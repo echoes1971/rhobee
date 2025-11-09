@@ -1,14 +1,30 @@
 package db
 
 import (
+	"crypto/rand"
 	"database/sql"
+	"encoding/hex"
 	"fmt"
+	"log"
 
 	"rprj/be/models"
 )
 
+func uuid16HexGo() (string, error) {
+	b := make([]byte, 8) // 8 bytes = 16 hex chars
+	if _, err := rand.Read(b); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(b), nil
+}
+
 // CREATE
 func CreateUser(u models.DBUser) error {
+	if u.ID == "" {
+		newID, _ := uuid16HexGo()
+		log.Print("newID=", newID)
+		u.ID = newID
+	}
 	_, err := DB.Exec(
 		"INSERT INTO "+tablePrefix+"users (id, login, pwd, pwd_salt, fullname, group_id) VALUES (?, ?, ?, ?, ?, ?)",
 		u.ID, u.Login, u.Pwd, u.PwdSalt, u.Fullname, u.GroupID,
