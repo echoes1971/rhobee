@@ -2,8 +2,10 @@ import React, { useContext, useEffect, useState } from "react";
 import axios from "axios";
 import { app_cfg } from "./app.cfg";
 import { ThemeContext } from "./ThemeContext";
+import { useTranslation } from "react-i18next";
 
 function Users() {
+  const { t } = useTranslation();
   const [users, setUsers] = useState([]);
   const [query, setQuery] = useState("");
   const [editingUser, setEditingUser] = useState(null); // utente in modifica
@@ -87,7 +89,7 @@ function Users() {
 
   return (
     <div className={`container mt-3 ${themeClass}`}>
-      <h2 className={dark ? "text-light" : "text-dark"}>Users</h2>
+      <h2 className={dark ? "text-light" : "text-dark"}>{t("users.users")}</h2>
 
       {/* Form di ricerca */}
       {!editingUser && (
@@ -95,11 +97,11 @@ function Users() {
           <input
             type="text"
             className={`form-control me-2 ${dark ? "bg-secondary text-light" : ""}`}
-            placeholder="Cerca utente..."
+            placeholder={t("common.search")}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
-          <button className="btn btn-primary">Search</button>
+          <button className="btn btn-primary">{t("common.search")}</button>
         </form>
       )}
 
@@ -108,7 +110,7 @@ function Users() {
           className="btn btn-success mb-3"
           onClick={() => setEditingUser({ ID: "", Login: "", Fullname: "", GroupID: "" })}
         >
-          New User
+          {t("users.newUser")}
         </button>
       )}
 
@@ -117,21 +119,27 @@ function Users() {
         className={`table ${dark ? "table-dark" : "table-striped"} table-hover`}
         >
           <thead>
-            <tr><th>ID</th><th>Login</th><th>Fullname</th><th>Group</th><th>Actions</th></tr>
+            <tr>
+              <th className="d-none d-md-table-cell">ID</th>
+              <th>Login</th>
+              <th>Fullname</th>
+              <th className="d-none d-md-table-cell">Group</th>
+              <th>Actions</th>
+            </tr>
           </thead>
           <tbody>
             {users.map(u => (
               <tr key={u.ID}>
-                <td>{u.ID}</td>
+                <td className="d-none d-md-table-cell">{u.ID}</td>
                 <td>{u.Login}</td>
                 <td>{u.Fullname}</td>
-                <td>{u.GroupID}</td>
+                <td className="d-none d-md-table-cell">{u.GroupID}</td>
                 <td>
                   <button
                     className="btn btn-sm btn-warning"
                     onClick={() => handleEditClick(u)}
                   >
-                    Edit
+                    {t("common.edit")}
                   </button>
                 </td>
               </tr>
@@ -143,7 +151,7 @@ function Users() {
       {/* Form di editing */}
       {editingUser && (
         <div className={`card p-3 mt-3 ${dark ? "bg-dark text-light" : "bg-light text-dark" }`}>
-          <h4>{editingUser.ID>'' ? "Modify" : "Create"} User</h4>
+          <h4>{editingUser.ID>'' ? t("common.edit") : t("common.create")} {t("users.user")}</h4>
           <input
             className={`form-control mb-2 ${dark ? "bg-secondary text-light" : ""}`}
             name="ID"
@@ -177,20 +185,20 @@ function Users() {
           />
           <div>
             <button className="btn btn-success me-2" onClick={handleSave}>
-              Save
+              { t("common.save") }
             </button>
             <button
               className="btn btn-secondary me-4"
               onClick={() => setEditingUser(null)}
             >
-              Cancel
+              { t("common.cancel") }
             </button>
             {editingUser.ID>"" ?
                       <button
                         className="btn btn-danger"
                         onClick={handleDelete}
                       >
-                        Delete
+                        { t("common.delete") }
                       </button>
           : null}
           </div>

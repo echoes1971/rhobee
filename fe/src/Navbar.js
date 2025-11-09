@@ -1,14 +1,27 @@
 import React, { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Navbar, Nav, NavDropdown, Container, Button } from "react-bootstrap";
+import { Navbar, Nav, NavDropdown, Container, Button, Dropdown } from "react-bootstrap";
 import { ThemeContext } from "./ThemeContext";
+import { useTranslation } from "react-i18next";
 import { app_cfg } from "./app.cfg";
 
 function AppNavbar() {
   const navigate = useNavigate();
   const [username, setUsername] = useState(localStorage.getItem("username"));
   const { dark, toggleTheme } = useContext(ThemeContext);
+  const { t, i18n } = useTranslation();
   const site_title = app_cfg.site_title;
+
+  const changeLanguage = (lng) => {
+    i18n.changeLanguage(lng);
+    localStorage.setItem("lang", lng);
+  };
+  const flags = {
+    it: "🇮🇹",
+    en: "🇬🇧",
+    fr: "🇫🇷",
+    de: "🇩🇪",
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -26,19 +39,40 @@ function AppNavbar() {
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="ms-auto">
             {username ? (
-              <Nav.Link as={Link} to="/users">Users</Nav.Link>
+              <Nav.Link as={Link} to="/users">{t("users.users")}</Nav.Link>
             ) : null}
             {username ? (
-              <Nav.Link as={Link} to="/groups">Groups</Nav.Link>
+              <Nav.Link as={Link} to="/groups">{t("groups.groups")}</Nav.Link>
             ) : null}
 
             {username ? (
               <NavDropdown title={username} id="user-dropdown" align="end">
-                <NavDropdown.Item onClick={handleLogout}>Logout</NavDropdown.Item>
+                <NavDropdown.Item onClick={handleLogout}>{t("common.logout")}</NavDropdown.Item>
               </NavDropdown>
             ) : (
-              <Nav.Link as={Link} to="/login">Login</Nav.Link>
+              <Nav.Link as={Link} to="/login">{t("common.login")}</Nav.Link>
             )}
+          
+            {/* Switch Language: */}
+            <Dropdown className="me-2">
+              <Dropdown.Toggle variant="outline-secondary" size="sm">
+                {flags[i18n.language] || "🌍"}
+              </Dropdown.Toggle>
+              <Dropdown.Menu>
+                <Dropdown.Item onClick={() => changeLanguage("en")}>
+                  🇬🇧 English
+                </Dropdown.Item>
+                <Dropdown.Item onClick={() => changeLanguage("fr")}>
+                  🇫🇷 Français
+                </Dropdown.Item>
+                <Dropdown.Item onClick={() => changeLanguage("de")}>
+                  🇩🇪 Deutsch
+                </Dropdown.Item>
+                <Dropdown.Item onClick={() => changeLanguage("it")}>
+                  🇮🇹 Italiano
+                </Dropdown.Item>
+              </Dropdown.Menu>
+            </Dropdown>
 
             {/* Bottone toggle tema */}
             <Button

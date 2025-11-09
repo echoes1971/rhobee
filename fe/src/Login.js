@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { useTranslation } from "react-i18next";
 
 function Login() {
+  const { t } = useTranslation();
   const [login, setLogin] = useState("");
   const [pwd, setPwd] = useState("");
 
@@ -24,7 +26,7 @@ function Login() {
     <form onSubmit={handleSubmit} className="p-3">
       <input className="form-control mb-2" placeholder="Login" value={login} onChange={e => setLogin(e.target.value)} />
       <input className="form-control mb-2" type="password" placeholder="Password" value={pwd} onChange={e => setPwd(e.target.value)} />
-      <button className="btn btn-primary">Login</button>
+      <button className="btn btn-primary">{t("common.login")}</button>
     </form>
   );
 }
