@@ -14,9 +14,9 @@ var tablePrefix string
 var DB *sql.DB
 
 // TestConnection apre la connessione, esegue la query e stampa il risultato
-func TestConnection() {
+func TestConnection(dbURL string) {
 	// URL di connessione
-	dsn := "root:mysecret@tcp(localhost:3306)/rproject"
+	dsn := dbURL
 
 	// Apri connessione
 	db, err := sql.Open("mysql", dsn)

@@ -6,7 +6,7 @@ Test:
 
 curl -X POST http://localhost:1971/login \
   -H "Content-Type: application/json" \
-  -d '{"login":"roberto","pwd":"echoestrade"}'
+  -d '{"login":"adm","pwd":"mysecretpass"}'
 
 curl -X GET http://localhost:1971/users/316 \
   -H "Authorization: Bearer <access_token>"
@@ -66,7 +66,7 @@ func main() {
 	api.JWTKey = []byte(AppConfig.JWTSecret)
 	db.Init(AppConfig.DBUrl, AppConfig.TablePrefix)
 
-	db.TestConnection()
+	db.TestConnection(AppConfig.DBUrl)
 
 	// Routing
 	r := mux.NewRouter()
