@@ -2,12 +2,13 @@ package db
 
 import (
 	"log"
+	"time"
 )
 
 func SaveToken(userID string, tokenString string, expiry int64) error {
 	_, err := DB.Exec(
-		"INSERT INTO "+tablePrefix+"oauth_tokens (user_id, token_id, expires_at) VALUES (?, ?, ?)",
-		userID, tokenString, expiry,
+		"INSERT INTO "+tablePrefix+"oauth_tokens (user_id, token_id, expires_at, access_token) VALUES (?, ?, ?, ?)",
+		userID, tokenString, time.Unix(expiry, 0).UTC(), tokenString,
 	)
 	if err != nil {
 		log.Println("Errore salvataggio token:", err)
