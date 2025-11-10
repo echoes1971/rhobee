@@ -43,11 +43,6 @@ import (
 
 var AppConfig models.Config
 
-// Struttura di esempio per la risposta JSON
-type Response struct {
-	Message string `json:"message"`
-}
-
 func main() {
 
 	configFile := "config.json"
@@ -70,6 +65,8 @@ func main() {
 
 	// Routing
 	r := mux.NewRouter()
+	// remove cors
+	r.Use(mux.CORSMethodMiddleware(r))
 
 	// Endpoint pubblico: login
 	r.HandleFunc("/login", api.LoginHandler).Methods("POST")
