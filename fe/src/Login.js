@@ -1,11 +1,13 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import api from "./axios";
+import { ThemeContext } from "./ThemeContext";
 import { useTranslation } from "react-i18next";
 
 function Login() {
   const { t } = useTranslation();
   const [login, setLogin] = useState("");
   const [pwd, setPwd] = useState("");
+  const { dark, themeClass } = useContext(ThemeContext);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,11 +24,23 @@ function Login() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="p-3">
-      <input className="form-control mb-2" placeholder="Login" value={login} onChange={e => setLogin(e.target.value)} />
-      <input className="form-control mb-2" type="password" placeholder="Password" value={pwd} onChange={e => setPwd(e.target.value)} />
-      <button className="btn btn-primary">{t("common.login")}</button>
-    </form>
+    <div className={`container mt-3  ${themeClass}`}>
+      <form onSubmit={handleSubmit} className="p-3">
+        <div class="form-group row">
+          <label class="col-md-1 col-form-label">Login</label>
+          <div class="col-sm-3">
+            <input className="form-control mb-2" placeholder="Login" value={login} onChange={e => setLogin(e.target.value)} />
+          </div>
+        </div>
+        <div class="form-group row">
+          <label class="col-md-1 col-form-label">Password</label>
+          <div class="col-sm-3">
+            <input className="form-control mb-2" type="password" placeholder="Password" value={pwd} onChange={e => setPwd(e.target.value)} />
+          </div>
+        </div>
+        <button className="btn btn-primary">{t("common.login")}</button>
+      </form>
+    </div>
   );
 }
 
