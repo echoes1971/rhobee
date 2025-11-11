@@ -25,7 +25,8 @@ services:
       context: ./fe
       dockerfile: Dockerfile.dev
     volumes:
-      - ./fe:/app
+      - ./fe:/app          # This hides node_modules previously built, so you need the following line
+      - /app/node_modules  # Anonymous volume: use node_modules from the image !!
     # healthcheck:
     #   test: ["CMD", "true"]
     #   # test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000"]

@@ -3,6 +3,7 @@ FROM node:24-alpine
 WORKDIR /app
 
 COPY package*.json ./
+RUN npm cache clean --force
 RUN npm install --legacy-peer-deps
 
 # Copy the source code
