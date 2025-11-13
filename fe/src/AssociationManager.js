@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { useTranslation } from "react-i18next";
+import { ThemeContext } from "./ThemeContext";
 
 /**
  * AssociationManager - Componente riusabile per gestire relazioni many-to-many
@@ -24,6 +25,7 @@ function AssociationManager({
     compact = null // auto-detect se null
 }) {
     const { t } = useTranslation();
+    const { themeClass } = useContext(ThemeContext);
     const [searchTerm, setSearchTerm] = useState("");
     
     // Auto-detect compact mode se non specificato
@@ -70,7 +72,7 @@ function AssociationManager({
     };
 
     return (
-        <div className="card mb-3">
+        <div className={`card mb-3 ${themeClass}`}>
             <div className="card-header d-flex justify-content-between align-items-center">
                 <h5 className="mb-0">{title}</h5>
                 <span className="badge bg-primary">{selected.length} / {available.length}</span>
@@ -119,7 +121,7 @@ function AssociationManager({
                             {selectedItems.map(item => (
                                 <div 
                                     key={item[valueKey]} 
-                                    className="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                                    className={`list-group-item list-group-item-action d-flex justify-content-between align-items-center ${themeClass}`}
                                     onClick={() => handleToggle(item[valueKey])}
                                     style={{ cursor: disabled ? 'default' : 'pointer' }}
                                 >
@@ -152,7 +154,7 @@ function AssociationManager({
                             {displayUnselectedItems.map(item => (
                                 <div 
                                     key={item[valueKey]} 
-                                    className="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                                    className={`list-group-item list-group-item-action d-flex justify-content-between align-items-center ${themeClass}`}
                                     onClick={() => handleToggle(item[valueKey])}
                                     style={{ cursor: disabled ? 'default' : 'pointer' }}
                                 >
@@ -197,7 +199,7 @@ function AssociationManager({
                                     {displayUnselectedItems.map(item => (
                                         <div 
                                             key={item[valueKey]} 
-                                            className="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                                            className={`list-group-item list-group-item-action d-flex justify-content-between align-items-center ${themeClass}`}
                                             onClick={() => handleToggle(item[valueKey])}
                                             style={{ cursor: disabled ? 'default' : 'pointer' }}
                                         >
