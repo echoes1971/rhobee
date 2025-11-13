@@ -45,10 +45,18 @@ func GetUserByID(id string) (*models.DBUser, error) {
 }
 
 // UPDATE
-func UpdateUser(u models.DBUser) error {
+func UpdateUser(u models.DBUser, updatePwd bool) error {
+	if updatePwd {
+		_, err := DB.Exec(
+			"UPDATE "+tablePrefix+"users SET login=?, pwd=?, pwd_salt=?, fullname=?, group_id=? WHERE id=?",
+			u.Login, u.Pwd, u.PwdSalt, u.Fullname, u.GroupID, u.ID,
+		)
+		return err
+	}
+	// Update without password
 	_, err := DB.Exec(
-		"UPDATE "+tablePrefix+"users SET login=?, pwd=?, pwd_salt=?, fullname=?, group_id=? WHERE id=?",
-		u.Login, u.Pwd, u.PwdSalt, u.Fullname, u.GroupID, u.ID,
+		"UPDATE "+tablePrefix+"users SET login=?, fullname=?, group_id=? WHERE id=?",
+		u.Login, u.Fullname, u.GroupID, u.ID,
 	)
 	return err
 }

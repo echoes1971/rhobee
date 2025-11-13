@@ -23,7 +23,15 @@
         "newUser": "Nuovo Utente",
         "user": "Utente",
         "users": "Utenti",
-        "groups": "Gruppi"
+        "groups": "Gruppi",
+        "login": "Login",
+        "fullname": "Nome Completo",
+        "password": "Password",
+        "confirm_password": "Conferma Password",
+        "leave_blank": "lascia vuoto per mantenere quella attuale",
+        "login_required": "Il login è obbligatorio",
+        "password_required": "La password è obbligatoria per i nuovi utenti",
+        "password_mismatch": "Le password non coincidono"
     },
     "groups": {
         "newGroup": "Nuovo Gruppo",

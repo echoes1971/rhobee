@@ -10,6 +10,8 @@ function Users() {
   const [groups, setGroups] = useState([]);
   const [query, setQuery] = useState("");
   const [editingUser, setEditingUser] = useState(null); // utente in modifica
+  const [confirmPwd, setConfirmPwd] = useState("");
+  const [pwdError, setPwdError] = useState("");
   const { dark, themeClass } = useContext(ThemeContext);
 
     // Carica tutti gli utenti all'inizio
@@ -63,11 +65,15 @@ function Users() {
       const res = await api.get(`/users/${user.ID}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setEditingUser({ ...user, group_ids: res.data.group_ids || [] });
+      setEditingUser({ ...user, group_ids: res.data.group_ids || [], Pwd: "" });
+      setConfirmPwd("");
+      setPwdError("");
     } catch (err) {
       console.log("Error loading user details.");
       // Fallback ai dati base se la chiamata fallisce
-      setEditingUser({ ...user, group_ids: [] });
+      setEditingUser({ ...user, group_ids: [], Pwd: "" });
+      setConfirmPwd("");
+      setPwdError("");
     }
   };
 
@@ -78,31 +84,53 @@ function Users() {
   };
 
   const handleSave = async () => {
+    // Validazione
+    if (!editingUser.Login || editingUser.Login.trim() === "") {
+      setPwdError(t("users.login_required") || "Login is required");
+      return;
+    }
+    
+    if (!editingUser.ID && (!editingUser.Pwd || editingUser.Pwd.trim() === "")) {
+      setPwdError(t("users.password_required") || "Password is required for new users");
+      return;
+    }
+    
+    if (editingUser.Pwd && editingUser.Pwd !== confirmPwd) {
+      setPwdError(t("users.password_mismatch") || "Passwords do not match");
+      return;
+    }
+    
+    setPwdError("");
     const token = localStorage.getItem("token");
     try {
       if (!editingUser.ID) {
         // Nuovo utente
         await api.post(`/users`, {
           login: editingUser.Login,
-          pwd: editingUser.Pwd || "default",
+          pwd: editingUser.Pwd,
           fullname: editingUser.Fullname,
           group_id: editingUser.GroupID,
           group_ids: editingUser.group_ids || []
         }, { headers: { Authorization: `Bearer ${token}` } } );
         setEditingUser(null);
+        setConfirmPwd("");
         fetchUsers();
         fetchGroups();
         return;
       }
-      // Utente esistente
-      await api.put(`/users/${editingUser.ID}`, {
+      // Utente esistente - invia password solo se modificata
+      const updateData = {
         login: editingUser.Login,
-        pwd: editingUser.Pwd,
         fullname: editingUser.Fullname,
         group_id: editingUser.GroupID,
         group_ids: editingUser.group_ids || []
-      }, { headers: { Authorization: `Bearer ${token}` } } );
+      };
+      if (editingUser.Pwd && editingUser.Pwd.trim() !== "") {
+        updateData.pwd = editingUser.Pwd;
+      }
+      await api.put(`/users/${editingUser.ID}`, updateData, { headers: { Authorization: `Bearer ${token}` } } );
       setEditingUser(null);
+      setConfirmPwd("");
       fetchUsers();
     } catch (err) {
       alert("Errore salvataggio utente");
@@ -141,7 +169,11 @@ function Users() {
       {!editingUser && (
         <button
           className="btn btn-success mb-3"
-          onClick={() => setEditingUser({ ID: "", Login: "", Fullname: "", GroupID: "", group_ids: [] })}
+          onClick={() => {
+            setEditingUser({ ID: "", Login: "", Fullname: "", GroupID: "", group_ids: [], Pwd: "" });
+            setConfirmPwd("");
+            setPwdError("");
+          }}
         >
           {t("users.newUser")}
         </button>
@@ -193,21 +225,55 @@ function Users() {
             readOnly
             onChange={handleEditChange}
           />
+          <label className="form-label">{t("users.login") || "Login"} *</label>
           <input
             className={`form-control mb-2 ${dark ? "bg-secondary text-light" : ""}`}
             name="Login"
-            title="Login"
+            placeholder={t("users.login") || "Login"}
             value={editingUser.Login}
-            {...editingUser.ID ? "disabled" : null}
+            disabled={editingUser.ID !== ""}
             onChange={handleEditChange}
+            required
           />
+          <label className="form-label">{t("users.fullname") || "Fullname"}</label>
           <input
             className={`form-control mb-2 ${dark ? "bg-secondary text-light" : ""}`}
             name="Fullname"
-            title="Fullname"
+            placeholder={t("users.fullname") || "Fullname"}
             value={editingUser.Fullname}
             onChange={handleEditChange}
           />
+          <label className="form-label">
+            {t("users.password") || "Password"}
+            {!editingUser.ID && " *"}
+            {editingUser.ID && " (" + (t("users.leave_blank") || "leave blank to keep current") + ")"}
+          </label>
+          <input
+            className={`form-control mb-2 ${dark ? "bg-secondary text-light" : ""}`}
+            name="Pwd"
+            type="password"
+            placeholder={t("users.password") || "Password"}
+            value={editingUser.Pwd || ""}
+            onChange={handleEditChange}
+            required={!editingUser.ID}
+          />
+          <label className="form-label">
+            {t("users.confirm_password") || "Confirm Password"}
+            {!editingUser.ID && " *"}
+          </label>
+          <input
+            className={`form-control mb-2 ${dark ? "bg-secondary text-light" : ""}`}
+            type="password"
+            placeholder={t("users.confirm_password") || "Confirm Password"}
+            value={confirmPwd}
+            onChange={(e) => setConfirmPwd(e.target.value)}
+            required={!editingUser.ID}
+          />
+          {pwdError && (
+            <div className="alert alert-danger" role="alert">
+              {pwdError}
+            </div>
+          )}
           <input
             className={`form-control mb-2 ${dark ? "bg-secondary text-light" : ""}`}
             name="GroupID"

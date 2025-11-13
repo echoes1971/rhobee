@@ -162,7 +162,9 @@ func UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
 		GroupID:  req.GroupID,
 	}
 
-	if err := db.UpdateUser(u); err != nil {
+	// Update password only if provided
+	updatePwd := req.Pwd != ""
+	if err := db.UpdateUser(u, updatePwd); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
