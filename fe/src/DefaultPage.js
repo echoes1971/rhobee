@@ -23,14 +23,18 @@ function DefaultPage() {
 
     if (content) {
         return (
-            <div className="p-3" dangerouslySetInnerHTML={{ __html: content }}></div>
+            <div className="p-3 d-flex justify-content-center">
+                <div className="col-12 col-md-9 col-lg-8" dangerouslySetInnerHTML={{ __html: content }}></div>
+            </div>
         );
     }
 
     return (
-        <div className="p-3">
-            <h3>Welcome to our application!</h3>
-            <p>Please log in to continue.</p>
+        <div className="p-3 d-flex justify-content-center">
+            <div className="col-12 col-md-9 col-lg-8">
+                <h3>Welcome to our application!</h3>
+                <p>Please log in to continue.</p>
+            </div>
         </div>
     );
 }

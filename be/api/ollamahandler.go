@@ -12,13 +12,22 @@ import (
 
 var ollamaURL string
 var ollamaModel string
+var ollamaAppName string
 
-func OllamaInit(url, model string) error {
+func OllamaInit(appName, url, model string) error {
 	ollamaURL = url
 	ollamaModel = model
+	ollamaAppName = appName
 
-	go UpdateOllamaDefaultPageResponse("en")
-	log.Printf("Ollama initialized with URL: %s and Model: %s\n", ollamaURL, ollamaModel)
+	if ollamaURL != "" && ollamaModel != "" {
+		go UpdateOllamaDefaultPageResponse("en")
+		log.Printf("Ollama initialized with URL: %s and Model: %s\n", ollamaURL, ollamaModel)
+	} else {
+		log.Println("Ollama not configured - using fallback responses")
+		lastDefaultPageResponse = "<h2>Welcome! 👋</h2><p>Please log in to continue using the application.</p>"
+		// lastDefaultPageResponse = "\u003ch2\u003eWelcome to the Galaxy 🚀\u003c/h2\u003e\n\n\u003cp\u003e Warning: Abandon all hope, ye who enter here... or at least try our web app! 😂\u003c/p\u003e\n\n\u003cb\u003eGalactic Hitcher's Guide\u003c/b\u003e\u003cbr\u003e\n\u003cbr\u003e\n\n1. First, buckle up and strap yourself in, because things are about to get weird. 🚀\n2. Our web app is powered by a combination of magic dust and cutting-edge technology (just kidding, it's just JavaScript). ✨\n3. Be prepared for epic battles with bugs and occasional crashes into the mothership (aka error 404). 💥\n4. But don't worry, our team of expert space rangers will be here to guide you through the galaxy and fix any problems that come your way. 🚀\n\nSo, are you ready to embark on this intergalactic adventure? Let's get started! 🔴"
+
+	}
 
 	return nil
 }
@@ -38,6 +47,14 @@ func OllamaHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if ollamaURL == "" || ollamaModel == "" {
+		res := Response{Error: "Ollama service not configured"}
+		w.WriteHeader(http.StatusServiceUnavailable)
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(res)
+		return
+	}
+
 	respText, err := CallOllama(req.Prompt)
 	if err != nil {
 		res := Response{Error: err.Error()}
@@ -54,14 +71,6 @@ func OllamaHandler(w http.ResponseWriter, r *http.Request) {
 var lastDefaultPageResponse string
 
 func DefaultPageOllamaHandler(w http.ResponseWriter, r *http.Request) {
-	// // Get Accept-Language header
-	// acceptLang := r.Header.Get("Accept-Language")
-	// tags, _, err := language.ParseAcceptLanguage(acceptLang)
-	// if err != nil || len(tags) == 0 {
-	// 	tags = []language.Tag{language.English}
-	// }
-	// langTag := tags[0].String()
-
 	// Get lang query parameter
 	langParam := r.URL.Query().Get("lang")
 	if langParam == "" {
@@ -79,18 +88,11 @@ func DefaultPageOllamaHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-//	var modelList = []string{
-//		"llama3.2:latest",
-//		"codellama:7b",
-//		"qwen3-vl:4b",
-//		"mistral:7b", // NO
-//		"gemma3:4b",
-//	}
 var prompts = []string{
-	"Provide a short funny star trek based welcome message for the default page of a web application",
-	"Provide a short funny star wars based welcome message for the default page of a web application",
-	"Provide a short funny hitcher's guide to galaxy based welcome message for the default page of a web application",
-	"Provide a short funny positive welcome message for the default page of a web application",
+	"Provide a short funny star trek based welcome message for the default page of ",
+	"Provide a short funny star wars based welcome message for the default page of ",
+	"Provide a short funny hitcher's guide to galaxy based welcome message for the default page of ",
+	"Provide a short funny positive welcome message for the default page of ",
 }
 
 func UpdateOllamaDefaultPageResponse(languageTag string) {
@@ -101,6 +103,8 @@ func UpdateOllamaDefaultPageResponse(languageTag string) {
 
 	// ollamaModel = modelList[0]
 	prompt := prompts[2]
+	prompt += " a web application"
+	// prompt += " " + ollamaAppName + " web application"
 	switch languageTag {
 	case "it", "it-IT":
 		prompt += prompt + " in Italian."
@@ -111,6 +115,7 @@ func UpdateOllamaDefaultPageResponse(languageTag string) {
 	case "de", "de-DE":
 		prompt += prompt + " in German."
 	}
+	prompt += " Use emojis."
 	prompt += " Use only <h2>, <p>, <b>, <br> tags. No links <a>. Output html code only."
 
 	log.Print("Prompt: ", prompt)
@@ -170,7 +175,8 @@ func CallOllama(prompt string) (string, error) {
 		content := ollamaResponseSingle.Message.Content
 		content = strings.ReplaceAll(content, "```html", "")
 		content = strings.ReplaceAll(content, "```", "")
-		content = strings.ReplaceAll(content, "[app name]", "our web site")
+		content = strings.ReplaceAll(content, "[app name]", ollamaAppName)
+		content = strings.ReplaceAll(content, "[App Name]", ollamaAppName)
 		return content, nil
 	}
 

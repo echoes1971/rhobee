@@ -8,6 +8,7 @@ import (
 
 // Backend Configuration Structure
 type Config struct {
+	AppName     string `json:"app_name"`
 	ServerPort  int    `json:"server_port"`
 	DBUrl       string `json:"db_url"`
 	TablePrefix string `json:"table_prefix"`

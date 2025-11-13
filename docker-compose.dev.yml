@@ -35,10 +35,14 @@ services:
     #   timeout: 10s
     #   retries: 3
     #   start_period: 5s
+    ports:
+      - "3000:3000"
     depends_on:
       be:
         condition: service_healthy
     environment:
+      - APP_NAME=R-Project
+      - REACT_APP_TITLE=R-Project Dev
       # - REACT_APP_ENDPOINT=http://localhost:8080/api  # Per connettere FE a BE
       - REACT_APP_API_URL=/api  # Per connettere FE a BE
       # Only for windows to force polling
@@ -52,11 +56,15 @@ services:
       dockerfile: Dockerfile.dev
     expose:
       - "1971"
-    # Temporary for external Ollama access from Docker container
+    # Allow access to host and local subnet IPs
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    # environment:
-    #   - DB_URL=root:mysecret@tcp(mysql:3306)/rproject
+      - "external.llama:192.168.1.232"  # Example static IP for external llama server
+    environment:
+      - APP_NAME=R-Project
+      # Ollama is optional - comment out or leave empty to disable
+      - OLLAMA_URL=http://external.llama:11434/api/chat
+      - OLLAMA_MODEL="llama3.2:latest"
     volumes:
       - ./be:/app
     healthcheck:

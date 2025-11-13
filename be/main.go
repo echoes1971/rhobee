@@ -33,6 +33,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"rprj/be/api"
 	"rprj/be/db"
@@ -52,10 +53,22 @@ func main() {
 
 	err := models.LoadConfig(configFile, &AppConfig)
 	if err != nil {
-		log.Fatalf("Errore caricamento configurazione: %v", err)
+		log.Fatalf("Error loading configuration: %v", err)
 	}
 
-	fmt.Printf("Configurazione caricata: %+v\n", AppConfig)
+	fmt.Printf("Loaded config: %+v\n", AppConfig)
+
+	if appName := os.Getenv("APP_NAME"); appName != "" {
+		AppConfig.AppName = appName
+	}
+
+	// Override Ollama settings from environment variables if present
+	if ollamaURL := os.Getenv("OLLAMA_URL"); ollamaURL != "" {
+		AppConfig.OllamaURL = ollamaURL
+	}
+	if ollamaModel := os.Getenv("OLLAMA_MODEL"); ollamaModel != "" {
+		AppConfig.OllamaModel = strings.ReplaceAll(ollamaModel, "\"", "")
+	}
 
 	// Passa la config ai pacchetti
 	api.JWTKey = []byte(AppConfig.JWTSecret)
@@ -63,7 +76,7 @@ func main() {
 
 	db.TestConnection(AppConfig.DBUrl)
 
-	api.OllamaInit(AppConfig.OllamaURL, AppConfig.OllamaModel)
+	api.OllamaInit(AppConfig.AppName, AppConfig.OllamaURL, AppConfig.OllamaModel)
 
 	// Routing
 	r := mux.NewRouter()
