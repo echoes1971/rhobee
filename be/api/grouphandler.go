@@ -43,23 +43,66 @@ func GetGroupHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(group)
-}
-
-// POST /groups
-func CreateGroupHandler(w http.ResponseWriter, r *http.Request) {
-	var g models.DBGroup
-	if err := json.NewDecoder(r.Body).Decode(&g); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	if err := db.CreateGroup(g); err != nil {
+	// Get group users
+	groupUsers, err := db.GetUserGroupsByGroupID(id)
+	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	// Build response with user IDs
+	userIDs := make([]string, len(groupUsers))
+	for i, gu := range groupUsers {
+		userIDs[i] = gu.UserID
+	}
+
+	response := map[string]interface{}{
+		"id":          group.ID,
+		"name":        group.Name,
+		"description": group.Description,
+		"user_ids":    userIDs,
+	}
+
+	json.NewEncoder(w).Encode(response)
+}
+
+// POST /groups
+func CreateGroupHandler(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		Name        string   `json:"name"`
+		Description string   `json:"description"`
+		UserIDs     []string `json:"user_ids"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	g := models.DBGroup{
+		Name:        req.Name,
+		Description: req.Description,
+	}
+
+	groupID, err := db.CreateGroup(g)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	g.ID = groupID
+
+	// Add users to group
+	for _, userID := range req.UserIDs {
+		if err := db.CreateUserGroup(models.DBUserGroup{
+			UserID:  userID,
+			GroupID: groupID,
+		}); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+
 	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(g)
 }
 
 // PUT /groups/{id}
@@ -71,16 +114,41 @@ func UpdateGroupHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var g models.DBGroup
-	if err := json.NewDecoder(r.Body).Decode(&g); err != nil {
+	var req struct {
+		Name        string   `json:"name"`
+		Description string   `json:"description"`
+		UserIDs     []string `json:"user_ids"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	g.ID = id
+
+	g := models.DBGroup{
+		ID:          id,
+		Name:        req.Name,
+		Description: req.Description,
+	}
 
 	if err := db.UpdateGroup(g); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
+	}
+
+	// Update group users: delete all and recreate
+	if err := db.DeleteUserGroupsByGroupID(id); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	for _, userID := range req.UserIDs {
+		if err := db.CreateUserGroup(models.DBUserGroup{
+			UserID:  userID,
+			GroupID: id,
+		}); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 
 	w.WriteHeader(http.StatusNoContent)

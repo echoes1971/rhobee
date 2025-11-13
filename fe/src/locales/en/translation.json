@@ -8,16 +8,33 @@
     "save": "Save",
     "cancel": "Cancel",
     "delete": "Delete",
-    "search": "Search"
+    "search": "Search",
+    "select_all": "Select All",
+    "deselect_all": "Deselect All",
+    "selected": "Selected",
+    "available": "Available",
+    "search_results": "Search Results",
+    "showing": "Showing",
+    "of": "of",
+    "no_items_found": "No items found",
+    "no_matches": "No matches found"
   },
   "users": {
     "newUser": "New User",
     "user": "User",
-    "users": "Users"
+    "users": "Users",
+    "groups": "Groups"
   },
   "groups": {
     "newGroup": "New Group",
     "group": "Group",
-    "groups": "Groups"
+    "groups": "Groups",
+    "users": "Users"
+  },
+  "association": {
+    "compact_mode": "Compact mode",
+    "search_to_add_more": "Search to add more",
+    "search_to_add_items": "Use the search bar above to find and add items",
+    "refine_search": "Refine your search to see more results"
   }
 }

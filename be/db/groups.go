@@ -8,7 +8,7 @@ import (
 )
 
 // CREATE
-func CreateGroup(g models.DBGroup) error {
+func CreateGroup(g models.DBGroup) (string, error) {
 	if g.ID == "" {
 		newID, _ := uuid16HexGo()
 		log.Print("newID=", newID)
@@ -18,7 +18,7 @@ func CreateGroup(g models.DBGroup) error {
 		"INSERT INTO "+tablePrefix+"groups (id, name, description) VALUES (?, ?, ?)",
 		g.ID, g.Name, g.Description,
 	)
-	return err
+	return g.ID, err
 }
 
 // READ

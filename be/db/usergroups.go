@@ -46,6 +46,26 @@ func GetUserGroupsByUserID(userID string) ([]models.DBUserGroup, error) {
 	}
 	return groups, nil
 }
+func GetUserGroupsByGroupID(groupID string) ([]models.DBUserGroup, error) {
+	rows, err := DB.Query(
+		"SELECT user_id, group_id FROM "+tablePrefix+"users_groups WHERE group_id = ?",
+		groupID,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var groups []models.DBUserGroup
+	for rows.Next() {
+		var g models.DBUserGroup
+		if err := rows.Scan(&g.UserID, &g.GroupID); err != nil {
+			return nil, err
+		}
+		groups = append(groups, g)
+	}
+	return groups, nil
+}
 
 // DELETE
 func DeleteUserGroup(userID string, groupID string) error {

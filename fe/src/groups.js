@@ -2,10 +2,12 @@ import React, { useContext, useEffect, useState } from "react";
 import api from "./axios";
 import { ThemeContext } from "./ThemeContext";
 import { useTranslation } from "react-i18next";
+import AssociationManager from "./AssociationManager";
 
 function Groups() {
   const { t } = useTranslation();
   const [groups, setGroups] = useState([]);
+  const [users, setUsers] = useState([]);
   const [query, setQuery] = useState("");
   const [editingGroup, setEditingGroup] = useState(null); // gruppo in modifica
   const { dark, themeClass } = useContext(ThemeContext);
@@ -13,6 +15,7 @@ function Groups() {
     // Carica tutti i gruppi all'inizio
   useEffect(() => {
     fetchGroups();
+    fetchUsers();
   }, []);
 
   const fetchGroups = async (search = "") => {
@@ -30,14 +33,36 @@ function Groups() {
     }
   };
 
+  const fetchUsers = async () => {
+    const token = localStorage.getItem("token");
+    try {
+      const res = await api.get("/users", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setUsers(res.data || []);
+    } catch (err) {
+      console.log("Error loading users.");
+    }
+  };
+
   const handleSearch = (e) => {
     e.preventDefault();
     fetchGroups(query);
   };
 
-  const handleEditClick = (group) => {
-    // alert("Editing group="+group.Name);
-    setEditingGroup({ ...group }); // copia per non modificare direttamente
+  const handleEditClick = async (group) => {
+    // Carica i dettagli completi del gruppo inclusi i user_ids
+    const token = localStorage.getItem("token");
+    try {
+      const res = await api.get(`/groups/${group.ID}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setEditingGroup({ ...group, user_ids: res.data.user_ids || [] });
+    } catch (err) {
+      console.log("Error loading group details.");
+      // Fallback ai dati base se la chiamata fallisce
+      setEditingGroup({ ...group, user_ids: [] });
+    }
   };
 
   const handleEditChange = (e) => {
@@ -51,13 +76,21 @@ function Groups() {
     try {
       if (!editingGroup.ID) {
         // Nuovo gruppo
-        await api.post(`/groups`, editingGroup, { headers: { Authorization: `Bearer ${token}` } } );
+        await api.post(`/groups`, {
+          name: editingGroup.Name,
+          description: editingGroup.Description,
+          user_ids: editingGroup.user_ids || []
+        }, { headers: { Authorization: `Bearer ${token}` } } );
         setEditingGroup(null);
         fetchGroups();
         return;
       }
       // Gruppo esistente
-      await api.put(`/groups/${editingGroup.ID}`, editingGroup, { headers: { Authorization: `Bearer ${token}` } } );
+      await api.put(`/groups/${editingGroup.ID}`, {
+        name: editingGroup.Name,
+        description: editingGroup.Description,
+        user_ids: editingGroup.user_ids || []
+      }, { headers: { Authorization: `Bearer ${token}` } } );
       setEditingGroup(null);
       fetchGroups();
     } catch (err) {
@@ -101,7 +134,7 @@ function Groups() {
       {!editingGroup && (
         <button
           className="btn btn-success mb-3"
-          onClick={() => setEditingGroup({ ID: "", Name: "", Description: ""})}
+          onClick={() => setEditingGroup({ ID: "", Name: "", Description: "", user_ids: []})}
         >
           {t("groups.newGroup")}
         </button>
@@ -166,6 +199,17 @@ function Groups() {
             value={editingGroup.Description}
             onChange={handleEditChange}
           />
+          
+          {/* Association Manager per gli utenti */}
+          <AssociationManager
+            title={t("groups.users") || "Users"}
+            available={users}
+            selected={editingGroup.user_ids || []}
+            onChange={(newUserIds) => setEditingGroup(prev => ({ ...prev, user_ids: newUserIds }))}
+            labelKey="Fullname"
+            valueKey="ID"
+          />
+
           <div>
             <button className="btn btn-success me-2" onClick={handleSave}>
               { t("common.save") }

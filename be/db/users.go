@@ -9,7 +9,7 @@ import (
 )
 
 // CREATE
-func CreateUser(u models.DBUser) error {
+func CreateUser(u models.DBUser) (string, error) {
 	if u.ID == "" {
 		newID, _ := uuid16HexGo()
 		log.Print("newID=", newID)
@@ -19,7 +19,7 @@ func CreateUser(u models.DBUser) error {
 		"INSERT INTO "+tablePrefix+"users (id, login, pwd, pwd_salt, fullname, group_id) VALUES (?, ?, ?, ?, ?, ?)",
 		u.ID, u.Login, u.Pwd, u.PwdSalt, u.Fullname, u.GroupID,
 	)
-	return err
+	return u.ID, err
 }
 
 // READ (by Login)

@@ -2,10 +2,12 @@ import React, { useContext, useEffect, useState } from "react";
 import api from "./axios";
 import { ThemeContext } from "./ThemeContext";
 import { useTranslation } from "react-i18next";
+import AssociationManager from "./AssociationManager";
 
 function Users() {
   const { t } = useTranslation();
   const [users, setUsers] = useState([]);
+  const [groups, setGroups] = useState([]);
   const [query, setQuery] = useState("");
   const [editingUser, setEditingUser] = useState(null); // utente in modifica
   const { dark, themeClass } = useContext(ThemeContext);
@@ -13,6 +15,7 @@ function Users() {
     // Carica tutti gli utenti all'inizio
   useEffect(() => {
     fetchUsers();
+    fetchGroups();
   }, []);
 
   const fetchUsers = async (search = "") => {
@@ -30,14 +33,42 @@ function Users() {
     }
   };
 
+  const fetchGroups = async () => {
+    const token = localStorage.getItem("token");
+    try {
+      const res = await api.get("/groups", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setGroups(res.data || []);
+    } catch (err) {
+      console.log("Error loading groups.");
+    }
+  };
+
   const handleSearch = (e) => {
     e.preventDefault();
     fetchUsers(query);
   };
 
-  const handleEditClick = (user) => {
-    // alert("Editing user="+user.Login);
-    setEditingUser({ ...user }); // copia per non modificare direttamente
+  // Helper per ottenere il nome del gruppo dall'ID
+  const getGroupName = (groupId) => {
+    const group = groups.find(g => g.ID === groupId);
+    return group ? group.Name : groupId;
+  };
+
+  const handleEditClick = async (user) => {
+    // Carica i dettagli completi dell'utente inclusi i group_ids
+    const token = localStorage.getItem("token");
+    try {
+      const res = await api.get(`/users/${user.ID}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setEditingUser({ ...user, group_ids: res.data.group_ids || [] });
+    } catch (err) {
+      console.log("Error loading user details.");
+      // Fallback ai dati base se la chiamata fallisce
+      setEditingUser({ ...user, group_ids: [] });
+    }
   };
 
   const handleEditChange = (e) => {
@@ -51,13 +82,26 @@ function Users() {
     try {
       if (!editingUser.ID) {
         // Nuovo utente
-        await api.post(`/users`, editingUser, { headers: { Authorization: `Bearer ${token}` } } );
+        await api.post(`/users`, {
+          login: editingUser.Login,
+          pwd: editingUser.Pwd || "default",
+          fullname: editingUser.Fullname,
+          group_id: editingUser.GroupID,
+          group_ids: editingUser.group_ids || []
+        }, { headers: { Authorization: `Bearer ${token}` } } );
         setEditingUser(null);
         fetchUsers();
+        fetchGroups();
         return;
       }
       // Utente esistente
-      await api.put(`/users/${editingUser.ID}`, editingUser, { headers: { Authorization: `Bearer ${token}` } } );
+      await api.put(`/users/${editingUser.ID}`, {
+        login: editingUser.Login,
+        pwd: editingUser.Pwd,
+        fullname: editingUser.Fullname,
+        group_id: editingUser.GroupID,
+        group_ids: editingUser.group_ids || []
+      }, { headers: { Authorization: `Bearer ${token}` } } );
       setEditingUser(null);
       fetchUsers();
     } catch (err) {
@@ -97,7 +141,7 @@ function Users() {
       {!editingUser && (
         <button
           className="btn btn-success mb-3"
-          onClick={() => setEditingUser({ ID: "", Login: "", Fullname: "", GroupID: "" })}
+          onClick={() => setEditingUser({ ID: "", Login: "", Fullname: "", GroupID: "", group_ids: [] })}
         >
           {t("users.newUser")}
         </button>
@@ -122,7 +166,7 @@ function Users() {
                 <td className="d-none d-md-table-cell">{u.ID}</td>
                 <td>{u.Login}</td>
                 <td>{u.Fullname}</td>
-                <td className="d-none d-md-table-cell">{u.GroupID}</td>
+                <td className="d-none d-md-table-cell">{getGroupName(u.GroupID)}</td>
                 <td>
                   <button
                     className="btn btn-sm btn-warning"
@@ -168,10 +212,21 @@ function Users() {
             className={`form-control mb-2 ${dark ? "bg-secondary text-light" : ""}`}
             name="GroupID"
             title="GroupID"
-            value={editingUser.GroupID}
+            value={getGroupName(editingUser.GroupID)}
             readOnly
             onChange={handleEditChange}
           />
+          
+          {/* Association Manager per i gruppi */}
+          <AssociationManager
+            title={t("users.groups") || "Groups"}
+            available={groups}
+            selected={editingUser.group_ids || []}
+            onChange={(newGroupIds) => setEditingUser(prev => ({ ...prev, group_ids: newGroupIds }))}
+            labelKey="Name"
+            valueKey="ID"
+          />
+
           <div>
             <button className="btn btn-success me-2" onClick={handleSave}>
               { t("common.save") }

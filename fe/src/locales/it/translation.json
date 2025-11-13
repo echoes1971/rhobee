@@ -8,16 +8,33 @@
         "save": "Salva",
         "cancel": "Annulla",
         "delete": "Elimina",
-        "search": "Cerca"
+        "search": "Cerca",
+        "select_all": "Seleziona Tutto",
+        "deselect_all": "Deseleziona Tutto",
+        "selected": "Selezionati",
+        "available": "Disponibili",
+        "search_results": "Risultati della Ricerca",
+        "showing": "Visualizzati",
+        "of": "di",
+        "no_items_found": "Nessun elemento trovato",
+        "no_matches": "Nessuna corrispondenza"
     },
     "users": {
         "newUser": "Nuovo Utente",
         "user": "Utente",
-        "users": "Utenti"
+        "users": "Utenti",
+        "groups": "Gruppi"
     },
     "groups": {
         "newGroup": "Nuovo Gruppo",
         "group": "Gruppo",
-        "groups": "Gruppi"
+        "groups": "Gruppi",
+        "users": "Utenti"
+    },
+    "association": {
+        "compact_mode": "Modalità compatta",
+        "search_to_add_more": "Cerca per aggiungerne altri",
+        "search_to_add_items": "Usa la barra di ricerca per trovare e aggiungere elementi",
+        "refine_search": "Affina la ricerca per visualizzare più risultati"
     }
 }
