@@ -6,6 +6,7 @@
 # docker container rm rprj-ng-be-1 ; docker image rm rprj-ng-be
 # docker container restart rprj-ng-be-1
 # docker exec -it rprj-ng-db-1 mariadb -u root --password=mysecret rproject
+# docker exec -it rprj-ng-be-1 bash
 # docker exec -it rprj-ng-fe-1 bash
 
 services:
@@ -51,6 +52,9 @@ services:
       dockerfile: Dockerfile.dev
     expose:
       - "1971"
+    # Temporary for external Ollama access from Docker container
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     # environment:
     #   - DB_URL=root:mysecret@tcp(mysql:3306)/rproject
     volumes:

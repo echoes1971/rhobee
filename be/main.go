@@ -63,6 +63,8 @@ func main() {
 
 	db.TestConnection(AppConfig.DBUrl)
 
+	api.OllamaInit(AppConfig.OllamaURL, AppConfig.OllamaModel)
+
 	// Routing
 	r := mux.NewRouter()
 	// remove cors
@@ -73,6 +75,13 @@ func main() {
 
 	// Endpoint pubblico: hello
 	r.HandleFunc("/ping", api.PingHandler).Methods("GET")
+
+	// Endpoint pubblico: Ollama
+	// curl -X POST http://localhost:8080/api/ollama -H "Content-Type: application/json" -d '{"prompt":"Hello Ollama!"}'
+	r.HandleFunc("/ollama", api.OllamaHandler).Methods("POST")
+	// Endpoint pubblico: Ollama default page response
+	// curl -X GET http://localhost:8080/api/ollama/defaultpage
+	r.HandleFunc("/ollama/defaultpage", api.DefaultPageOllamaHandler).Methods("GET")
 
 	// Endpoint protected: CRUD utenti
 	userRoutes := r.PathPrefix("/users").Subrouter()

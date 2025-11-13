@@ -13,6 +13,8 @@ type Config struct {
 	TablePrefix string `json:"table_prefix"`
 	JWTSecret   string `json:"jwt_secret"`
 	LogLevel    string `json:"log_level"`
+	OllamaModel string `json:"ollama_model"`
+	OllamaURL   string `json:"ollama_url"`
 }
 
 func LoadConfig(filename string, config *Config) error {
