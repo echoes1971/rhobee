@@ -41,6 +41,19 @@ function AppNavbar() {
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="ms-auto">
             
+
+            {!username ? (
+              <Button as={Link} to="/login" variant={dark ? "secondary" : "outline-secondary"}>
+                {t("common.login")}
+              </Button>
+            ) : null}
+
+            {username ? (
+              <NavDropdown title={username} id="basic-nav-dropdown" align="end">
+                <NavDropdown.Item onClick={handleLogout}>{t("common.logout")}</NavDropdown.Item>
+              </NavDropdown>
+            ) : null}
+
             {username && isAdmin ? (
               <Dropdown className="me-2">
                 <Dropdown.Toggle variant="outline-secondary" size="sm">
