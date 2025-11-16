@@ -52,30 +52,35 @@ func NewDBRepository(dbContext *DBContext, factory *DBEFactory, dbConnection *sq
 	}
 }
 
-func (dbr *DBRepository) GetInstanceByClassName(classname string) *DBEntity {
+func (dbr *DBRepository) GetInstanceByClassName(classname string) DBEntityInterface {
 	return dbr.factory.GetInstanceByClassName(classname)
 }
-func (dbr *DBRepository) GetInstanceByTableName(tablename string) *DBEntity {
+func (dbr *DBRepository) GetInstanceByTableName(tablename string) DBEntityInterface {
 	return dbr.factory.GetInstanceByTableName(tablename)
 }
 
-func (dbr *DBRepository) buildTableName(dbe *DBEntity) string {
+func (dbr *DBRepository) buildTableName(dbe DBEntityInterface) string {
 	if dbr.DbContext != nil && dbr.DbContext.Schema != "" {
 		return dbr.DbContext.Schema + "_" + dbe.GetTableName()
 	}
 	return dbe.GetTableName()
 }
 
-func (dbr *DBRepository) Search(dbe *DBEntity, useLike bool, caseSensitive bool, orderBy string) ([]*DBEntity, error) {
+func (dbr *DBRepository) Search(dbe DBEntityInterface, useLike bool, caseSensitive bool, orderBy string) ([]DBEntityInterface, error) {
+	return dbr.searchWithTx(dbe, useLike, caseSensitive, orderBy, nil)
+}
+
+// searchWithTx is an internal method that performs the search using an existing transaction (if provided)
+func (dbr *DBRepository) searchWithTx(dbe DBEntityInterface, useLike bool, caseSensitive bool, orderBy string, tx *sql.Tx) ([]DBEntityInterface, error) {
 	if dbr.Verbose {
-		log.Print("DBRepository::Search: dbe=", dbe)
+		log.Print("DBRepository::searchWithTx: dbe=", dbe)
 	}
 
 	// 1. Build WHERE clauses
 	whereClauses := make([]string, 0)
 	args := make([]interface{}, 0) // slice of interface{} for values
 
-	for key, value := range dbe.dictionary {
+	for key, value := range dbe.getDictionary() {
 		if useLike {
 			// For strings: LIKE '%value%'
 			if strings.Contains(dbe.GetColumnType(key), "varchar") || dbe.GetColumnType(key) == "text" {
@@ -108,19 +113,25 @@ func (dbr *DBRepository) Search(dbe *DBEntity, useLike bool, caseSensitive bool,
 	}
 
 	if dbr.Verbose {
-		log.Print("DBRepository::Search: query=", query, " args=", args)
+		log.Print("DBRepository::searchWithTx: query=", query, " args=", args)
 	}
 
-	// 3. Execute the query
-	rows, err := dbr.DbConnection.Query(query, args...)
+	// 3. Execute the query (use transaction if provided, otherwise use connection)
+	var rows *sql.Rows
+	var err error
+	if tx != nil {
+		rows, err = tx.Query(query, args...)
+	} else {
+		rows, err = dbr.DbConnection.Query(query, args...)
+	}
 	if err != nil {
-		log.Print("DBRepository::Search: Query error:", err)
+		log.Print("DBRepository::searchWithTx: Query error:", err)
 		return nil, err
 	}
 	defer rows.Close()
 
 	// 4. Process results
-	results := make([]*DBEntity, 0)
+	results := make([]DBEntityInterface, 0)
 	columns, err := rows.Columns()
 	if err != nil {
 		return nil, err
@@ -164,4 +175,273 @@ func (dbr *DBRepository) Search(dbe *DBEntity, useLike bool, caseSensitive bool,
 	// 5. Return results
 
 	return results, nil
+}
+
+// Insert inserts a new entity into the database within a transaction
+func (dbr *DBRepository) Insert(dbe DBEntityInterface) (DBEntityInterface, error) {
+	// Start a transaction
+	tx, err := dbr.DbConnection.Begin()
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	// Use internal method with transaction
+	result, err := dbr.insertWithTx(dbe, tx)
+	if err != nil {
+		return nil, err
+	}
+
+	// Commit the transaction
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// insertWithTx is an internal method that performs the insert using an existing transaction
+func (dbr *DBRepository) insertWithTx(dbe DBEntityInterface, tx *sql.Tx) (DBEntityInterface, error) {
+	if dbr.Verbose {
+		log.Print("DBRepository::insertWithTx: dbe=", dbe.ToString())
+	}
+
+	// Call beforeInsert hook (which can use dbr.insertWithTx for nested inserts)
+	err := dbe.beforeInsert(dbr, tx)
+	if err != nil {
+		log.Print("DBRepository::insertWithTx: beforeInsert error:", err)
+		return nil, err
+	}
+
+	// 1. Build INSERT query dynamically based on populated fields
+	columns := make([]string, 0)
+	placeholders := make([]string, 0)
+	args := make([]interface{}, 0)
+
+	for key, value := range dbe.getDictionary() {
+		columns = append(columns, key)
+		placeholders = append(placeholders, "?")
+		args = append(args, value)
+	}
+
+	if len(columns) == 0 {
+		return nil, fmt.Errorf("no fields to insert")
+	}
+
+	// 2. Build the INSERT query
+	query := fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s)",
+		dbr.buildTableName(dbe),
+		strings.Join(columns, ", "),
+		strings.Join(placeholders, ", "))
+
+	if dbr.Verbose {
+		log.Print("DBRepository::insertWithTx: query=", query, " args=", args)
+	}
+
+	// 3. Execute the INSERT using the transaction
+	result, err := tx.Exec(query, args...)
+	if err != nil {
+		log.Print("DBRepository::insertWithTx: Exec error:", err)
+		return nil, err
+	}
+
+	// 4. Get the last inserted ID (if auto-increment)
+	lastID, err := result.LastInsertId()
+	if err == nil && dbr.Verbose {
+		log.Printf("DBRepository::insertWithTx: inserted with ID=%d", lastID)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err == nil && dbr.Verbose {
+		log.Printf("DBRepository::insertWithTx: rows affected=%d", rowsAffected)
+	}
+
+	err = dbe.afterInsert(dbr, tx)
+	if err != nil {
+		log.Print("DBRepository::insertWithTx: afterInsert error:", err)
+		return nil, err
+	}
+
+	return dbe, nil
+}
+
+func (dbr *DBRepository) Delete(dbe DBEntityInterface) (DBEntityInterface, error) {
+	// Start a transaction
+	tx, err := dbr.DbConnection.Begin()
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	// Use internal method with transaction
+	result, err := dbr.deleteWithTx(dbe, tx)
+	if err != nil {
+		return nil, err
+	}
+
+	// Commit the transaction
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// deleteWithTx is an internal method that performs the delete using an existing transaction
+func (dbr *DBRepository) deleteWithTx(dbe DBEntityInterface, tx *sql.Tx) (DBEntityInterface, error) {
+	if dbr.Verbose {
+		log.Print("DBRepository::deleteWithTx: dbe=", dbe.ToString())
+	}
+
+	err := dbe.beforeDelete(dbr, tx)
+	if err != nil {
+		log.Print("DBRepository::deleteWithTx: beforeDelete error:", err)
+		return nil, err
+	}
+
+	// 1. Build DELETE query dynamically based on primary keys
+	whereClauses := make([]string, 0)
+	args := make([]interface{}, 0)
+
+	for _, key := range dbe.GetKeys() {
+		value := dbe.GetValue(key)
+		whereClauses = append(whereClauses, key+" = ?")
+		args = append(args, value)
+	}
+
+	if len(whereClauses) == 0 {
+		return nil, fmt.Errorf("no primary keys defined for delete")
+	}
+
+	// 2. Build the DELETE query
+	query := fmt.Sprintf("DELETE FROM %s WHERE %s",
+		dbr.buildTableName(dbe),
+		strings.Join(whereClauses, " AND "))
+
+	if dbr.Verbose {
+		log.Print("DBRepository::deleteWithTx: query=", query, " args=", args)
+	}
+
+	// 3. Execute the DELETE using the transaction
+	result, err := tx.Exec(query, args...)
+	if err != nil {
+		log.Print("DBRepository::deleteWithTx: Exec error:", err)
+		return nil, err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err == nil && dbr.Verbose {
+		log.Printf("DBRepository::deleteWithTx: rows affected=%d", rowsAffected)
+	}
+
+	err = dbe.afterDelete(dbr, tx)
+	if err != nil {
+		log.Print("DBRepository::deleteWithTx: afterDelete error:", err)
+		return nil, err
+	}
+
+	return dbe, nil
+
+}
+
+// Update updates an existing entity in the database within a transaction
+func (dbr *DBRepository) Update(dbe DBEntityInterface) (DBEntityInterface, error) {
+	// Start a transaction
+	tx, err := dbr.DbConnection.Begin()
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	// Use internal method with transaction
+	result, err := dbr.updateWithTx(dbe, tx)
+	if err != nil {
+		return nil, err
+	}
+
+	// Commit the transaction
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// updateWithTx is an internal method that performs the update using an existing transaction
+func (dbr *DBRepository) updateWithTx(dbe DBEntityInterface, tx *sql.Tx) (DBEntityInterface, error) {
+	if dbr.Verbose {
+		log.Print("DBRepository::updateWithTx: dbe=", dbe.ToString())
+	}
+
+	// Call beforeUpdate hook (which can use dbr methods for nested operations)
+	err := dbe.beforeUpdate(dbr, tx)
+	if err != nil {
+		log.Print("DBRepository::updateWithTx: beforeUpdate error:", err)
+		return nil, err
+	}
+
+	// 1. Build UPDATE query dynamically based on populated fields (excluding primary keys)
+	setClauses := make([]string, 0)
+	args := make([]interface{}, 0)
+
+	// Get primary keys to exclude them from SET clause
+	primaryKeys := make(map[string]bool)
+	for _, key := range dbe.GetKeys() {
+		primaryKeys[key] = true
+	}
+
+	// Build SET clause with non-primary-key fields
+	for key, value := range dbe.getDictionary() {
+		if !primaryKeys[key] {
+			setClauses = append(setClauses, key+" = ?")
+			args = append(args, value)
+		}
+	}
+
+	if len(setClauses) == 0 {
+		return nil, fmt.Errorf("no fields to update")
+	}
+
+	// 2. Build WHERE clause with primary keys
+	whereClauses := make([]string, 0)
+	for _, key := range dbe.GetKeys() {
+		value := dbe.GetValue(key)
+		whereClauses = append(whereClauses, key+" = ?")
+		args = append(args, value)
+	}
+
+	if len(whereClauses) == 0 {
+		return nil, fmt.Errorf("no primary keys defined for update")
+	}
+
+	// 3. Build the UPDATE query
+	query := fmt.Sprintf("UPDATE %s SET %s WHERE %s",
+		dbr.buildTableName(dbe),
+		strings.Join(setClauses, ", "),
+		strings.Join(whereClauses, " AND "))
+
+	if dbr.Verbose {
+		log.Print("DBRepository::updateWithTx: query=", query, " args=", args)
+	}
+
+	// 4. Execute the UPDATE using the transaction
+	result, err := tx.Exec(query, args...)
+	if err != nil {
+		log.Print("DBRepository::updateWithTx: Exec error:", err)
+		return nil, err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err == nil && dbr.Verbose {
+		log.Printf("DBRepository::updateWithTx: rows affected=%d", rowsAffected)
+	}
+
+	// Call afterUpdate hook
+	err = dbe.afterUpdate(dbr, tx)
+	if err != nil {
+		log.Print("DBRepository::updateWithTx: afterUpdate error:", err)
+		return nil, err
+	}
+
+	return dbe, nil
 }

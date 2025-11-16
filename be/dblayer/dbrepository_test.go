@@ -2,7 +2,11 @@ package dblayer
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
+	"math/rand"
+	"sync"
+	"time"
 
 	"testing"
 
@@ -26,7 +30,7 @@ func TestSearchUserByLogin(t *testing.T) {
 	}
 	factory := NewDBEFactory(true)
 	user := NewDBUser()
-	factory.Register(&user.DBEntity)
+	factory.Register(user)
 	dbConnection, err := sql.Open("mysql", "root:mysecret@tcp(localhost:3306)/rproject")
 	if err != nil {
 		t.Fatal("Failed to connect to database:", err)
@@ -59,5 +63,510 @@ func TestSearchUserByLogin(t *testing.T) {
 	// Step 6: Print the results
 	for _, user := range results {
 		log.Printf("- %s\t%s\t%s\n", user.GetValue("id"), user.GetValue("login"), user.GetValue("fullname"))
+	}
+}
+
+func randInt(min, max int) int {
+	return min + rand.Intn(max-min)
+}
+
+/* Returns a random 4-digit string */
+func random4digits() string {
+	const digits = "0123456789"
+	result := make([]byte, 4)
+	// Generate random number between 0000 and 9999
+	for i := 0; i < 4; i++ {
+		result[i] = digits[randInt(0, len(digits))]
+	}
+	return string(result)
+}
+
+func TestInsertUser(t *testing.T) {
+	// Setup
+	dbContext := &DBContext{
+		UserID:   "-1",
+		GroupIDs: []string{"-2"},
+		Schema:   "rprj",
+	}
+	factory := NewDBEFactory(true)
+	user := NewDBUser()
+	factory.Register(user)
+	group := NewDBGroup()
+	factory.Register(group)
+	userGroup := NewUserGroup()
+	factory.Register(userGroup)
+	dbConnection, err := sql.Open("mysql", "root:mysecret@tcp(localhost:3306)/rproject")
+	if err != nil {
+		t.Fatal("Failed to connect to database:", err)
+	}
+	defer dbConnection.Close()
+
+	repo := NewDBRepository(dbContext, factory, dbConnection)
+	repo.Verbose = true
+
+	// Create a new user entity
+	newUser := factory.GetInstanceByTableName("users")
+	if newUser == nil {
+		t.Fatal("Failed to get DBEntity for 'users'")
+	}
+
+	// Set values (id must be set manually since it's not auto-increment)
+	login := "testuser_" + random4digits()
+	newUser.SetValue("login", login)
+	newUser.SetValue("pwd", "testpassword")
+	newUser.SetValue("fullname", "Test User")
+
+	// newUser.SetValue("group_id", "-3") // -3 is the default "users" group
+
+	// Insert the user (transaction is handled internally)
+	newUser, newerr := repo.Insert(newUser)
+	if newerr != nil {
+		t.Fatal("Failed to insert user:", newerr)
+	}
+
+	// Verify insertion by searching
+	searchEntity := factory.GetInstanceByTableName("users")
+	searchEntity.SetValue("login", login)
+	results, err := repo.Search(searchEntity, false, true, "")
+	if err != nil {
+		t.Fatal("Failed to search for inserted user:", err)
+	}
+	if len(results) == 0 {
+		t.Fatal("Inserted user not found")
+	}
+	// Verify the group_id is set correctly
+	if results[0].GetValue("group_id") == "" {
+		t.Fatal("Inserted user's group_id is not set")
+	}
+	// Verify the group exists
+	groupEntity := factory.GetInstanceByTableName("groups")
+	groupEntity.SetValue("id", results[0].GetValue("group_id"))
+	groupResults, err := repo.Search(groupEntity, false, true, "")
+	if err != nil {
+		t.Fatal("Failed to search for user's group:", err)
+	}
+	if len(groupResults) == 0 {
+		t.Fatal("User's group not found")
+	}
+
+	// Print success message
+
+	log.Printf("Successfully inserted and found user: %s", results[0].GetValue("login"))
+
+	// Cleanup: delete the test user
+	_, err = repo.Delete(newUser)
+	if err != nil {
+		t.Logf("Warning: Failed to cleanup test user: %v", err)
+	}
+}
+
+func TestConcurrentMayhem(t *testing.T) {
+	// Setup
+	dbContext := &DBContext{
+		UserID:   "-1",
+		GroupIDs: []string{"-2"},
+		Schema:   "rprj",
+	}
+	factory := NewDBEFactory(false)
+	user := NewDBUser()
+	factory.Register(user)
+	group := NewDBGroup()
+	factory.Register(group)
+	userGroup := NewUserGroup()
+	factory.Register(userGroup)
+
+	dbConnection, err := sql.Open("mysql", "root:mysecret@tcp(localhost:3306)/rproject")
+	if err != nil {
+		t.Fatal("Failed to connect to database:", err)
+	}
+	defer dbConnection.Close()
+
+	// Configure connection pool to handle concurrent operations
+	dbConnection.SetMaxOpenConns(25)   // Maximum number of open connections to the database
+	dbConnection.SetMaxIdleConns(10)   // Maximum number of connections in the idle connection pool
+	dbConnection.SetConnMaxLifetime(0) // Maximum amount of time a connection may be reused (0 = unlimited)
+
+	repo := NewDBRepository(dbContext, factory, dbConnection)
+	repo.Verbose = false
+
+	var wgCreate sync.WaitGroup
+	var wgDelete sync.WaitGroup
+
+	var wgMayhem sync.WaitGroup
+
+	// Rate limiter to control the number of concurrent goroutines
+	// Buffer size should be much smaller than MaxOpenConns to leave room for nested operations
+	// Each Insert creates: user + group + usergroup (3 operations in 1 transaction)
+	// Then launches a Delete goroutine (which does: delete usergroup + delete group + delete user)
+	max_concurrent := 10 // Small buffer - ticker will refill gradually
+	burstyLimiter := make(chan time.Time, max_concurrent)
+	for range max_concurrent {
+		burstyLimiter <- time.Now()
+	}
+	go func() {
+		for range time.Tick(25 * time.Millisecond) {
+			burstyLimiter <- time.Now()
+		}
+	}()
+
+	concurrent_routines := 500
+	userPrefix := "mayhem_" + random4digits()
+
+	for i := range concurrent_routines {
+		<-burstyLimiter // Acquire a token
+
+		wgCreate.Add(1)
+		go func(index int) {
+			defer wgCreate.Done()
+			// Create a new user entity
+			newUser := factory.GetInstanceByTableName("users")
+			if newUser == nil {
+				t.Log("Failed to get DBEntity for 'users'")
+				return
+			}
+
+			// Set values (id must be set manually since it's not auto-increment)
+			login := fmt.Sprintf("%s_%04d", userPrefix, index)
+			newUser.SetValue("login", login)
+			newUser.SetValue("pwd", "testpassword")
+			newUser.SetValue("fullname", fmt.Sprintf("Concurrent User %04d", index))
+			// Insert the user (transaction is handled internally)
+			_, newerr := repo.Insert(newUser)
+			if newerr != nil {
+				t.Logf("Failed to insert user %s: %v", login, newerr)
+				return
+			}
+			t.Logf("Successfully inserted user: %s", login)
+
+			// Cleanup: delete the test user
+			wgDelete.Add(1)
+			go func(delUser DBEntityInterface) {
+				defer wgDelete.Done()
+				_, delErr := repo.Delete(delUser)
+				if delErr != nil {
+					t.Logf("Warning: Failed to cleanup test user %s: %v", delUser.GetValue("login"), delErr)
+				} else {
+					t.Logf("Successfully deleted user: %s", delUser.GetValue("login"))
+				}
+			}(newUser)
+		}(i)
+	}
+
+	// for i := concurrent_routines - 1; i > 0; i-- {
+	// 	<-burstyLimiter
+	// 	wgMayhem.Add(1)
+	// 	go func(index int) {
+	// 		defer wgMayhem.Done()
+	// 		// Create a new user entity
+	// 		searchUser := factory.GetInstanceByTableName("users")
+	// 		if searchUser == nil {
+	// 			t.Log("Failed to get DBEntity for 'users'")
+	// 			return
+	// 		}
+	// 		searchUser.SetValue("login", fmt.Sprintf("%s_%04d", userPrefix, index))
+	// 		results, err := repo.Search(searchUser, false, true, "")
+	// 		if err != nil {
+	// 			t.Logf("Failed to search for user %s: %v", searchUser.GetValue("login"), err)
+	// 			return
+	// 		}
+	// 		if len(results) == 0 {
+	// 			t.Logf("User %s not found during mayhem search", searchUser.GetValue("login"))
+	// 			return
+	// 		}
+	// 		t.Logf("Mayhem search found user: %s", results[0].ToString())
+	// 		_, delErr := repo.Delete(results[0])
+	// 		if delErr != nil {
+	// 			t.Logf("Warning: Failed to cleanup test user %s: %v", results[0].GetValue("login"), delErr)
+	// 		} else {
+	// 			t.Logf("Successfully deleted user: %s", results[0].GetValue("login"))
+	// 		}
+	// 	}(i)
+	// }
+
+	wgCreate.Wait()
+	wgDelete.Wait()
+	wgMayhem.Wait()
+
+	// Search for any remaining users with the mayhem prefix
+	searchEntity := factory.GetInstanceByTableName("users")
+	searchEntity.SetValue("login", userPrefix+"_%")
+	results, err := repo.Search(searchEntity, false, true, "")
+	if err != nil {
+		t.Fatal("Failed to search for mayhem users:", err)
+	}
+	if len(results) != 0 {
+		t.Fatalf("Some mayhem users were not deleted, count: %d", len(results))
+	} else {
+		t.Log("All mayhem users successfully deleted.")
+	}
+
+	// Search for the personal groups created
+	groupSearchEntity := factory.GetInstanceByTableName("groups")
+	groupSearchEntity.SetValue("name", userPrefix+"_%'s group")
+	groupResults, err := repo.Search(groupSearchEntity, false, true, "")
+	if err != nil {
+		t.Fatal("Failed to search for mayhem groups:", err)
+	}
+	if len(groupResults) != 0 {
+		t.Fatalf("Some mayhem groups were not deleted, count: %d", len(groupResults))
+	} else {
+		t.Log("All mayhem groups successfully deleted.")
+	}
+}
+
+func TestCRUDUser(t *testing.T) {
+	// Setup
+	dbContext := &DBContext{
+		UserID:   "-1",
+		GroupIDs: []string{"-2"},
+		Schema:   "rprj",
+	}
+	factory := NewDBEFactory(true)
+	user := NewDBUser()
+	factory.Register(user)
+	group := NewDBGroup()
+	factory.Register(group)
+	userGroup := NewUserGroup()
+	factory.Register(userGroup)
+	dbConnection, err := sql.Open("mysql", "root:mysecret@tcp(localhost:3306)/rproject")
+	if err != nil {
+		t.Fatal("Failed to connect to database:", err)
+	}
+	defer dbConnection.Close()
+
+	repo := NewDBRepository(dbContext, factory, dbConnection)
+	repo.Verbose = true
+
+	// Create a new user entity
+	newUser := factory.GetInstanceByTableName("users")
+	if newUser == nil {
+		t.Fatal("Failed to get DBEntity for 'users'")
+	}
+
+	// Set values (id must be set manually since it's not auto-increment)
+	login := "testuser_" + random4digits()
+	newUser.SetValue("login", login)
+	newUser.SetValue("pwd", "testpassword")
+	newUser.SetValue("fullname", "Test User")
+
+	// newUser.SetValue("group_id", "-3") // -3 is the default "users" group
+
+	// Insert the user (transaction is handled internally)
+	newUser, newerr := repo.Insert(newUser)
+	if newerr != nil {
+		t.Fatal("Failed to insert user:", newerr)
+	}
+
+	// Verify insertion by searching
+	searchEntity := factory.GetInstanceByTableName("users")
+	searchEntity.SetValue("login", login)
+	results, err := repo.Search(searchEntity, false, true, "")
+	if err != nil {
+		t.Fatal("Failed to search for inserted user:", err)
+	}
+	if len(results) == 0 {
+		t.Fatal("Inserted user not found")
+	}
+	// Verify the group_id is set correctly
+	if results[0].GetValue("group_id") == "" {
+		t.Fatal("Inserted user's group_id is not set")
+	}
+	// Verify the group exists
+	groupEntity := factory.GetInstanceByTableName("groups")
+	groupEntity.SetValue("id", results[0].GetValue("group_id"))
+	groupResults, err := repo.Search(groupEntity, false, true, "")
+	if err != nil {
+		t.Fatal("Failed to search for user's group:", err)
+	}
+	if len(groupResults) == 0 {
+		t.Fatal("User's group not found")
+	}
+
+	// Modify the user's fullname
+	results[0].SetValue("fullname", "Updated Test User")
+	_, err = repo.Update(results[0])
+	if err != nil {
+		t.Fatal("Failed to update user:", err)
+	}
+
+	// Verify the update
+	verifyEntity := factory.GetInstanceByTableName("users")
+	verifyEntity.SetValue("login", login)
+	verifyResults, err := repo.Search(verifyEntity, false, true, "")
+	if err != nil {
+		t.Fatal("Failed to search for updated user:", err)
+	}
+	if len(verifyResults) == 0 {
+		t.Fatal("Updated user not found")
+	}
+	if verifyResults[0].GetValue("fullname") != "Updated Test User" {
+		t.Fatal("User's fullname was not updated correctly")
+	}
+	log.Printf("Successfully updated user: %s", verifyResults[0].GetValue("login"))
+
+	// Cleanup: delete the test user
+	_, err = repo.Delete(newUser)
+	if err != nil {
+		t.Logf("Warning: Failed to cleanup test user: %v", err)
+	}
+
+	// Verify deletion
+	finalResults, err := repo.Search(searchEntity, false, true, "")
+	if err != nil {
+		t.Fatal("Failed to search for deleted user:", err)
+	}
+	if len(finalResults) != 0 {
+		t.Fatal("User was not deleted successfully")
+	}
+	log.Printf("Successfully deleted user: %s", login)
+}
+
+func TestCRUDMayhem(t *testing.T) {
+	// Setup
+	dbContext := &DBContext{
+		UserID:   "-1",
+		GroupIDs: []string{"-2"},
+		Schema:   "rprj",
+	}
+	factory := NewDBEFactory(false)
+	user := NewDBUser()
+	factory.Register(user)
+	group := NewDBGroup()
+	factory.Register(group)
+	userGroup := NewUserGroup()
+	factory.Register(userGroup)
+	dbConnection, err := sql.Open("mysql", "root:mysecret@tcp(localhost:3306)/rproject")
+	if err != nil {
+		t.Fatal("Failed to connect to database:", err)
+	}
+	defer dbConnection.Close()
+
+	repo := NewDBRepository(dbContext, factory, dbConnection)
+	repo.Verbose = false
+
+	var wgCreate sync.WaitGroup
+	var wgDelete sync.WaitGroup
+
+	// Rate limiter to control the number of concurrent goroutines
+	// Buffer size should be much smaller than MaxOpenConns to leave room for nested operations
+	// Each Insert creates: user + group + usergroup (3 operations in 1 transaction)
+	// Then launches a Delete goroutine (which does: delete usergroup + delete group + delete user)
+	max_concurrent := 10 // Small buffer - ticker will refill gradually
+	burstyLimiter := make(chan time.Time, max_concurrent)
+	for range max_concurrent {
+		burstyLimiter <- time.Now()
+	}
+	go func() {
+		for range time.Tick(25 * time.Millisecond) {
+			burstyLimiter <- time.Now()
+		}
+	}()
+
+	concurrent_routines := 300
+	userPrefix := "mayhem_" + random4digits()
+
+	for i := range concurrent_routines {
+		<-burstyLimiter // Acquire a token
+		wgCreate.Add(1)
+		go func(index int) {
+			defer wgCreate.Done()
+			// Create a new user entity
+			newUser := factory.GetInstanceByTableName("users")
+			if newUser == nil {
+				t.Log("Failed to get DBEntity for 'users'")
+				return
+			}
+
+			// Set values (id must be set manually since it's not auto-increment)
+			login := fmt.Sprintf("%s_%04d", userPrefix, index)
+			newUser.SetValue("login", login)
+			newUser.SetValue("pwd", "testpassword")
+			newUser.SetValue("fullname", fmt.Sprintf("Concurrent User %04d", index))
+			// Insert the user (transaction is handled internally)
+			_, newerr := repo.Insert(newUser)
+			if newerr != nil {
+				t.Logf("Failed to insert user %s: %v", login, newerr)
+				return
+			}
+			t.Logf("Successfully inserted user: %s", login)
+
+			// Verify insertion by searching
+			searchEntity := factory.GetInstanceByTableName("users")
+			searchEntity.SetValue("login", login)
+			results, err := repo.Search(searchEntity, false, true, "")
+			if err != nil {
+				t.Logf("Failed to search for inserted user %s: %v", login, err)
+				return
+			}
+			if len(results) == 0 {
+				t.Logf("Inserted user %s not found", login)
+				return
+			}
+			t.Logf("Verified inserted user: %s", login)
+
+			// Update the user's fullname
+			results[0].SetValue("fullname", "Updated Concurrent User")
+			_, err = repo.Update(results[0])
+			if err != nil {
+				t.Logf("Failed to update user %s: %v", login, err)
+				return
+			}
+			t.Logf("Successfully updated user: %s", login)
+
+			// Verify the update
+			verifyEntity := factory.GetInstanceByTableName("users")
+			verifyEntity.SetValue("login", login)
+			verifyResults, err := repo.Search(verifyEntity, false, true, "")
+			if err != nil {
+				t.Logf("Failed to search for updated user %s: %v", login, err)
+				return
+			}
+			if len(verifyResults) == 0 {
+				t.Logf("Updated user %s not found", login)
+				return
+			}
+			if verifyResults[0].GetValue("fullname") != "Updated Concurrent User" {
+				t.Logf("User %s's fullname was not updated correctly", login)
+				return
+			}
+			t.Logf("Verified updated user: %s", login)
+
+			// Cleanup: delete the test user
+			_, err = repo.Delete(verifyResults[0])
+			if err != nil {
+				t.Logf("Failed to delete user %s: %v", login, err)
+				return
+			}
+			t.Logf("Successfully deleted user: %s", login)
+		}(i)
+	}
+
+	wgCreate.Wait()
+	wgDelete.Wait()
+
+	// Search for any remaining users with the mayhem prefix
+	searchEntity := factory.GetInstanceByTableName("users")
+	searchEntity.SetValue("login", userPrefix+"_%")
+	results, err := repo.Search(searchEntity, false, true, "")
+	if err != nil {
+		t.Fatal("Failed to search for mayhem users:", err)
+	}
+	if len(results) != 0 {
+		t.Fatalf("Some mayhem users were not deleted, count: %d", len(results))
+	} else {
+		t.Log("All mayhem users successfully deleted.")
+	}
+
+	// Search for the personal groups created
+	groupSearchEntity := factory.GetInstanceByTableName("groups")
+	groupSearchEntity.SetValue("name", userPrefix+"_%'s group")
+	groupResults, err := repo.Search(groupSearchEntity, false, true, "")
+	if err != nil {
+		t.Fatal("Failed to search for mayhem groups:", err)
+	}
+	if len(groupResults) != 0 {
+		t.Fatalf("Some mayhem groups were not deleted, count: %d", len(groupResults))
+	} else {
+		t.Log("All mayhem groups successfully deleted.")
 	}
 }

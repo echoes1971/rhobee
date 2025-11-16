@@ -4,25 +4,24 @@ import "log"
 
 type DBEFactory struct {
 	verbose        bool
-	classname2type map[string]*DBEntity
-	tablename2type map[string]*DBEntity
+	classname2type map[string]DBEntityInterface
+	tablename2type map[string]DBEntityInterface
 }
 
 func NewDBEFactory(verbose bool) *DBEFactory {
 	ret := &DBEFactory{
 		verbose: verbose,
 	}
-	ret.classname2type = make(map[string]*DBEntity)
-	ret.tablename2type = make(map[string]*DBEntity)
+	ret.classname2type = make(map[string]DBEntityInterface)
+	ret.tablename2type = make(map[string]DBEntityInterface)
 
 	return ret
 }
 
-func (dbef *DBEFactory) Register(dbe *DBEntity) {
+func (dbef *DBEFactory) Register(dbe DBEntityInterface) {
 	if dbef.verbose {
-		log.Print("DBEFactory: Registering DBEntity:", dbe.GetTypeName(), "->", dbe.GetTableName())
+		log.Print("DBEFactory::Registering DBEntity: ", dbe.GetTypeName(), " -> ", dbe.GetTableName())
 	}
-	log.Print("dbef registering: dbe = ", dbe)
 	dbef.classname2type[dbe.GetTypeName()] = dbe
 	dbef.tablename2type[dbe.GetTableName()] = dbe
 }
@@ -35,14 +34,14 @@ func (dbef *DBEFactory) GetAllClassNames() []string {
 	return ret
 }
 
-func (dbef *DBEFactory) GetInstanceByClassName(className string) *DBEntity {
+func (dbef *DBEFactory) GetInstanceByClassName(className string) DBEntityInterface {
 	if dbeType, exists := dbef.classname2type[className]; exists {
 		return dbeType.NewInstance()
 	}
 	return nil
 }
 
-func (dbef *DBEFactory) GetInstanceByTableName(tableName string) *DBEntity {
+func (dbef *DBEFactory) GetInstanceByTableName(tableName string) DBEntityInterface {
 	if dbeType, exists := dbef.tablename2type[tableName]; exists {
 		return dbeType.NewInstance()
 	}

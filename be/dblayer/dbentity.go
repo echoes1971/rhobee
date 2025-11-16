@@ -1,9 +1,23 @@
 package dblayer
 
 import (
+	"crypto/rand"
+	"database/sql"
+	"encoding/hex"
+	"fmt"
+	"log"
 	"sort"
 	"strings"
 )
+
+/* Generate a random UUID-like string of 16 hex characters */
+func uuid16HexGo() (string, error) {
+	b := make([]byte, 8) // 8 bytes = 16 hex chars
+	if _, err := rand.Read(b); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(b), nil
+}
 
 type ForeignKey struct {
 	Column    string
@@ -17,6 +31,40 @@ type Column struct {
 	Constraints []string
 }
 
+type DBEntityInterface interface {
+	NewInstance() DBEntityInterface
+	GetColumnType(columnName string) string
+	GetTypeName() string
+	GetTableName() string
+	GetKeys() []string
+	GetForeignKeys() []ForeignKey
+	GetOrderBy() []string
+	GetOrderByString() string
+	GetForeignKeysForTable(tableName string) []ForeignKey
+	GetForeignKeyDefinition(columnName string) *ForeignKey
+	SetValue(columnName string, value string)
+	GetValue(columnName string) string
+	HasValue(columnName string) bool
+	ReadFKFrom(dbe *DBEntity)
+	WriteToFK(dbe *DBEntity)
+	IsPrimaryKey(columnName string) bool
+	IsForeignKey(columnName string) bool
+	GetDictionaryKeys() []string
+	GetDictionaryValues() []string
+	GetKeySetDictionary() map[string]string
+	RemoveKeysFromDictionary()
+	IsNew() bool
+	ToString() string
+	ToJSON() string
+
+	getDictionary() map[string]any
+	beforeInsert(dbRepository *DBRepository, tx *sql.Tx) error
+	afterInsert(dbRepository *DBRepository, tx *sql.Tx) error
+	beforeUpdate(dbRepository *DBRepository, tx *sql.Tx) error
+	afterUpdate(dbRepository *DBRepository, tx *sql.Tx) error
+	beforeDelete(dbRepository *DBRepository, tx *sql.Tx) error
+	afterDelete(dbRepository *DBRepository, tx *sql.Tx) error
+}
 type DBEntity struct {
 	typename    string
 	tablename   string
@@ -42,7 +90,7 @@ func NewDBEntity(typename string, tablename string, columns []Column, keys []str
 }
 
 /* Override */
-func (dbEntity *DBEntity) NewInstance() *DBEntity {
+func (dbEntity *DBEntity) NewInstance() DBEntityInterface {
 	columns := make([]Column, 0, len(dbEntity.columns))
 	for _, col := range dbEntity.columns {
 		columns = append(columns, col)
@@ -160,6 +208,10 @@ func (dbEntity *DBEntity) GetDictionaryValues() []string {
 	return values
 }
 
+func (dbEntity *DBEntity) getDictionary() map[string]any {
+	return dbEntity.dictionary
+}
+
 /*
 Returns a dictionary of the keys set in the entity
 */
@@ -194,32 +246,44 @@ func (dbEntity *DBEntity) IsNew() bool {
 	return true
 }
 
-func (dbEntity *DBEntity) beforeInsert(dbRepository *DBRepository) error {
+func (dbEntity *DBEntity) ToString() string {
+	return fmt.Sprintf("%s(%v)", dbEntity.typename, dbEntity.ToJSON())
+}
+func (dbEntity *DBEntity) ToJSON() string {
+	parts := make([]string, 0, len(dbEntity.dictionary))
+	for key, value := range dbEntity.dictionary {
+		parts = append(parts, fmt.Sprintf(`"%s":"%s"`, key, value))
+	}
+	return "{" + strings.Join(parts, ", ") + "}"
+}
+
+func (dbEntity *DBEntity) beforeInsert(dbRepository *DBRepository, tx *sql.Tx) error {
 	// Implement any logic needed before inserting the entity into the database
+	log.Print("DBEntity::beforeInsert: ", dbEntity.ToString())
 	return nil
 }
 
-func (dbEntity *DBEntity) afterInsert(dbRepository *DBRepository) error {
+func (dbEntity *DBEntity) afterInsert(dbRepository *DBRepository, tx *sql.Tx) error {
 	// Implement any logic needed after inserting the entity into the database
 	return nil
 }
 
-func (dbEntity *DBEntity) beforeUpdate(dbRepository *DBRepository) error {
+func (dbEntity *DBEntity) beforeUpdate(dbRepository *DBRepository, tx *sql.Tx) error {
 	// Implement any logic needed before updating the entity in the database
 	return nil
 }
 
-func (dbEntity *DBEntity) afterUpdate(dbRepository *DBRepository) error {
+func (dbEntity *DBEntity) afterUpdate(dbRepository *DBRepository, tx *sql.Tx) error {
 	// Implement any logic needed after updating the entity in the database
 	return nil
 }
 
-func (dbEntity *DBEntity) beforeDelete(dbRepository *DBRepository) error {
+func (dbEntity *DBEntity) beforeDelete(dbRepository *DBRepository, tx *sql.Tx) error {
 	// Implement any logic needed before deleting the entity from the database
 	return nil
 }
 
-func (dbEntity *DBEntity) afterDelete(dbRepository *DBRepository) error {
+func (dbEntity *DBEntity) afterDelete(dbRepository *DBRepository, tx *sql.Tx) error {
 	// Implement any logic needed after deleting the entity from the database
 	return nil
 }
