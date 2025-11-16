@@ -10,6 +10,41 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
+func GetClaimsFromRequest(r *http.Request) (map[string]string, error) {
+
+	authHeader := r.Header.Get("Authorization")
+	if authHeader == "" {
+		return nil, http.ErrNoCookie
+	}
+
+	parts := strings.Split(authHeader, " ")
+	if len(parts) != 2 || parts[0] != "Bearer" {
+		return nil, http.ErrNoCookie
+	}
+	tokenString := parts[1]
+
+	// Validate the token
+	claims := jwt.MapClaims{}
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (interface{}, error) {
+		return JWTKey, nil
+	})
+	if err != nil || !token.Valid {
+		log.Print("Deleting token from db due to invalidity.")
+		db.DeleteToken(tokenString)
+		return nil, http.ErrNoCookie
+	}
+
+	// Extract claims as map[string]string
+	result := make(map[string]string)
+	for key, value := range claims {
+		if strVal, ok := value.(string); ok {
+			result[key] = strVal
+		}
+	}
+
+	return result, nil
+}
+
 // Middleware che controlla il token JWT
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
