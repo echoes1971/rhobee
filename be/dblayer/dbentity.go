@@ -45,6 +45,9 @@ type DBEntityInterface interface {
 	SetValue(columnName string, value string)
 	GetValue(columnName string) string
 	HasValue(columnName string) bool
+	SetMetadata(key string, value any)
+	GetMetadata(key string) any
+	HasMetadata(key string) bool
 	ReadFKFrom(dbe *DBEntity)
 	WriteToFK(dbe *DBEntity)
 	IsPrimaryKey(columnName string) bool
@@ -72,6 +75,7 @@ type DBEntity struct {
 	keys        []string
 	foreignKeys []ForeignKey
 	dictionary  map[string]any
+	metadata    map[string]any // Extra data for business logic, not persisted to DB
 }
 
 func NewDBEntity(typename string, tablename string, columns []Column, keys []string, foreignKeys []ForeignKey, dictionary map[string]any) *DBEntity {
@@ -156,6 +160,32 @@ func (dbEntity *DBEntity) HasValue(columnName string) bool {
 	_, exists := dbEntity.dictionary[columnName]
 	return exists
 }
+
+// SetMetadata sets a metadata value that won't be persisted to the database
+// Useful for passing extra data to beforeInsert/beforeUpdate hooks
+func (dbEntity *DBEntity) SetMetadata(key string, value any) {
+	if dbEntity.metadata == nil {
+		dbEntity.metadata = make(map[string]any)
+	}
+	dbEntity.metadata[key] = value
+}
+
+// GetMetadata retrieves a metadata value
+func (dbEntity *DBEntity) GetMetadata(key string) any {
+	if dbEntity.metadata == nil {
+		return nil
+	}
+	return dbEntity.metadata[key]
+}
+
+func (dbEntity *DBEntity) HasMetadata(key string) bool {
+	if dbEntity.metadata == nil {
+		return false
+	}
+	_, exists := dbEntity.metadata[key]
+	return exists
+}
+
 func (dbEntity *DBEntity) ReadFKFrom(dbe *DBEntity) {
 	fks := dbEntity.GetForeignKeysForTable(dbe.GetTableName())
 	for _, fk := range fks {
