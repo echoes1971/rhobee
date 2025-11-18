@@ -192,6 +192,7 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	dbUser.SetValue("login", req.Login)
 	dbUser.SetValue("pwd", req.Pwd)
 	dbUser.SetValue("fullname", req.Fullname)
+	dbUser.SetMetadata("group_ids", req.GroupIDs)
 
 	createdUser, err := repo.Insert(dbUser)
 	if err != nil {
@@ -207,26 +208,6 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Assign the user to the specified groups
-	for _, gID := range req.GroupIDs {
-		dbUserGroup := repo.GetInstanceByTableName("users_groups")
-		if dbUserGroup == nil {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusInternalServerError)
-			json.NewEncoder(w).Encode(map[string]string{"error": "Failed to create user-group association instance"})
-			return
-		}
-		dbUserGroup.SetValue("user_id", createdUser.GetValue("id"))
-		dbUserGroup.SetValue("group_id", gID)
-		_, err := repo.Insert(dbUserGroup)
-		if err != nil {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusInternalServerError)
-			json.NewEncoder(w).Encode(map[string]string{"error": "Failed to assign user to group: " + err.Error()})
-			return
-		}
-	}
-
 	response := map[string]interface{}{
 		"id":        createdUser.GetValue("id"),
 		"login":     createdUser.GetValue("login"),
@@ -234,27 +215,6 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 		"group_id":  createdUser.GetValue("group_id"),
 		"group_ids": req.GroupIDs,
 	}
-
-	// u := models.DBUser{
-	// 	Login:    req.Login,
-	// 	Pwd:      req.Pwd,
-	// 	Fullname: req.Fullname,
-	// }
-
-	// // Create user with transaction (creates group, user, and associations atomically)
-	// createdUser, _, err := db.CreateUser(u, req.Login, req.GroupIDs)
-	// if err != nil {
-	// 	w.Header().Set("Content-Type", "application/json")
-	// 	// Check if it's a duplicate login error
-	// 	if strings.Contains(err.Error(), "already exists") {
-	// 		w.WriteHeader(http.StatusConflict)
-	// 		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
-	// 	} else {
-	// 		w.WriteHeader(http.StatusInternalServerError)
-	// 		json.NewEncoder(w).Encode(map[string]string{"error": "Failed to create user: " + err.Error()})
-	// 	}
-	// 	return
-	// }
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
@@ -320,12 +280,14 @@ func UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user.SetValue("id", id)
-	user.SetValue("login", req.Login)
+	// user.SetValue("login", req.Login) // login CANNOT be changed
 	user.SetValue("fullname", req.Fullname)
 	if req.Pwd != "" {
 		user.SetValue("pwd", req.Pwd)
 	}
 	user.SetValue("group_id", req.GroupID)
+	user.SetMetadata("group_ids", req.GroupIDs)
+
 	u, err := repo.Update(user)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
@@ -338,52 +300,6 @@ func UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
 			json.NewEncoder(w).Encode(map[string]string{"error": "Failed to update user: " + err.Error()})
 		}
 		return
-	}
-
-	// Assign the user to the specified groups
-	// First, delete existing associations
-	userGroupsInstance := repo.GetInstanceByTableName("users_groups")
-	if userGroupsInstance == nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]string{"error": "Failed to create user-groups instance"})
-		return
-	}
-	userGroupsInstance.SetValue("user_id", id)
-	existingUserGroups, err := repo.Search(userGroupsInstance, false, false, "")
-	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]string{"error": "Failed to get existing user groups: " + err.Error()})
-		return
-	}
-	for _, ug := range existingUserGroups {
-		_, err := repo.Delete(ug)
-		if err != nil {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusInternalServerError)
-			json.NewEncoder(w).Encode(map[string]string{"error": "Failed to delete user-group association: " + err.Error()})
-			return
-		}
-	}
-	// Then, add new associations
-	for _, gID := range req.GroupIDs {
-		dbUserGroup := repo.GetInstanceByTableName("users_groups")
-		if dbUserGroup == nil {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusInternalServerError)
-			json.NewEncoder(w).Encode(map[string]string{"error": "Failed to create user-group association instance"})
-			return
-		}
-		dbUserGroup.SetValue("user_id", id)
-		dbUserGroup.SetValue("group_id", gID)
-		_, err := repo.Insert(dbUserGroup)
-		if err != nil {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusInternalServerError)
-			json.NewEncoder(w).Encode(map[string]string{"error": "Failed to assign user to group: " + err.Error()})
-			return
-		}
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -434,13 +350,6 @@ func DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]string{"error": "Failed to delete user: " + err.Error()})
 		return
 	}
-
-	// if err := db.DeleteUser(id); err != nil {
-	// 	w.Header().Set("Content-Type", "application/json")
-	// 	w.WriteHeader(http.StatusInternalServerError)
-	// 	json.NewEncoder(w).Encode(map[string]string{"error": "Failed to delete user: " + err.Error()})
-	// 	return
-	// }
 
 	w.WriteHeader(http.StatusNoContent)
 }

@@ -121,22 +121,86 @@ func (dbUser *DBUser) beforeInsert(dbr *DBRepository, tx *sql.Tx) error {
 	dbUser.SetValue("id", userID)
 	dbUser.SetValue("group_id", groupID)
 
+	return nil
+}
+func (dbUser *DBUser) afterInsert(dbr *DBRepository, tx *sql.Tx) error {
+
+	userID := dbUser.GetValue("id")
+	groupID := dbUser.GetValue("group_id")
+
 	// 4. Add user to personal group
 	userGroup := NewUserGroup()
 	userGroup.SetValue("user_id", userID)
 	userGroup.SetValue("group_id", groupID)
-	_, err = dbr.insertWithTx(userGroup, tx)
+	_, err := dbr.insertWithTx(userGroup, tx)
 	if err != nil {
-		log.Print("DBUser::beforeInsert: error inserting userGroup:", err)
+		log.Print("DBUser::afterInsert: error inserting userGroup:", err)
 		return err
+	}
+
+	if !dbUser.HasMetadata("group_ids") {
+		return nil
+	}
+
+	// Assign the user to the specified groups
+	groupIDs := dbUser.GetMetadata("group_ids").([]string)
+	for _, gID := range groupIDs {
+		if gID == groupID {
+			continue // Skip personal group (already added)
+		}
+		userGroup := dbr.GetInstanceByTableName("users_groups").(*UserGroup)
+		userGroup.SetValue("user_id", userID)
+		userGroup.SetValue("group_id", gID)
+		_, err = dbr.insertWithTx(userGroup, tx)
+		if err != nil {
+			log.Print("DBUser::afterInsert: error inserting userGroup for additional group:", err)
+			return err
+		}
+	}
+	return nil
+}
+
+func (dbUser *DBUser) afterUpdate(dbr *DBRepository, tx *sql.Tx) error {
+
+	// Update user-group associations if group_ids metadata is set
+	if !dbUser.HasMetadata("group_ids") {
+		return nil
+	}
+
+	userID := dbUser.GetValue("id")
+	groupIDs := dbUser.GetMetadata("group_ids").([]string)
+
+	// Delete existing associations
+	userGroups := dbr.GetInstanceByTableName("users_groups").(*UserGroup)
+	userGroupFilter := userGroups.NewInstance()
+	userGroupFilter.SetValue("user_id", userID)
+	results, err := dbr.searchWithTx(userGroupFilter, false, false, "user_id", tx)
+	if err != nil {
+		return err
+	}
+	for _, res := range results {
+		_, err := dbr.deleteWithTx(res, tx)
+		if err != nil {
+			log.Print("DBUser::afterUpdate: error deleting existing userGroup:", err)
+			return err
+		}
+	}
+
+	// Add new associations
+	for _, gID := range groupIDs {
+		userGroup := dbr.GetInstanceByTableName("users_groups").(*UserGroup)
+		userGroup.SetValue("user_id", userID)
+		userGroup.SetValue("group_id", gID)
+		_, err = dbr.insertWithTx(userGroup, tx)
+		if err != nil {
+			log.Print("DBUser::afterUpdate: error inserting userGroup for updated groups:", err)
+			return err
+		}
 	}
 
 	return nil
 }
-func (dbUser *DBUser) afterInsert(dbr *DBRepository, tx *sql.Tx) error {
-	// No additional actions needed after insert
-	return nil
-}
+
 func (dbUser *DBUser) beforeDelete(dbr *DBRepository, tx *sql.Tx) error {
 	// Delete all user-group associations for this user
 	userGroup := NewUserGroup()
