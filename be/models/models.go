@@ -96,15 +96,15 @@ CREATE TABLE IF NOT EXISTS `rra_log` (
 
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 */
-type DBLog struct {
-	IP    string
-	Data  string // date in formato stringa
-	Ora   string // time in formato stringa
-	Count int
-	URL   string
-	Note  string
-	Note2 string
-}
+// type DBLog struct {
+// 	IP    string
+// 	Data  string // date in formato stringa
+// 	Ora   string // time in formato stringa
+// 	Count int
+// 	URL   string
+// 	Note  string
+// 	Note2 string
+// }
 
 /*
 CREATE TABLE IF NOT EXISTS `rra_objects` (
@@ -138,21 +138,21 @@ CREATE TABLE IF NOT EXISTS `rra_objects` (
 
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 */
-type DBObject struct {
-	ID             string
-	Owner          string
-	GroupID        string
-	Permissions    string
-	Creator        string
-	CreationDate   string // DATETIME in formato stringa
-	LastModify     string
-	LastModifyDate string // DATETIME in formato stringa
-	FatherID       string
-	Name           string
-	Description    string
-	DeletedBy      string
-	DeletedDate    string // DATETIME in formato stringa
-}
+// type DBObject struct {
+// 	ID             string
+// 	Owner          string
+// 	GroupID        string
+// 	Permissions    string
+// 	Creator        string
+// 	CreationDate   string // DATETIME in formato stringa
+// 	LastModify     string
+// 	LastModifyDate string // DATETIME in formato stringa
+// 	FatherID       string
+// 	Name           string
+// 	Description    string
+// 	DeletedBy      string
+// 	DeletedDate    string // DATETIME in formato stringa
+// }
 
 /** *********************************** RRA Framework: end. *********************************** */
 
@@ -179,22 +179,22 @@ CREATE TABLE IF NOT EXISTS `rra_countrylist` (
 
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 */
-type DBCountry struct {
-	ID                   string
-	CommonName           string
-	FormalName           string
-	Type                 string
-	SubType              string
-	Sovereignty          string
-	Capital              string
-	ISO4217CurrencyCode  string
-	ISO4217CurrencyName  string
-	ITUTTelephoneCode    string
-	ISO31661_2LetterCode string
-	ISO31661_3LetterCode string
-	ISO31661Number       string
-	IANACountryCodeTLD   string
-}
+// type DBCountry struct {
+// 	ID                   string
+// 	CommonName           string
+// 	FormalName           string
+// 	Type                 string
+// 	SubType              string
+// 	Sovereignty          string
+// 	Capital              string
+// 	ISO4217CurrencyCode  string
+// 	ISO4217CurrencyName  string
+// 	ITUTTelephoneCode    string
+// 	ISO31661_2LetterCode string
+// 	ISO31661_3LetterCode string
+// 	ISO31661Number       string
+// 	IANACountryCodeTLD   string
+// }
 
 /*
 CREATE TABLE IF NOT EXISTS `rra_companies` (
@@ -231,31 +231,31 @@ CREATE TABLE IF NOT EXISTS `rra_companies` (
 
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 */
-type DBCompany struct {
-	ID              string
-	Owner           string
-	GroupID         string
-	Permissions     string
-	Creator         string
-	CreationDate    string // DATETIME in formato stringa
-	LastModify      string
-	LastModifyDate  string // DATETIME in formato stringa
-	FatherID        string
-	Name            string
-	Description     string
-	Street          string
-	ZIP             string
-	City            string
-	State           string
-	FKCountryListID string
-	Phone           string
-	Fax             string
-	Email           string
-	URL             string
-	PIVA            string
-	DeletedBy       string
-	DeletedDate     string // DATETIME in formato stringa
-}
+// type DBCompany struct {
+// 	ID              string
+// 	Owner           string
+// 	GroupID         string
+// 	Permissions     string
+// 	Creator         string
+// 	CreationDate    string // DATETIME in formato stringa
+// 	LastModify      string
+// 	LastModifyDate  string // DATETIME in formato stringa
+// 	FatherID        string
+// 	Name            string
+// 	Description     string
+// 	Street          string
+// 	ZIP             string
+// 	City            string
+// 	State           string
+// 	FKCountryListID string
+// 	Phone           string
+// 	Fax             string
+// 	Email           string
+// 	URL             string
+// 	PIVA            string
+// 	DeletedBy       string
+// 	DeletedDate     string // DATETIME in formato stringa
+// }
 
 /*
 CREATE TABLE IF NOT EXISTS `rra_people` (
@@ -297,36 +297,36 @@ CREATE TABLE IF NOT EXISTS `rra_people` (
 
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 */
-type DBPerson struct {
-	ID              string
-	Owner           string
-	GroupID         string
-	Permissions     string
-	Creator         string
-	CreationDate    string // DATETIME in formato stringa
-	LastModify      string
-	LastModifyDate  string // DATETIME in formato stringa
-	FatherID        string
-	Name            string
-	Description     string
-	Street          string
-	ZIP             string
-	City            string
-	State           string
-	FKCountryListID string
-	FKCompaniesID   string
-	FKUsersID       string
-	Phone           string
-	Mobile          string
-	Fax             string
-	Email           string
-	URL             string
-	OfficePhone     string
-	CodiceFiscale   string
-	PIVA            string
-	DeletedBy       string
-	DeletedDate     string // DATETIME in formato stringa
-}
+// type DBPerson struct {
+// 	ID              string
+// 	Owner           string
+// 	GroupID         string
+// 	Permissions     string
+// 	Creator         string
+// 	CreationDate    string // DATETIME in formato stringa
+// 	LastModify      string
+// 	LastModifyDate  string // DATETIME in formato stringa
+// 	FatherID        string
+// 	Name            string
+// 	Description     string
+// 	Street          string
+// 	ZIP             string
+// 	City            string
+// 	State           string
+// 	FKCountryListID string
+// 	FKCompaniesID   string
+// 	FKUsersID       string
+// 	Phone           string
+// 	Mobile          string
+// 	Fax             string
+// 	Email           string
+// 	URL             string
+// 	OfficePhone     string
+// 	CodiceFiscale   string
+// 	PIVA            string
+// 	DeletedBy       string
+// 	DeletedDate     string // DATETIME in formato stringa
+// }
 
 /** *********************************** RRA Contacts: end. *********************************** */
 
@@ -391,47 +391,47 @@ CREATE TABLE IF NOT EXISTS `rra_events` (
 
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 */
-type DBEvent struct {
-	ID                   string
-	Owner                string
-	GroupID              string
-	Permissions          string
-	Creator              string
-	CreationDate         string // DATETIME in formato stringa
-	LastModify           string
-	LastModifyDate       string // DATETIME in formato stringa
-	DeletedBy            string
-	DeletedDate          string // DATETIME in formato stringa
-	FatherID             string
-	Name                 string
-	Description          string
-	FKObjID              string
-	StartDate            string // DATETIME in formato stringa
-	EndDate              string // DATETIME in formato stringa
-	AllDay               string
-	URL                  string
-	Alarm                string
-	AlarmMinute          int
-	AlarmUnit            string
-	BeforeEvent          string
-	Category             string
-	Recurrence           string
-	RecurrenceType       string
-	DailyEveryX          int
-	WeeklyEveryX         int
-	WeeklyDayOfTheWeek   string
-	MonthlyEveryX        int
-	MonthlyDayOfTheMonth int
-	MonthlyWeekNumber    int
-	MonthlyWeekDay       string
-	YearlyMonthNumber    int
-	YearlyMonthDay       int
-	YearlyWeekNumber     int
-	YearlyWeekDay        string
-	YearlyDayOfTheYear   int
-	RecurrenceTimes      int
-	RecurrenceEndDate    string // DATETIME in formato stringa
-}
+// type DBEvent struct {
+// 	ID                   string
+// 	Owner                string
+// 	GroupID              string
+// 	Permissions          string
+// 	Creator              string
+// 	CreationDate         string // DATETIME in formato stringa
+// 	LastModify           string
+// 	LastModifyDate       string // DATETIME in formato stringa
+// 	DeletedBy            string
+// 	DeletedDate          string // DATETIME in formato stringa
+// 	FatherID             string
+// 	Name                 string
+// 	Description          string
+// 	FKObjID              string
+// 	StartDate            string // DATETIME in formato stringa
+// 	EndDate              string // DATETIME in formato stringa
+// 	AllDay               string
+// 	URL                  string
+// 	Alarm                string
+// 	AlarmMinute          int
+// 	AlarmUnit            string
+// 	BeforeEvent          string
+// 	Category             string
+// 	Recurrence           string
+// 	RecurrenceType       string
+// 	DailyEveryX          int
+// 	WeeklyEveryX         int
+// 	WeeklyDayOfTheWeek   string
+// 	MonthlyEveryX        int
+// 	MonthlyDayOfTheMonth int
+// 	MonthlyWeekNumber    int
+// 	MonthlyWeekDay       string
+// 	YearlyMonthNumber    int
+// 	YearlyMonthDay       int
+// 	YearlyWeekNumber     int
+// 	YearlyWeekDay        string
+// 	YearlyDayOfTheYear   int
+// 	RecurrenceTimes      int
+// 	RecurrenceEndDate    string // DATETIME in formato stringa
+// }
 
 /*
 CREATE TABLE IF NOT EXISTS `rra_files` (
@@ -464,27 +464,27 @@ CREATE TABLE IF NOT EXISTS `rra_files` (
 
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 */
-type DBFile struct {
-	ID             string
-	Owner          string
-	GroupID        string
-	Permissions    string
-	Creator        string
-	CreationDate   string // DATETIME in formato stringa
-	LastModify     string
-	LastModifyDate string // DATETIME in formato stringa
-	FatherID       string
-	Name           string
-	Description    string
-	FKObjID        string
-	Path           string
-	Filename       string
-	Checksum       string
-	Mime           string
-	AltLink        string
-	DeletedBy      string
-	DeletedDate    string // DATETIME in formato stringa
-}
+// type DBFile struct {
+// 	ID             string
+// 	Owner          string
+// 	GroupID        string
+// 	Permissions    string
+// 	Creator        string
+// 	CreationDate   string // DATETIME in formato stringa
+// 	LastModify     string
+// 	LastModifyDate string // DATETIME in formato stringa
+// 	FatherID       string
+// 	Name           string
+// 	Description    string
+// 	FKObjID        string
+// 	Path           string
+// 	Filename       string
+// 	Checksum       string
+// 	Mime           string
+// 	AltLink        string
+// 	DeletedBy      string
+// 	DeletedDate    string // DATETIME in formato stringa
+// }
 
 /*
 CREATE TABLE IF NOT EXISTS `rra_folders` (
@@ -513,23 +513,23 @@ CREATE TABLE IF NOT EXISTS `rra_folders` (
 
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 */
-type DBFolder struct {
-	ID              string
-	Owner           string
-	GroupID         string
-	Permissions     string
-	Creator         string
-	CreationDate    string // DATETIME in formato stringa
-	LastModify      string
-	LastModifyDate  string // DATETIME in formato stringa
-	FatherID        string
-	Name            string
-	Description     string
-	FKObjID         string
-	ChildsSortOrder string
-	DeletedBy       string
-	DeletedDate     string // DATETIME in formato stringa
-}
+// type DBFolder struct {
+// 	ID              string
+// 	Owner           string
+// 	GroupID         string
+// 	Permissions     string
+// 	Creator         string
+// 	CreationDate    string // DATETIME in formato stringa
+// 	LastModify      string
+// 	LastModifyDate  string // DATETIME in formato stringa
+// 	FatherID        string
+// 	Name            string
+// 	Description     string
+// 	FKObjID         string
+// 	ChildsSortOrder string
+// 	DeletedBy       string
+// 	DeletedDate     string // DATETIME in formato stringa
+// }
 
 /*
 CREATE TABLE IF NOT EXISTS `rra_links` (
@@ -560,24 +560,24 @@ CREATE TABLE IF NOT EXISTS `rra_links` (
 
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 */
-type DBLink struct {
-	ID             string
-	Owner          string
-	GroupID        string
-	Permissions    string
-	Creator        string
-	CreationDate   string // DATETIME in formato stringa
-	LastModify     string
-	LastModifyDate string // DATETIME in formato stringa
-	FatherID       string
-	Name           string
-	Description    string
-	Href           string
-	Target         string
-	FKObjID        string
-	DeletedBy      string
-	DeletedDate    string // DATETIME in formato stringa
-}
+// type DBLink struct {
+// 	ID             string
+// 	Owner          string
+// 	GroupID        string
+// 	Permissions    string
+// 	Creator        string
+// 	CreationDate   string // DATETIME in formato stringa
+// 	LastModify     string
+// 	LastModifyDate string // DATETIME in formato stringa
+// 	FatherID       string
+// 	Name           string
+// 	Description    string
+// 	Href           string
+// 	Target         string
+// 	FKObjID        string
+// 	DeletedBy      string
+// 	DeletedDate    string // DATETIME in formato stringa
+// }
 
 /*
 CREATE TABLE IF NOT EXISTS `rra_notes` (
@@ -610,22 +610,22 @@ CREATE TABLE IF NOT EXISTS `rra_notes` (
 
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 */
-type DBNote struct {
-	ID             string
-	Owner          string
-	GroupID        string
-	Permissions    string
-	Creator        string
-	CreationDate   string // DATETIME in formato stringa
-	LastModify     string
-	LastModifyDate string // DATETIME in formato stringa
-	FatherID       string
-	Name           string
-	Description    string
-	FKObjID        string
-	DeletedBy      string
-	DeletedDate    string // DATETIME in formato stringa
-}
+// type DBNote struct {
+// 	ID             string
+// 	Owner          string
+// 	GroupID        string
+// 	Permissions    string
+// 	Creator        string
+// 	CreationDate   string // DATETIME in formato stringa
+// 	LastModify     string
+// 	LastModifyDate string // DATETIME in formato stringa
+// 	FatherID       string
+// 	Name           string
+// 	Description    string
+// 	FKObjID        string
+// 	DeletedBy      string
+// 	DeletedDate    string // DATETIME in formato stringa
+// }
 
 /*
 CREATE TABLE IF NOT EXISTS `rra_pages` (
@@ -649,24 +649,24 @@ CREATE TABLE IF NOT EXISTS `rra_pages` (
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 */
 
-type DBPage struct {
-	ID             string
-	Owner          string
-	GroupID        string
-	Permissions    string
-	Creator        string
-	CreationDate   string // DATETIME in formato stringa
-	LastModify     string
-	LastModifyDate string // DATETIME in formato stringa
-	FatherID       string
-	Name           string
-	Description    string
-	HTML           string
-	FKObjID        string
-	Language       string
-	DeletedBy      string
-	DeletedDate    string // DATETIME in formato stringa
-}
+// type DBPage struct {
+// 	ID             string
+// 	Owner          string
+// 	GroupID        string
+// 	Permissions    string
+// 	Creator        string
+// 	CreationDate   string // DATETIME in formato stringa
+// 	LastModify     string
+// 	LastModifyDate string // DATETIME in formato stringa
+// 	FatherID       string
+// 	Name           string
+// 	Description    string
+// 	HTML           string
+// 	FKObjID        string
+// 	Language       string
+// 	DeletedBy      string
+// 	DeletedDate    string // DATETIME in formato stringa
+// }
 
 /*
 CREATE TABLE IF NOT EXISTS `rra_news` (
@@ -701,24 +701,24 @@ CREATE TABLE IF NOT EXISTS `rra_news` (
 
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 */
-type DBNews struct {
-	ID             string
-	Owner          string
-	GroupID        string
-	Permissions    string
-	Creator        string
-	CreationDate   string // DATETIME in formato stringa
-	LastModify     string
-	LastModifyDate string // DATETIME in formato stringa
-	FatherID       string
-	Name           string
-	Description    string
-	HTML           string
-	FKObjID        string
-	Language       string
-	DeletedBy      string
-	DeletedDate    string // DATETIME in formato stringa
-}
+// type DBNews struct {
+// 	ID             string
+// 	Owner          string
+// 	GroupID        string
+// 	Permissions    string
+// 	Creator        string
+// 	CreationDate   string // DATETIME in formato stringa
+// 	LastModify     string
+// 	LastModifyDate string // DATETIME in formato stringa
+// 	FatherID       string
+// 	Name           string
+// 	Description    string
+// 	HTML           string
+// 	FKObjID        string
+// 	Language       string
+// 	DeletedBy      string
+// 	DeletedDate    string // DATETIME in formato stringa
+// }
 
 /** *********************************** CMS: end. *********************************** */
 
