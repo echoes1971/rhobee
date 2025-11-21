@@ -7,12 +7,16 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"rprj/be/dblayer"
 	"strings"
+	"time"
 )
 
 var ollamaURL string
 var ollamaModel string
 var ollamaAppName string
+
+var ollamaFolder *dblayer.DBFolder
 
 func OllamaInit(appName, url, model string) error {
 	ollamaURL = url
@@ -29,7 +33,53 @@ func OllamaInit(appName, url, model string) error {
 
 	}
 
+	OllamaFolderInit("Ollama Pages")
+
 	return nil
+}
+
+func OllamaFolderInit(folderName string) {
+	dbContext := &dblayer.DBContext{
+		UserID:   "-1",           // DANGEROUS!!!! Think of something better here!!!
+		GroupIDs: []string{"-2"}, // Same here!!!
+		Schema:   dblayer.DbSchema,
+	}
+
+	repo := dblayer.NewDBRepository(dbContext, dblayer.Factory, dblayer.DbConnection)
+	repo.Verbose = false
+
+	search := repo.GetInstanceByTableName("folders")
+	if search == nil {
+		log.Println("Failed to create folder instance for Ollama")
+		return
+	}
+	search.SetValue("name", folderName)
+	results, err := repo.Search(search, false, false, "")
+	if err != nil {
+		log.Printf("Failed to find or create Ollama folder '%s': %v\n", folderName, err)
+		return
+	}
+	if len(results) == 1 {
+		ollamaFolder = results[0].(*dblayer.DBFolder)
+		return
+	}
+
+	// Create the folder
+	newFolder := repo.GetInstanceByTableName("folders")
+	if newFolder == nil {
+		log.Println("Failed to create new folder instance for Ollama")
+		return
+	}
+	newFolder.SetValue("name", folderName)
+	newFolder.SetValue("description", "AI-generated content by Ollama")
+	newFolder.SetValue("permissions", "rwxr--r--") // Tutti possono leggere
+	created, err := repo.Insert(newFolder)
+	if err != nil {
+		log.Printf("Failed to create Ollama folder '%s': %v\n", folderName, err)
+		return
+	}
+	ollamaFolder = created.(*dblayer.DBFolder)
+	log.Printf("Created Ollama folder '%s' with ID %s\n", folderName, ollamaFolder.GetValue("id"))
 }
 
 func OllamaHandler(w http.ResponseWriter, r *http.Request) {
@@ -134,6 +184,44 @@ func UpdateOllamaDefaultPageResponse(languageTag string) {
 	}
 
 	lastDefaultPageResponse = respText
+
+	OllamaSavePage(respText)
+}
+
+func OllamaSavePage(content string) {
+	if ollamaFolder == nil {
+		log.Println("Ollama folder not initialized, cannot save page.")
+		return
+	}
+
+	dbContext := &dblayer.DBContext{
+		UserID:   "-1",           // DANGEROUS!!!! Think of something better here!!!
+		GroupIDs: []string{"-2"}, // Same here!!!
+		Schema:   dblayer.DbSchema,
+	}
+
+	repo := dblayer.NewDBRepository(dbContext, dblayer.Factory, dblayer.DbConnection)
+	repo.Verbose = true
+
+	page := repo.GetInstanceByTableName("pages")
+	if page == nil {
+		log.Println("Failed to create page instance for Ollama")
+		return
+	}
+	// Generate title with YYYY.MM.DD prefix
+	titlePrefix := time.Now().Format("2006.01.02 15:04")
+	page.SetValue("name", titlePrefix+" Ollama Default Page")
+	page.SetValue("description", "AI-generated content by Ollama")
+	page.SetValue("html", content)
+	page.SetValue("father_id", ollamaFolder.GetValue("id"))
+	page.SetValue("permissions", "rwxr--r--") // Tutti possono leggere
+	created, err := repo.Insert(page)
+	if err != nil {
+		log.Printf("Failed to create Ollama default page: %v\n", err)
+		return
+	}
+	createdPage := created.(*dblayer.DBPage)
+	log.Printf("Created Ollama default page with ID %s\n", createdPage.GetValue("id"))
 }
 
 // CallOllama sends a prompt to the Ollama API and returns the response
