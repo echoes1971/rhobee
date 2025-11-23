@@ -24,14 +24,12 @@ func OllamaInit(appName, url, model string) error {
 	ollamaAppName = appName
 
 	if ollamaURL != "" && ollamaModel != "" {
-		go UpdateOllamaDefaultPageResponse("en")
+		// go UpdateOllamaDefaultPageResponse("en")
 		log.Printf("Ollama initialized with URL: %s and Model: %s\n", ollamaURL, ollamaModel)
 	} else {
 		log.Println("Ollama not configured - using fallback responses")
-		lastDefaultPageResponse = "<h2>Welcome! 👋</h2><p>Please log in to continue using the application.</p>"
-		// lastDefaultPageResponse = "\u003ch2\u003eWelcome to the Galaxy 🚀\u003c/h2\u003e\n\n\u003cp\u003e Warning: Abandon all hope, ye who enter here... or at least try our web app! 😂\u003c/p\u003e\n\n\u003cb\u003eGalactic Hitcher's Guide\u003c/b\u003e\u003cbr\u003e\n\u003cbr\u003e\n\n1. First, buckle up and strap yourself in, because things are about to get weird. 🚀\n2. Our web app is powered by a combination of magic dust and cutting-edge technology (just kidding, it's just JavaScript). ✨\n3. Be prepared for epic battles with bugs and occasional crashes into the mothership (aka error 404). 💥\n4. But don't worry, our team of expert space rangers will be here to guide you through the galaxy and fix any problems that come your way. 🚀\n\nSo, are you ready to embark on this intergalactic adventure? Let's get started! 🔴"
-
 	}
+	lastDefaultPageResponse = "<h2>Welcome! 👋</h2><p>Please log in to continue using the application.</p>"
 
 	OllamaFolderInit("Ollama Pages")
 
@@ -201,7 +199,7 @@ func OllamaSavePage(content string) {
 	}
 
 	repo := dblayer.NewDBRepository(dbContext, dblayer.Factory, dblayer.DbConnection)
-	repo.Verbose = true
+	repo.Verbose = false
 
 	page := repo.GetInstanceByTableName("pages")
 	if page == nil {
