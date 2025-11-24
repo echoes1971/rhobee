@@ -258,7 +258,9 @@ func UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
 	if req.Pwd != "" {
 		user.SetValue("pwd", req.Pwd)
 	}
-	user.SetValue("group_id", req.GroupID)
+	if req.GroupID != "" {
+		user.SetValue("group_id", req.GroupID)
+	}
 	user.SetMetadata("group_ids", req.GroupIDs)
 
 	u, err := repo.Update(user)
