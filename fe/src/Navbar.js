@@ -4,6 +4,7 @@ import { Navbar, Nav, NavDropdown, Container, Button, Dropdown } from "react-boo
 import { ThemeContext } from "./ThemeContext";
 import { useTranslation } from "react-i18next";
 import { app_cfg } from "./app.cfg";
+import axios from "./axios";
 
 function AppNavbar() {
   const navigate = useNavigate();
@@ -30,6 +31,17 @@ function AppNavbar() {
     localStorage.removeItem("username");
     setUsername(null);
     navigate("/");
+  };
+
+  const handleProfileClick = async () => {
+    try {
+      const userId = localStorage.getItem("user_id");
+      const response = await axios.get(`/users/${userId}/person`);
+      const { person_id } = response.data;
+      navigate(`/c/${person_id}`);
+    } catch (error) {
+      console.error("Error fetching person:", error);
+    }
   };
 
   return (
@@ -64,7 +76,7 @@ function AppNavbar() {
 
             {username ? (
               <NavDropdown title={username} id="basic-nav-dropdown" align="end">
-                <NavDropdown.Item as={Link} to={`/users/${localStorage.getItem("user_id")}`}>
+                <NavDropdown.Item onClick={handleProfileClick}>
                   <i className="bi bi-person-circle me-2"></i>Profile
                 </NavDropdown.Item>
                 <NavDropdown.Divider />

@@ -20,7 +20,6 @@
         "no_matches": "Nessuna corrispondenza"
     },
     "users": {
-        "user_profile": "Profilo Utente",
         "newUser": "Nuovo Utente",
         "user": "Utente",
         "users": "Utenti",
@@ -32,14 +31,17 @@
         "leave_blank": "lascia vuoto per mantenere quella attuale",
         "login_required": "Il login è obbligatorio",
         "password_required": "La password è obbligatoria per i nuovi utenti",
-        "password_mismatch": "Le password non coincidono"
+        "password_mismatch": "Le password non coincidono",
+        "delete_confirm": "Sei sicuro di voler eliminare questo utente?",
+        "user_profile": "Profilo Utente"
     },
     "groups": {
         "newGroup": "Nuovo Gruppo",
         "group": "Gruppo",
         "groups": "Gruppi",
         "users": "Utenti",
-        "name_required": "Il nome del gruppo è obbligatorio"
+        "name_required": "Il nome del gruppo è obbligatorio",
+        "delete_confirm": "Sei sicuro di voler eliminare questo gruppo?"
     },
     "association": {
         "compact_mode": "Modalità compatta",

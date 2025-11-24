@@ -140,6 +140,33 @@ function UserProfile() {
     }
   };
 
+  const handleDelete = async () => {
+    if (!window.confirm(t("users.delete_confirm"))) {
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    try {
+      await api.delete(`/users/${userId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      
+      // If user deleted their own account, logout
+      if (isOwnProfile) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("username");
+        localStorage.removeItem("user_id");
+        localStorage.removeItem("groups");
+        navigate("/login");
+      } else {
+        navigate("/users");
+      }
+    } catch (err) {
+      setErrorMessage(getErrorMessage(err, t));
+      console.error("Error deleting user:", err);
+    }
+  };
+
   if (!user) {
     return (
       <Container className={`mt-4 ${themeClass}`}>
@@ -229,6 +256,11 @@ function UserProfile() {
               <Button variant="secondary" onClick={handleCancel}>
                 {t("common.cancel")}
               </Button>
+              {isAdmin && (
+                <Button variant="danger" onClick={handleDelete}>
+                  {t("common.delete")}
+                </Button>
+              )}
             </div>
           </Form>
         </Card.Body>

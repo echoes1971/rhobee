@@ -32,14 +32,16 @@
     "leave_blank": "laisser vide pour conserver l'actuel",
     "login_required": "L'identifiant est obligatoire",
     "password_required": "Le mot de passe est obligatoire pour les nouveaux utilisateurs",
-    "password_mismatch": "Les mots de passe ne correspondent pas"
+    "password_mismatch": "Les mots de passe ne correspondent pas",
+    "delete_confirm": "Êtes-vous sûr de vouloir supprimer cet utilisateur ?"
   },
   "groups": {
     "newGroup": "Nouveau Groupe",
     "group": "Groupe",
     "groups": "Groupes",
     "users": "Utilisateurs",
-    "name_required": "Le nom du groupe est obligatoire"
+    "name_required": "Le nom du groupe est obligatoire",
+    "delete_confirm": "Êtes-vous sûr de vouloir supprimer ce groupe ?"
   },
   "association": {
     "compact_mode": "Mode compact",

@@ -10,6 +10,7 @@ import Login from "./Login";
 import Users from "./Users";
 import UserProfile from "./UserProfile";
 import Groups from './Groups';
+import GroupProfile from './GroupProfile';
 import SiteNavigation from './SiteNavigation';
 
 function App() {
@@ -33,6 +34,12 @@ function App() {
         <Route
           path="/users/:userId"
           element={token ? <UserProfile /> : <Navigate to="/login" />}
+        />
+
+        {/* Group profile - only for admins */}
+        <Route
+          path="/groups/:groupId"
+          element={token && isAdmin ? <GroupProfile /> : <Navigate to="/" />}
         />
 
         {/* Protected routes - only for admins (group -2) */}

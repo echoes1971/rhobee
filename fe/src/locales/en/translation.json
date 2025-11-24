@@ -32,14 +32,16 @@
     "leave_blank": "leave blank to keep current",
     "login_required": "Login is required",
     "password_required": "Password is required for new users",
-    "password_mismatch": "Passwords do not match"
+    "password_mismatch": "Passwords do not match",
+    "delete_confirm": "Are you sure you want to delete this user?"
   },
   "groups": {
     "newGroup": "New Group",
     "group": "Group",
     "groups": "Groups",
     "users": "Users",
-    "name_required": "Group name is required"
+    "name_required": "Group name is required",
+    "delete_confirm": "Are you sure you want to delete this group?"
   },
   "association": {
     "compact_mode": "Compact mode",

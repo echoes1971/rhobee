@@ -136,6 +136,7 @@ func main() {
 	userRoutes.Use(api.AuthMiddleware) // applica il middleware
 
 	userRoutes.HandleFunc("/{id}", api.GetUserHandler).Methods("GET")
+	userRoutes.HandleFunc("/{id}/person", api.GetUserPersonHandler).Methods("GET")
 	userRoutes.HandleFunc("", api.GetAllUsersHandler).Methods("GET")
 	userRoutes.HandleFunc("", api.CreateUserHandler).Methods("POST")
 	userRoutes.HandleFunc("/{id}", api.UpdateUserHandler).Methods("PUT")

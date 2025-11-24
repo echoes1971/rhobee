@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"strings"
 
@@ -316,4 +317,102 @@ func DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+// GET /users/:userId/person
+// Get or create a Person record linked to this user
+func GetUserPersonHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	userId := vars["userId"]
+
+	claims, err := GetClaimsFromRequest(r)
+	if err != nil {
+		RespondSimpleError(w, ErrUnauthorized, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	dbContext := &dblayer.DBContext{
+		UserID:   claims["user_id"],
+		GroupIDs: strings.Split(claims["groups"], ","),
+		Schema:   dblayer.DbSchema,
+	}
+
+	repo := dblayer.NewDBRepository(dbContext, dblayer.Factory, dblayer.DbConnection)
+	repo.Verbose = false
+
+	// Search for existing person with fk_users_id = userId
+	person := repo.GetInstanceByTableName("people")
+	if person == nil {
+		RespondSimpleError(w, ErrInternalServer, "Failed to create person instance", http.StatusInternalServerError)
+		return
+	}
+
+	if userId == "" {
+		userId = claims["user_id"]
+		log.Print("UserId not provided, using claim user_id: ", userId)
+	}
+	person.SetValue("fk_users_id", userId)
+	people, err := repo.Search(person, false, false, "")
+	if err != nil {
+		RespondSimpleError(w, ErrInternalServer, "Failed to search person: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// If person exists, return it
+	if len(people) > 0 {
+		existingPerson := people[0]
+
+		// Check read permission
+		if !repo.CheckReadPermission(existingPerson) {
+			RespondSimpleError(w, ErrForbidden, "Permission denied", http.StatusForbidden)
+			return
+		}
+
+		response := map[string]interface{}{
+			"person_id": existingPerson.GetValue("id"),
+			"user_id":   userId,
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
+		return
+	}
+
+	// Person doesn't exist, create it
+	// Get user details to populate person name
+	user := repo.GetInstanceByTableName("users")
+	user.SetValue("id", userId)
+	users, err := repo.Search(user, false, false, "")
+	if err != nil || len(users) == 0 {
+		RespondSimpleError(w, ErrUserNotFound, "User not found", http.StatusNotFound)
+		return
+	}
+
+	currentUser := users[0]
+	fullname := currentUser.GetValue("fullname")
+	if fullname == nil {
+		fullname = currentUser.GetValue("login")
+	}
+
+	// Create new person
+	newPerson := repo.GetInstanceByTableName("people")
+	newPerson.SetValue("name", fullname)
+	newPerson.SetValue("fk_users_id", userId)
+	newPerson.SetValue("owner", claims["user_id"])
+	newPerson.SetValue("group_id", strings.Split(claims["groups"], ",")[0]) // First group
+	newPerson.SetValue("permissions", "rwxr-----")                          // Owner and group can read
+
+	createdPerson, err := repo.Insert(newPerson)
+	if err != nil {
+		RespondSimpleError(w, ErrInternalServer, "Failed to create person: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	response := map[string]interface{}{
+		"person_id": createdPerson.GetValue("id"),
+		"user_id":   userId,
+		"created":   true,
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(response)
 }

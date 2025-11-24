@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "./axios";
 import { ThemeContext } from "./ThemeContext";
 import { useTranslation } from "react-i18next";
@@ -7,6 +8,7 @@ import { getErrorMessage } from "./errorHandler";
 
 function Groups() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [groups, setGroups] = useState([]);
   const [users, setUsers] = useState([]);
   const [query, setQuery] = useState("");
@@ -189,7 +191,7 @@ function Groups() {
                 <td>
                   <button
                     className="btn btn-sm btn-warning"
-                    onClick={() => handleEditClick(g)}
+                    onClick={() => navigate(`/groups/${g.ID}`)}
                   >
                     {t("common.edit")}
                   </button>

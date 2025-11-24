@@ -284,6 +284,72 @@ function PersonView({ data, metadata, objectData, dark }) {
     );
 }
 
+function CompanyView({ data, metadata, objectData, dark }) {
+    const navigate = useNavigate();
+    const { t } = useTranslation();
+    const canEdit = metadata.can_edit;
+    
+    return (
+        <Card className="mb-3" bg={dark ? 'dark' : 'light'} text={dark ? 'light' : 'dark'}>
+            <Card.Header className={dark ? 'bg-secondary bg-opacity-10' : ''} style={dark ? { borderBottom: '1px solid rgba(255,255,255,0.1)' } : {}}>
+                {data.father_id && data.father_id!=="0" && <small style={{ opacity: 0.7 }}>Parent: <ObjectLinkView obj_id={data.father_id} dark={dark} /></small>}
+                {data.father_id && data.father_id!=="0" && <br />}
+                <small style={{ opacity: 0.7 }}><i className={`bi bi-${classname2bootstrapIcon(metadata.classname)}`} title={metadata.classname}></i> ID: {data.id}</small>
+                {data.fk_obj_id && data.fk_obj_id!==data.father_id && data.fk_obj_id!=="0" && <br />}
+                {data.fk_obj_id && data.fk_obj_id!==data.father_id && data.fk_obj_id!=="0" && <small style={{ opacity: 0.7 }}>Linked to: <ObjectLinkView obj_id={data.fk_obj_id} dark={dark} /></small>}
+            </Card.Header>
+            <Card.Body>
+                <h2 className={dark ? 'text-light' : 'text-dark'}>{data.name}</h2>
+                {!data.html && data.description && <hr />}
+                {data.description && (
+                    <Card.Text dangerouslySetInnerHTML={{ __html: formatDescription(data.description) }}></Card.Text>
+                )}
+                {data.html && <hr />}
+                {data.html && (
+                    <HtmlFieldView htmlContent={data.html} dark={dark} />
+                )}
+                <hr />
+                <p>
+                {data.street}<br/>
+                {data.zip} {data.city} ({data.state})<br/>
+                <CountryView country_id={data.fk_countrylist_id} dark={dark} />
+                </p>
+                {data.phone && <p>📞 {data.phone}</p>}
+                {data.office_phone && <p>🏢 {data.office_phone}</p>}
+                {data.mobile && <p>📱 {data.mobile}</p>}
+                {data.fax && <p>📠 {data.fax}</p>}
+                {data.email && <p>✉️ <a href={`mailto:${data.email}`}>{data.email}</a></p>}
+                {data.url && <p>🔗 <a href={data.url} target="_blank" rel="noopener noreferrer">{data.url}</a></p>}
+                {data.p_iva && <p>💰 {data.p_iva}</p>}
+            </Card.Body>
+            <Card.Footer className={dark ? 'bg-secondary bg-opacity-10' : ''} style={dark ? { borderTop: '1px solid rgba(255,255,255,0.1)' } : {}}>
+                <small style={{ opacity: 0.7 }}>Owner: {objectData && objectData.owner_name} | Group: {objectData && objectData.group_name}</small>
+                <br />
+                <small style={{ opacity: 0.7 }}>Permissions: {data.permissions}</small>
+                <br />
+                <small style={{ opacity: 0.7 }}>Created: {formateDateTimeString(data.creation_date)} - {objectData && objectData.creator_name}</small>
+                <br />
+                <small style={{ opacity: 0.7 }}>Last update: {formateDateTimeString(data.last_modify_date)} - {objectData && objectData.last_modifier_name}</small>
+                {data.deleted_date && <br />}
+                {data.deleted_date && <small style={{ opacity: 0.7 }}>Deleted: {formateDateTimeString(data.deleted_date)} - {objectData && objectData.deleted_by_name}</small>}
+                {canEdit && (
+                    <>
+                        <br />
+                        <Button 
+                            variant="primary" 
+                            size="sm" 
+                            className="mt-2"
+                            onClick={() => navigate(`/e/${data.id}`)}
+                        >
+                            <i className="bi bi-pencil me-1"></i>{t('common.edit')}
+                        </Button>
+                    </>
+                )}
+            </Card.Footer>
+        </Card>
+    );
+}
+
 // Generic view for DBObject
 function ObjectView({ data, metadata, objectData, dark }) {
     const navigate = useNavigate();
@@ -400,8 +466,8 @@ function ContentView({ data, metadata, dark }) {
     const classname = metadata.classname;
 
     switch (classname) {
-        // case 'DBCompany':
-        //     return <CompanyView data={data} metadata={metadata} dark={dark} />;
+        case 'DBCompany':
+            return <CompanyView data={data} metadata={metadata} dark={dark} />;
         case 'DBPerson':
             return <PersonView data={data} metadata={metadata} dark={dark} />;
         // // CMS
