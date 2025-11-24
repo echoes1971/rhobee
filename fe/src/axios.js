@@ -27,11 +27,18 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("username");
-      // setUsername(null);
-      // redirect globale
-      window.location.href = "/"; // oppure "/login"
+      const token = localStorage.getItem("token");
+      
+      // Only redirect if we actually had a token (session expired)
+      // If no token, the 401 is expected for protected resources
+      if (token) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("username");
+        localStorage.removeItem("groups");
+        
+        // Redirect to login page instead of home
+        window.location.href = "/login";
+      }
     }
     return Promise.reject(error);
   }
