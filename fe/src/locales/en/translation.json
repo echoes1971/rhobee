@@ -20,6 +20,7 @@
     "no_matches": "No matches found"
   },
   "users": {
+    "user_profile": "User Profile",
     "newUser": "New User",
     "user": "User",
     "users": "Users",
@@ -45,5 +46,9 @@
     "search_to_add_more": "Search to add more",
     "search_to_add_items": "Use the search bar above to find and add items",
     "refine_search": "Refine your search to see more results"
+  },
+  "navigation": {
+    "back": "Back",
+    "delete_confirm": "Are you sure you want to delete this object?"
   }
 }

@@ -20,6 +20,7 @@
     "no_matches": "Keine Übereinstimmungen"
   },
   "users": {
+    "user_profile": "Benutzerprofil",
     "newUser": "Neuer Benutzer",
     "user": "Benutzer",
     "users": "Benutzer",
@@ -45,5 +46,9 @@
     "search_to_add_more": "Suchen, um weitere hinzuzufügen",
     "search_to_add_items": "Verwenden Sie die Suchleiste, um Elemente zu finden und hinzuzufügen",
     "refine_search": "Verfeinern Sie Ihre Suche, um mehr Ergebnisse zu sehen"
+  },
+  "navigation": {
+    "back": "Zurück",
+    "delete_confirm": "Möchten Sie dieses Objekt wirklich löschen?"
   }
 }

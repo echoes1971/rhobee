@@ -20,6 +20,7 @@
         "no_matches": "Nessuna corrispondenza"
     },
     "users": {
+        "user_profile": "Profilo Utente",
         "newUser": "Nuovo Utente",
         "user": "Utente",
         "users": "Utenti",
@@ -45,5 +46,9 @@
         "search_to_add_more": "Cerca per aggiungerne altri",
         "search_to_add_items": "Usa la barra di ricerca per trovare e aggiungere elementi",
         "refine_search": "Affina la ricerca per visualizzare più risultati"
+    },
+    "navigation": {
+        "back": "Indietro",
+        "delete_confirm": "Sei sicuro di voler eliminare questo oggetto?"
     }
 }
