@@ -8,6 +8,7 @@ import { app_cfg } from './app.cfg';
 import DefaultPage from "./DefaultPage";
 import Login from "./Login";
 import Users from "./Users";
+import UserProfile from "./UserProfile";
 import Groups from './Groups';
 import SiteNavigation from './SiteNavigation';
 
@@ -28,6 +29,12 @@ function App() {
         <Route path="/c/:objectId" element={<SiteNavigation />} />
         <Route path="/c" element={<SiteNavigation />} />
 
+        {/* User profile - accessible by the user themselves or admins */}
+        <Route
+          path="/users/:userId"
+          element={token ? <UserProfile /> : <Navigate to="/login" />}
+        />
+
         {/* Protected routes - only for admins (group -2) */}
         <Route
           path="/users"
@@ -40,7 +47,7 @@ function App() {
         />
 
         {/* Default -> redirect to / */}
-        <Route path="*" element={<Navigate to="/" />} />
+        <Route path="*" element={<Navigate to="/default" />} />
       </Routes>
     </Router>
   );

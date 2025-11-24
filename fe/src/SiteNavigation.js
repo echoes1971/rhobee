@@ -6,15 +6,7 @@ import { app_cfg } from './app.cfg';
 import ContentView from './ContentView';
 import { getErrorMessage } from './errorHandler';
 import { ThemeContext } from './ThemeContext';
-
-// Format object ID: if 16 chars, format as xxxx-xxxxxxxx-xxxx
-function formatObjectId(objId) {
-    if (!objId) return objId;
-    if (objId.length === 16) {
-        return `${objId.slice(0, 4)}-${objId.slice(4, 12)}-${objId.slice(12, 16)}`;
-    }
-    return objId;
-}
+import { formatObjectId, classname2bootstrapIcon } from './sitenavigation_utils';
 
 function SiteNavigation() {
     const { objectId } = useParams();
@@ -123,14 +115,13 @@ function SiteNavigation() {
                     )}
 
                     {/* Main Content */}
-                    <ContentView 
-                        data={content.data} 
-                        metadata={content.metadata}
-                        dark={dark}
-                    />
-
-                    {/* Children List (if folder) */}
-                    {children.length > 0 && content.metadata.classname === 'DBFolder' && (
+                <ContentView 
+                    data={content.data} 
+                    metadata={content.metadata}
+                    dark={dark}
+                />                    {/* Children List (if folder) */}
+                    {/*  && content.metadata.classname === 'DBFolder' */}
+                    {children.length > 0 && (
                         <div className="mt-4">
                             {/* <h4>Contents</h4> */}
                             <ListGroup variant={dark ? 'dark' : undefined}>
@@ -145,14 +136,14 @@ function SiteNavigation() {
                                         <div className="d-flex justify-content-between align-items-center">
                                             <div>
                                                 <strong>{child.data.name}</strong>
-                                                {child.data.description && (
+                                                {child.metadata.classname !== 'DBNote' && child.data.description && (
                                                     <div className="small" style={{ opacity: 0.7 }}>
                                                         {child.data.description}
                                                     </div>
                                                 )}
                                             </div>
                                             <span className="badge bg-secondary">
-                                                {child.metadata.classname}
+                                                <i className={`bi bi-${classname2bootstrapIcon(child.metadata.classname)}`} title={child.metadata.classname}></i>
                                             </span>
                                         </div>
                                     </ListGroup.Item>

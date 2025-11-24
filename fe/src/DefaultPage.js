@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { Button } from 'react-bootstrap';
 import { useTranslation } from "react-i18next";
 
 
@@ -8,6 +10,7 @@ function DefaultPage() {
     // Use ollama response for default page content
     const [content, setContent] = useState("");
 
+    const navigate = useNavigate();
     const language = localStorage.getItem("lang") || "en";
     
     useEffect(() => {
@@ -23,9 +26,23 @@ function DefaultPage() {
 
     if (content) {
         return (
+            <>
             <div className="p-3 d-flex justify-content-center">
                 <div className="col-12 col-md-9 col-lg-8" dangerouslySetInnerHTML={{ __html: content }}></div>
             </div>
+            {/* <div className="p-3 d-flex justify-content-end">
+                <div className="col-12 col-md-9 col-lg-8">
+                    <Button 
+                        variant="secondary" 
+                        size="sm" 
+                        className="mt-2 me-2"
+                        onClick={() => navigate(-1)}
+                    >
+                        <i className="bi bi-arrow-left me-1"></i>{t('navigation.back')}
+                    </Button>
+                </div>
+            </div> */}
+            </>
         );
     }
 

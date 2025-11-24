@@ -50,6 +50,8 @@ function AppNavbar() {
                 <NavDropdown.Item as={Link} to="/default">Ollama Test</NavDropdown.Item>
                 <NavDropdown.Item as={Link} to="/c/2c53-b677a6c6-74a1">Ollama Pages</NavDropdown.Item>
                 <NavDropdown.Item as={Link} to="/c/3339-6a5e4fd8-5670">Ollama Pages</NavDropdown.Item>
+                <NavDropdown.Divider />
+                <NavDropdown.Item as={Link} to="/c/it.4-f1e68bab-4349">Accounts</NavDropdown.Item>
               </NavDropdown>
             ) : null}
 
@@ -62,6 +64,10 @@ function AppNavbar() {
 
             {username ? (
               <NavDropdown title={username} id="basic-nav-dropdown" align="end">
+                <NavDropdown.Item as={Link} to={`/users/${localStorage.getItem("user_id")}`}>
+                  <i className="bi bi-person-circle me-2"></i>Profile
+                </NavDropdown.Item>
+                <NavDropdown.Divider />
                 <NavDropdown.Item onClick={handleLogout}>{t("common.logout")}</NavDropdown.Item>
               </NavDropdown>
             ) : null}
