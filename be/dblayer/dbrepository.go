@@ -896,14 +896,18 @@ func (dbr *DBRepository) FilterByReadPermission(entities []DBEntityInterface) []
 	return filtered
 }
 
-// GetEntityByID retrieves a generic entity (non-DBObject) by table name and ID
 func (dbr *DBRepository) GetEntityByID(tableName string, id string) DBEntityInterface {
+	return dbr.GetEntityByIDWithTx(tableName, id, nil)
+}
+
+// GetEntityByID retrieves a generic entity (non-DBObject) by table name and ID
+func (dbr *DBRepository) GetEntityByIDWithTx(tableName string, id string, tx *sql.Tx) DBEntityInterface {
 	dbe := dbr.GetInstanceByTableName(tableName)
 	if dbe == nil {
 		return nil
 	}
 	dbe.SetValue("id", id)
-	results, err := dbr.Search(dbe, false, false, "")
+	results, err := dbr.searchWithTx(dbe, false, false, "", tx)
 	if err != nil || len(results) == 0 {
 		return nil
 	}
