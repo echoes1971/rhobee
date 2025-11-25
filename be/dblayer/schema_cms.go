@@ -1,5 +1,10 @@
 package dblayer
 
+import (
+	"database/sql"
+	"log"
+)
+
 /*
 CREATE TABLE IF NOT EXISTS `rra_events` (
 
@@ -106,21 +111,17 @@ func NewDBEvent() *DBEvent {
 		{Name: "recurrence_end_date", Type: "datetime", Constraints: []string{"NOT NULL"}},
 	}
 	keys := []string{"id"}
-	// $this->_fk[] = new ForeignKey('fk_obj_id','companies','id');
-	// $this->_fk[] = new ForeignKey('fk_obj_id','folders','id');
-	// $this->_fk[] = new ForeignKey('fk_obj_id','people','id');
-	// $this->_fk[] = new ForeignKey('fk_obj_id','projects','id');
 	foreignKeys := []ForeignKey{
 		{Column: "owner", RefTable: "users", RefColumn: "id"},
 		{Column: "group_id", RefTable: "groups", RefColumn: "id"},
 		{Column: "creator", RefTable: "users", RefColumn: "id"},
 		{Column: "last_modify", RefTable: "users", RefColumn: "id"},
 		{Column: "deleted_by", RefTable: "users", RefColumn: "id"},
-		{Column: "father_id", RefTable: "calendars", RefColumn: "id"},
-		{Column: "fk_obj_id", RefTable: "pages", RefColumn: "id"},
-		{Column: "father_id", RefTable: "pages", RefColumn: "id"},
-		{Column: "fk_obj_id", RefTable: "news", RefColumn: "id"},
-		{Column: "father_id", RefTable: "news", RefColumn: "id"},
+
+		{Column: "fk_obj_id", RefTable: "companies", RefColumn: "id"},
+		{Column: "fk_obj_id", RefTable: "folders", RefColumn: "id"},
+		{Column: "fk_obj_id", RefTable: "people", RefColumn: "id"},
+		{Column: "fk_obj_id", RefTable: "projects", RefColumn: "id"},
 	}
 	return &DBEvent{
 		DBObject: DBObject{
@@ -520,7 +521,7 @@ func NewDBFolder() *DBFolder {
 		{Column: "creator", RefTable: "users", RefColumn: "id"},
 		{Column: "last_modify", RefTable: "users", RefColumn: "id"},
 		{Column: "deleted_by", RefTable: "users", RefColumn: "id"},
-		{Column: "father_id", RefTable: "folders", RefColumn: "id"},
+		{Column: "father_id", RefTable: "objects", RefColumn: "id"},
 		{Column: "fk_obj_id", RefTable: "companies", RefColumn: "id"},
 		{Column: "fk_obj_id", RefTable: "people", RefColumn: "id"},
 		{Column: "fk_obj_id", RefTable: "projects", RefColumn: "id"},
@@ -545,43 +546,72 @@ func (dbFolder *DBFolder) IsDBObject() bool {
 	return true
 }
 
-// function setDefaultValues(&$dbmgr) {
-// 	parent::setDefaultValues($dbmgr);
-// 	if($this->getValue('father_id')===null) {
-// 	} else {
-// 		$cerca = new DBEFolder();
-// 		$cerca->setValue('id',$this->getValue('father_id'));
-// 		$lista = $dbmgr->search($cerca,$uselike=0);
-// 		if(count($lista)==1) {
-// 			$father = $lista[0];
-// 			$this->setValue('fk_obj_id',$father->getValue('fk_obj_id'));
-// 		}
-// 	}
-// }
-// function _before_insert(&$dbmgr) {
-// 	parent::_before_insert($dbmgr);
-// 	// Eredita la 'radice' dal padre
-// 	$father_id = $this->getValue('father_id');
-// 	if($father_id>0) {
-// 		$query="select fk_obj_id from ". $dbmgr->buildTableName($this)." where id='".str_replace(' ','\0',sprintf("%-16s",$this->getValue('father_id')))."'";
-// 		$tmp = $dbmgr->select("DBE",$this->getTableName(),$query);
-// 		if(count($tmp)==1) {
-// 			$this->setValue('fk_obj_id', $tmp[0]->getValue('fk_obj_id'));
-// 		}
-// 	}
-// }
-// function _before_update(&$dbmgr) {
-// 	parent::_before_update($dbmgr);
-// 	// Eredita la 'radice' dal padre
-// 	$father_id = $this->getValue('father_id');
-// 	if($father_id>0) {
-// 		$query="select fk_obj_id from ". $dbmgr->buildTableName($this)." where id='".str_replace(' ','\0',sprintf("%-16s",$this->getValue('father_id')))."'";
-// 		$tmp = $dbmgr->select("DBE",$this->getTableName(),$query);
-// 		if(count($tmp)==1) {
-// 			$this->setValue('fk_obj_id', $tmp[0]->getValue('fk_obj_id'));
-// 		}
-// 	}
-// }
+func (dbFolder *DBFolder) SetDefaultValues(repo *DBRepository) {
+	if repo.Verbose {
+		log.Print("DBFolder.SetDefaultValues called")
+	}
+	dbFolder.DBObject.SetDefaultValues(repo)
+
+	if !dbFolder.HasValue("father_id") || dbFolder.GetValue("father_id") == "" || dbFolder.GetValue("father_id") == "0" {
+		return
+	}
+	father := repo.GetEntityByID("folders", dbFolder.GetValue("father_id").(string))
+	if father != nil {
+		if fatherFolder, ok := father.(*DBFolder); ok {
+			if fatherFolder.HasValue("fk_obj_id") && fatherFolder.GetValue("fk_obj_id") != "" && fatherFolder.GetValue("fk_obj_id") != "0" {
+				dbFolder.SetValue("fk_obj_id", fatherFolder.GetValue("fk_obj_id"))
+			}
+		}
+	}
+}
+
+func (dbFolder *DBFolder) beforeInsert(dbr *DBRepository, tx *sql.Tx) error {
+	if dbr.Verbose {
+		log.Print("DBFolder.beforeInsert called")
+	}
+	err := dbFolder.DBObject.beforeInsert(dbr, tx)
+	if err != nil {
+		return err
+	}
+	// This seems redundant with SetDefaultValues, but keeping it for compatibility
+	// I don't know, it seems to hide the effects of SetDefaultValues... maybe it should be removed?
+	if !dbFolder.HasValue("father_id") || dbFolder.GetValue("father_id") == "" || dbFolder.GetValue("father_id") == "0" {
+		return nil
+	}
+	father := dbr.GetEntityByIDWithTx("folders", dbFolder.GetValue("father_id").(string), tx)
+	if father != nil {
+		if fatherFolder, ok := father.(*DBFolder); ok {
+			if fatherFolder.HasValue("fk_obj_id") && fatherFolder.GetValue("fk_obj_id") != "" && fatherFolder.GetValue("fk_obj_id") != "0" {
+				dbFolder.SetValue("fk_obj_id", fatherFolder.GetValue("fk_obj_id"))
+			}
+		}
+	}
+	return nil
+}
+
+func (dbFolder *DBFolder) beforeUpdate(dbr *DBRepository, tx *sql.Tx) error {
+	if dbr.Verbose {
+		log.Print("DBFolder.beforeUpdate called")
+	}
+	err := dbFolder.DBObject.beforeUpdate(dbr, tx)
+	if err != nil {
+		return err
+	}
+	// This seems redundant with SetDefaultValues, but keeping it for compatibility
+	// I don't know, it seems to hide the effects of SetDefaultValues... maybe it should be removed?
+	if !dbFolder.HasValue("father_id") || dbFolder.GetValue("father_id") == "" || dbFolder.GetValue("father_id") == "0" {
+		return nil
+	}
+	father := dbr.GetEntityByIDWithTx("folders", dbFolder.GetValue("father_id").(string), tx)
+	if father != nil {
+		if fatherFolder, ok := father.(*DBFolder); ok {
+			if fatherFolder.HasValue("fk_obj_id") && fatherFolder.GetValue("fk_obj_id") != "" && fatherFolder.GetValue("fk_obj_id") != "0" {
+				dbFolder.SetValue("fk_obj_id", fatherFolder.GetValue("fk_obj_id"))
+			}
+		}
+	}
+	return nil
+}
 
 /*
 CREATE TABLE IF NOT EXISTS `rra_links` (
@@ -637,22 +667,20 @@ func NewDBLink() *DBLink {
 	}
 	keys := []string{"id"}
 
-	// $this->_fk[] = new ForeignKey('fk_obj_id','companies','id');
-	// $this->_fk[] = new ForeignKey('fk_obj_id','folders','id');
-	// $this->_fk[] = new ForeignKey('fk_obj_id','people','id');
-	// $this->_fk[] = new ForeignKey('fk_obj_id','projects','id');
-	// $this->_fk[] = new ForeignKey('fk_obj_id','pages','id');
-	// $this->_fk[] = new ForeignKey('father_id','pages','id');
-	// $this->_fk[] = new ForeignKey('fk_obj_id','news','id');
-	// $this->_fk[] = new ForeignKey('father_id','news','id');
-
 	foreignKeys := []ForeignKey{
 		{Column: "owner", RefTable: "users", RefColumn: "id"},
 		{Column: "group_id", RefTable: "groups", RefColumn: "id"},
 		{Column: "creator", RefTable: "users", RefColumn: "id"},
 		{Column: "last_modify", RefTable: "users", RefColumn: "id"},
 		{Column: "deleted_by", RefTable: "users", RefColumn: "id"},
-		{Column: "father_id", RefTable: "objects", RefColumn: "id"},
+		{Column: "father_id", RefTable: "pages", RefColumn: "id"},
+		{Column: "father_id", RefTable: "news", RefColumn: "id"},
+		{Column: "fk_obj_id", RefTable: "companies", RefColumn: "id"},
+		{Column: "fk_obj_id", RefTable: "folders", RefColumn: "id"},
+		{Column: "fk_obj_id", RefTable: "people", RefColumn: "id"},
+		{Column: "fk_obj_id", RefTable: "projects", RefColumn: "id"},
+		{Column: "fk_obj_id", RefTable: "pages", RefColumn: "id"},
+		{Column: "fk_obj_id", RefTable: "news", RefColumn: "id"},
 	}
 	return &DBLink{
 		DBObject: DBObject{
@@ -725,11 +753,6 @@ func NewDBNote() *DBNote {
 	}
 	keys := []string{"id"}
 
-	// $this->_fk[] = new ForeignKey('fk_obj_id','companies','id');
-	// $this->_fk[] = new ForeignKey('fk_obj_id','folders','id');
-	// $this->_fk[] = new ForeignKey('fk_obj_id','people','id');
-	// $this->_fk[] = new ForeignKey('fk_obj_id','projects','id');
-
 	foreignKeys := []ForeignKey{
 		{Column: "owner", RefTable: "users", RefColumn: "id"},
 		{Column: "group_id", RefTable: "groups", RefColumn: "id"},
@@ -737,6 +760,10 @@ func NewDBNote() *DBNote {
 		{Column: "last_modify", RefTable: "users", RefColumn: "id"},
 		{Column: "deleted_by", RefTable: "users", RefColumn: "id"},
 		{Column: "father_id", RefTable: "objects", RefColumn: "id"},
+		{Column: "fk_obj_id", RefTable: "companies", RefColumn: "id"},
+		{Column: "fk_obj_id", RefTable: "folders", RefColumn: "id"},
+		{Column: "fk_obj_id", RefTable: "people", RefColumn: "id"},
+		{Column: "fk_obj_id", RefTable: "projects", RefColumn: "id"},
 	}
 	return &DBNote{
 		DBObject: DBObject{
@@ -803,11 +830,6 @@ func NewDBPage() *DBPage {
 	}
 	keys := []string{"id"}
 
-	// $this->_fk[] = new ForeignKey('fk_obj_id','companies','id');
-	// $this->_fk[] = new ForeignKey('fk_obj_id','folders','id');
-	// $this->_fk[] = new ForeignKey('fk_obj_id','people','id');
-	// $this->_fk[] = new ForeignKey('fk_obj_id','projects','id');
-
 	foreignKeys := []ForeignKey{
 		{Column: "owner", RefTable: "users", RefColumn: "id"},
 		{Column: "group_id", RefTable: "groups", RefColumn: "id"},
@@ -815,6 +837,10 @@ func NewDBPage() *DBPage {
 		{Column: "last_modify", RefTable: "users", RefColumn: "id"},
 		{Column: "deleted_by", RefTable: "users", RefColumn: "id"},
 		{Column: "father_id", RefTable: "objects", RefColumn: "id"},
+		{Column: "fk_obj_id", RefTable: "companies", RefColumn: "id"},
+		{Column: "fk_obj_id", RefTable: "folders", RefColumn: "id"},
+		{Column: "fk_obj_id", RefTable: "people", RefColumn: "id"},
+		{Column: "fk_obj_id", RefTable: "projects", RefColumn: "id"},
 	}
 	return &DBPage{
 		DBObject: DBObject{
@@ -880,21 +906,16 @@ func NewDBNews() *DBNews {
 		{Name: "creation_date", Type: "datetime", Constraints: []string{}},
 		{Name: "last_modify", Type: "varchar(16)", Constraints: []string{"NOT NULL"}},
 		{Name: "last_modify_date", Type: "datetime", Constraints: []string{}},
+		{Name: "deleted_by", Type: "varchar(16)", Constraints: []string{}},
+		{Name: "deleted_date", Type: "datetime", Constraints: []string{}},
 		{Name: "father_id", Type: "varchar(16)", Constraints: []string{}},
 		{Name: "name", Type: "varchar(255)", Constraints: []string{"NOT NULL"}},
 		{Name: "description", Type: "text", Constraints: []string{}},
 		{Name: "html", Type: "text", Constraints: []string{}},
 		{Name: "fk_obj_id", Type: "varchar(16)", Constraints: []string{}},
 		{Name: "language", Type: "varchar(5)", Constraints: []string{}},
-		{Name: "deleted_by", Type: "varchar(16)", Constraints: []string{}},
-		{Name: "deleted_date", Type: "datetime", Constraints: []string{}},
 	}
 	keys := []string{"id"}
-
-	// $this->_fk[] = new ForeignKey('fk_obj_id','companies','id');
-	// $this->_fk[] = new ForeignKey('fk_obj_id','folders','id');
-	// $this->_fk[] = new ForeignKey('fk_obj_id','people','id');
-	// $this->_fk[] = new ForeignKey('fk_obj_id','projects','id');
 
 	foreignKeys := []ForeignKey{
 		{Column: "owner", RefTable: "users", RefColumn: "id"},
@@ -903,6 +924,10 @@ func NewDBNews() *DBNews {
 		{Column: "last_modify", RefTable: "users", RefColumn: "id"},
 		{Column: "deleted_by", RefTable: "users", RefColumn: "id"},
 		{Column: "father_id", RefTable: "objects", RefColumn: "id"},
+		{Column: "fk_obj_id", RefTable: "companies", RefColumn: "id"},
+		{Column: "fk_obj_id", RefTable: "folders", RefColumn: "id"},
+		{Column: "fk_obj_id", RefTable: "people", RefColumn: "id"},
+		{Column: "fk_obj_id", RefTable: "projects", RefColumn: "id"},
 	}
 	return &DBNews{
 		DBObject: DBObject{
