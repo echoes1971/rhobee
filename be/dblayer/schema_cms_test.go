@@ -2,6 +2,7 @@ package dblayer
 
 import (
 	"log"
+	"os"
 	"testing"
 )
 
@@ -70,5 +71,318 @@ func TestDBFolderDefaultValues(t *testing.T) {
 	err = hardDeleteForTests(repo, createdParent.(DBObjectInterface))
 	if err != nil {
 		t.Fatalf("Failed to hard delete parent folder: %v", err)
+	}
+}
+
+func TestDBFileUpload(t *testing.T) {
+	repo := setupTestRepo(t)
+
+	// Create and upload file - simplified!
+	file := createTestFile(t, repo, "testdata/images/test_image.jpg", map[string]any{
+		"name":        "Test Image",
+		"description": "Test image for upload",
+	})
+
+	// Verify file was renamed with prefix
+	filename := file.GetValue("filename").(string)
+	expectedPrefix := "r_" + file.GetValue("id").(string) + "_"
+	if len(filename) < len(expectedPrefix) || filename[:len(expectedPrefix)] != expectedPrefix {
+		t.Errorf("Expected filename to start with '%s', got '%s'", expectedPrefix, filename)
+	}
+
+	// Verify checksum was calculated
+	if file.GetValue("checksum") == nil || file.GetValue("checksum").(string) == "" {
+		t.Error("Expected checksum to be calculated")
+	}
+
+	// Verify MIME type was detected
+	mime := file.GetValue("mime").(string)
+	if mime != "image/jpeg" && mime[:10] != "image/jpeg" {
+		t.Errorf("Expected MIME type to be 'image/jpeg', got '%s'", mime)
+	}
+
+	// Verify thumbnail was created
+	fullpath := file.getFullpath(nil)
+	thumbPath := fullpath + "_thumb.jpg"
+	if _, err := os.Stat(thumbPath); os.IsNotExist(err) {
+		t.Errorf("Expected thumbnail to be created at '%s'", thumbPath)
+	} else {
+		log.Printf("Thumbnail created at: %s", thumbPath)
+	}
+
+	// Cleanup: hard delete file (removes physical file and thumbnail)
+	err := hardDeleteForTests(repo, file)
+	if err != nil {
+		t.Fatalf("Failed to hard delete file: %v", err)
+	}
+
+	// Verify physical file was deleted
+	if _, err := os.Stat(fullpath); !os.IsNotExist(err) {
+		t.Errorf("Expected physical file to be deleted at '%s'", fullpath)
+	}
+
+	// Verify thumbnail was deleted
+	if _, err := os.Stat(thumbPath); !os.IsNotExist(err) {
+		t.Errorf("Expected thumbnail to be deleted at '%s'", thumbPath)
+	}
+}
+
+func TestDBFileUploadPNG(t *testing.T) {
+	repo := setupTestRepo(t)
+
+	file := createTestFile(t, repo, "testdata/images/test_image.png", map[string]any{
+		"name": "Test PNG Image",
+	})
+	mime := file.GetValue("mime").(string)
+	if mime != "image/png" && mime[:9] != "image/png" {
+		t.Errorf("Expected MIME type to be 'image/png', got '%s'", mime)
+	}
+
+	// Verify thumbnail created
+	fullpath := file.getFullpath(nil)
+	thumbPath := fullpath + "_thumb.jpg"
+	if _, err := os.Stat(thumbPath); os.IsNotExist(err) {
+		t.Errorf("Expected thumbnail to be created at '%s'", thumbPath)
+	}
+
+	// Cleanup
+	err := hardDeleteForTests(repo, file)
+	if err != nil {
+		t.Fatalf("Failed to hard delete PNG file: %v", err)
+	}
+}
+
+func TestDBFileUploadGIF(t *testing.T) {
+	repo := setupTestRepo(t)
+
+	file := createTestFile(t, repo, "testdata/images/test_image.gif", map[string]any{
+		"name": "Test GIF Image",
+	})
+	mime := file.GetValue("mime").(string)
+	if mime != "image/gif" && mime[:9] != "image/gif" {
+		t.Errorf("Expected MIME type to be 'image/gif', got '%s'", mime)
+	}
+
+	// Verify thumbnail created
+	fullpath := file.getFullpath(nil)
+	thumbPath := fullpath + "_thumb.jpg"
+	if _, err := os.Stat(thumbPath); os.IsNotExist(err) {
+		t.Errorf("Expected thumbnail to be created at '%s'", thumbPath)
+	}
+
+	// Cleanup
+	err := hardDeleteForTests(repo, file)
+	if err != nil {
+		t.Fatalf("Failed to hard delete GIF file: %v", err)
+	}
+}
+
+func TestDBFileUploadNonImage(t *testing.T) {
+	repo := setupTestRepo(t)
+
+	file := createTestFile(t, repo, "testdata/files/test_document.txt", map[string]any{
+		"name": "Test Text Document",
+	})
+	mime := file.GetValue("mime").(string)
+	if mime[:10] != "text/plain" {
+		t.Errorf("Expected MIME type to start with 'text/plain', got '%s'", mime)
+	}
+
+	// Verify NO thumbnail was created (not an image)
+	fullpath := file.getFullpath(nil)
+	thumbPath := fullpath + "_thumb.jpg"
+	if _, err := os.Stat(thumbPath); !os.IsNotExist(err) {
+		t.Errorf("Expected NO thumbnail for text file, but found one at '%s'", thumbPath)
+	}
+
+	// Cleanup
+	err := hardDeleteForTests(repo, file)
+	if err != nil {
+		t.Fatalf("Failed to hard delete text file: %v", err)
+	}
+}
+
+func TestDBFileUploadPDF(t *testing.T) {
+	repo := setupTestRepo(t)
+
+	file := createTestFile(t, repo, "testdata/files/test_document.pdf", map[string]any{
+		"name": "Test PDF Document",
+	})
+
+	mime := file.GetValue("mime").(string)
+	if mime != "application/pdf" && mime[:15] != "application/pdf" {
+		t.Errorf("Expected MIME type to be 'application/pdf', got '%s'", mime)
+	}
+
+	// Verify NO thumbnail was created (not an image)
+	fullpath := file.getFullpath(nil)
+	thumbPath := fullpath + "_thumb.jpg"
+	if _, err := os.Stat(thumbPath); !os.IsNotExist(err) {
+		t.Errorf("Expected NO thumbnail for PDF file, but found one at '%s'", thumbPath)
+	}
+
+	// Cleanup
+	err := hardDeleteForTests(repo, file)
+	if err != nil {
+		t.Fatalf("Failed to hard delete PDF file: %v", err)
+	}
+}
+
+
+func TestDBFileSmallImage(t *testing.T) {
+	repo := setupTestRepo(t)
+
+	// Test with small image (50x50) - should still create thumbnail
+	file := createTestFile(t, repo, "testdata/images/small_image.jpg", map[string]any{
+		"name": "Small Test Image",
+	})
+
+	// Verify thumbnail was still created even for small image
+	fullpath := file.getFullpath(nil)
+	thumbPath := fullpath + "_thumb.jpg"
+	if _, err := os.Stat(thumbPath); os.IsNotExist(err) {
+		t.Errorf("Expected thumbnail to be created even for small image at '%s'", thumbPath)
+	}
+
+	// Cleanup
+	err := hardDeleteForTests(repo, file)
+	if err != nil {
+		t.Fatalf("Failed to hard delete small image: %v", err)
+	}
+}
+
+func TestDBFileUpdate(t *testing.T) {
+	repo := setupTestRepo(t)
+
+	// Create initial file
+	file := createTestFile(t, repo, "testdata/images/test_image.jpg", map[string]any{
+		"name": "Original File",
+	})
+
+	originalFilename := file.GetValue("filename").(string)
+	originalChecksum := file.GetValue("checksum").(string)
+
+	log.Printf("Original file: %s, checksum: %s", originalFilename, originalChecksum)
+
+	// Update file metadata (change name and description)
+	file.SetValue("name", "Updated File Name")
+	file.SetValue("description", "Updated description")
+
+	updated, err := repo.Update(file)
+	if err != nil {
+		t.Fatalf("Failed to update file: %v", err)
+	}
+
+	updatedFile := updated.(*DBFile)
+
+	// Verify metadata updated
+	if updatedFile.GetValue("name").(string) != "Updated File Name" {
+		t.Errorf("Expected name to be 'Updated File Name', got '%s'", updatedFile.GetValue("name").(string))
+	}
+
+	// Verify filename and checksum unchanged (same physical file)
+	if updatedFile.GetValue("filename").(string) != originalFilename {
+		t.Errorf("Expected filename to remain '%s', got '%s'", originalFilename, updatedFile.GetValue("filename").(string))
+	}
+
+	if updatedFile.GetValue("checksum").(string) != originalChecksum {
+		t.Errorf("Expected checksum to remain '%s', got '%s'", originalChecksum, updatedFile.GetValue("checksum").(string))
+	}
+
+	// Cleanup
+	err = hardDeleteForTests(repo, updatedFile)
+	if err != nil {
+		t.Fatalf("Failed to hard delete file: %v", err)
+	}
+}
+
+func TestDBFileSoftDelete(t *testing.T) {
+	repo := setupTestRepo(t)
+
+	// Create file
+	file := createTestFile(t, repo, "testdata/images/test_image.jpg", map[string]any{
+		"name": "File to Delete",
+	})
+
+	fullpath := file.getFullpath(nil)
+	thumbPath := fullpath + "_thumb.jpg"
+
+	// Verify file and thumbnail exist
+	if _, err := os.Stat(fullpath); os.IsNotExist(err) {
+		t.Fatalf("Expected file to exist at '%s'", fullpath)
+	}
+	if _, err := os.Stat(thumbPath); os.IsNotExist(err) {
+		t.Fatalf("Expected thumbnail to exist at '%s'", thumbPath)
+	}
+
+	// Soft delete (first delete)
+	deleted, err := repo.Delete(file)
+	if err != nil {
+		t.Fatalf("Failed to soft delete file: %v", err)
+	}
+
+	deletedFile := deleted.(*DBFile)
+
+	// Verify file still exists physically after soft delete
+	if _, err := os.Stat(fullpath); os.IsNotExist(err) {
+		t.Errorf("Expected file to still exist after soft delete at '%s'", fullpath)
+	}
+
+	// Verify thumbnail still exists after soft delete
+	if _, err := os.Stat(thumbPath); os.IsNotExist(err) {
+		t.Errorf("Expected thumbnail to still exist after soft delete at '%s'", thumbPath)
+	}
+
+	// Hard delete (second delete)
+	err = hardDeleteForTests(repo, deletedFile)
+	if err != nil {
+		t.Fatalf("Failed to hard delete file: %v", err)
+	}
+
+	// Verify file removed physically after hard delete
+	if _, err := os.Stat(fullpath); !os.IsNotExist(err) {
+		t.Errorf("Expected file to be deleted after hard delete at '%s'", fullpath)
+	}
+
+	// Verify thumbnail removed after hard delete
+	if _, err := os.Stat(thumbPath); !os.IsNotExist(err) {
+		t.Errorf("Expected thumbnail to be deleted after hard delete at '%s'", thumbPath)
+	}
+}
+
+
+func TestDBFileWithFolder(t *testing.T) {
+	repo := setupTestRepo(t)
+
+	fk_obj_id_value := "-10"
+
+	// Create parent folder
+	folder := createTestFolder(t, repo, map[string]any{
+		"name":      "Test Folder",
+		"fk_obj_id": fk_obj_id_value,
+	})
+
+	// Upload file into folder
+	file := createTestFile(t, repo, "testdata/images/test_image.jpg", map[string]any{
+		"name":      "File in Folder",
+		"father_id": folder.GetValue("id"),
+	})
+
+	// Verify fk_obj_id inherited from folder
+	if file.GetValue("fk_obj_id") != fk_obj_id_value {
+		t.Errorf("Expected fk_obj_id to be '%s' (inherited from folder), got '%v'", fk_obj_id_value, file.GetValue("fk_obj_id"))
+	}
+
+	log.Printf("File fk_obj_id: %v (inherited from folder)", file.GetValue("fk_obj_id"))
+
+	// Cleanup
+	err := hardDeleteForTests(repo, file)
+	if err != nil {
+		t.Fatalf("Failed to hard delete file: %v", err)
+	}
+
+	err = hardDeleteForTests(repo, folder.(DBObjectInterface))
+	if err != nil {
+		t.Fatalf("Failed to hard delete folder: %v", err)
 	}
 }
