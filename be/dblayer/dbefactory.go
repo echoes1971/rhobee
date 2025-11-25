@@ -75,3 +75,16 @@ func (dbef *DBEFactory) GetInstanceByTableName(tableName string) DBEntityInterfa
 	}
 	return nil
 }
+
+// GetInstanceByTableNameWithValues creates a new instance and sets the provided values
+// Usage: factory.GetInstanceByTableNameWithValues("files", map[string]any{"name": "Test", "filename": "test.jpg"})
+func (dbef *DBEFactory) GetInstanceByTableNameWithValues(tableName string, values map[string]any) DBEntityInterface {
+	instance := dbef.GetInstanceByTableName(tableName)
+	if instance == nil {
+		return nil
+	}
+	for key, value := range values {
+		instance.SetValue(key, value)
+	}
+	return instance
+}
