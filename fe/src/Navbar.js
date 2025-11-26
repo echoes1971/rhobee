@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Navbar, Nav, NavDropdown, Container, Button, Dropdown } from "react-bootstrap";
 import { ThemeContext } from "./ThemeContext";
@@ -12,6 +12,8 @@ function AppNavbar() {
   const { dark, toggleTheme } = useContext(ThemeContext);
   const { t, i18n } = useTranslation();
   const site_title = app_cfg.site_title;
+  const site_root = app_cfg.app_home_object_id;
+  const [children, setChildren] = useState([]);
   const groups = localStorage.getItem("groups") ? JSON.parse(localStorage.getItem("groups")) : [];
   const isAdmin = groups.includes("-2");
 
@@ -25,6 +27,22 @@ function AppNavbar() {
     fr: "🇫🇷",
     de: "🇩🇪",
   };
+
+  // Load root children
+  useEffect(() => {
+    const loadChildren = async () => {
+      try {
+        const response = await axios.get(`/nav/children/${site_root}`);
+        // filter those with metadata DBFolder
+        const filteredChildren = (response.data.children || []).filter(child => child.metadata && child.metadata.classname === "DBFolder");
+        // alert(JSON.stringify(filteredChildren));
+        setChildren(filteredChildren);
+      } catch (error) {
+        console.error("Error loading root children:", error);
+      }
+    };
+    loadChildren();
+  }, [site_root]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -52,7 +70,12 @@ function AppNavbar() {
 
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="ms-auto">
-            
+            {/* iterate over children and create the link */}
+            {children.map(child => (
+              <Nav.Link as={Link} key={child.data.id} to={`/c/${child.data.id}`}>
+                {child.data.name}
+              </Nav.Link>
+            ))}
 
             {username && isAdmin ? (
               <NavDropdown title="Admin ⚙️" id="admin-nav-dropdown" align="end">

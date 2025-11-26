@@ -20,7 +20,7 @@ function Login() {
       localStorage.setItem("username", login);
       localStorage.setItem("user_id", res.data.user_id);
       localStorage.setItem("groups", JSON.stringify(res.data.groups));
-      window.location.href = "/users";
+      window.location.href = "/";
     } catch (err) {
       const errorMsg = getErrorMessage(err, t("common.login_failed") || "Login failed");
       setErrorMessage(errorMsg);
