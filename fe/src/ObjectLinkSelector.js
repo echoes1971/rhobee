@@ -25,21 +25,23 @@ function ObjectLinkSelector({ value, onChange, classname, fieldName, label, requ
     // Load selected object details on mount or when value changes
     useEffect(() => {
         if (value && value !== '0' && value !== '') {
-            loadObjectDetails(value);
+            loadObjectDetails(value, classname);
         } else {
             setSelectedObject(null);
         }
     }, [value]);
 
     // Load object details by ID
-    const loadObjectDetails = async (objectId) => {
+    const loadObjectDetails = async (objectId, classname) => {
         try {
-            const response = await axiosInstance.get(`/content/${objectId}`);
+            const uri = classname == 'DBUser' ? `/users/${objectId}` : `/content/${objectId}`;
+            const response = await axiosInstance.get(uri);
             // if (response.data.success && response.data.data) { if you check .success it fails
-            if (response.data.data) {
+            // alert(classname + "::" +JSON.stringify(response.data));
+            if (response.data.data || response.data.login) {
                 setSelectedObject({
-                    id: response.data.data.id,
-                    name: response.data.data.name || 'Unnamed',
+                    id: classname == 'DBUser' ? response.data.id : response.data.data.id,
+                    name: classname == 'DBUser' ? response.data.login || 'Unnamed' : response.data.data.name || 'Unnamed',
                 });
             }
         } catch (error) {

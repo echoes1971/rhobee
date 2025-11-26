@@ -402,18 +402,34 @@ func SearchObjectsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !searchInstance.IsDBObject() {
-		RespondSimpleError(w, ErrInvalidRequest, "Classname is not a DBObject: "+classname, http.StatusBadRequest)
-		return
-	}
+	// if !searchInstance.IsDBObject() {
+	// 	RespondSimpleError(w, ErrInvalidRequest, "Classname is not a DBObject: "+classname, http.StatusBadRequest)
+	// 	return
+	// }
 
 	// Set search criteria
 	if namePattern != "" {
-		searchInstance.SetValue("name", namePattern)
+		switch classname {
+		case "DBCountry":
+			// For countries, search by Common_Name field
+			searchInstance.SetValue("Common_Name", namePattern)
+		case "DBUser":
+			// For users, search by login field
+			searchInstance.SetValue("login", namePattern)
+		default:
+			searchInstance.SetValue("name", namePattern)
+		}
+	}
+	orderBy := "name"
+	switch classname {
+	case "DBUser":
+		orderBy = "login"
+	case "DBCountry":
+		orderBy = "Common_Name"
 	}
 
 	// Search with LIKE and case-insensitive
-	results, err := repo.Search(searchInstance, true, false, "name")
+	results, err := repo.Search(searchInstance, true, false, orderBy)
 	if err != nil {
 		log.Printf("SearchObjectsHandler: Search failed: %v", err)
 		RespondSimpleError(w, ErrInternalServer, "Search failed: "+err.Error(), http.StatusInternalServerError)
@@ -440,7 +456,14 @@ func SearchObjectsHandler(w http.ResponseWriter, r *http.Request) {
 
 		resultMap := make(map[string]interface{})
 		resultMap["id"] = entity.GetValue("id")
-		resultMap["name"] = entity.GetValue("name")
+		switch classname {
+		case "DBCountry":
+			resultMap["name"] = entity.GetValue("Common_Name")
+		case "DBUser":
+			resultMap["name"] = entity.GetValue("login")
+		default:
+			resultMap["name"] = entity.GetValue("name")
+		}
 		if desc := entity.GetValue("description"); desc != nil {
 			resultMap["description"] = desc
 		}

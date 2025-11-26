@@ -486,19 +486,14 @@ function PersonEdit({ data, onSave, onCancel, saving, error, dark }) {
 
             <h5 className="mt-4 mb-3">{t('common.links')}</h5>
 
-            <Form.Group className="mb-3">
-                <Form.Label>{t('common.user_id')}</Form.Label>
-                <Form.Control
-                    type="text"
-                    name="fk_users_id"
-                    value={formData.fk_users_id}
-                    onChange={handleChange}
-                    placeholder="User ID (TODO: selector)"
-                />
-                <Form.Text className="text-muted">
-                    Enter user ID (will be replaced with user selector)
-                </Form.Text>
-            </Form.Group>
+            <ObjectLinkSelector
+                value={formData.fk_users_id}
+                onChange={handleChange}
+                classname="DBUser"
+                fieldName="fk_users_id"
+                label={t('common.user_id')}
+                required={false}
+            />
 
             <ObjectLinkSelector
                 value={formData.fk_companies_id}
