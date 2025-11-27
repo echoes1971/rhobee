@@ -86,10 +86,8 @@ func (dbef *DBEFactory) GetInstanceByTableNameWithValues(tableName string, value
 	for key, value := range values {
 		instance.SetValue(key, value)
 	}
-	if metadata != nil {
-		for key, value := range metadata {
-			instance.SetMetadata(key, value)
-		}
+	for key, value := range metadata {
+		instance.SetMetadata(key, value)
 	}
 	return instance
 }

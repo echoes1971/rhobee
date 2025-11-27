@@ -248,7 +248,7 @@ func (dbr *DBRepository) CreateObject(tableName string, values map[string]any, m
 
 // UpdateObject updates an existing entity with the provided values (only updates specified fields)
 // Usage: repo.UpdateObject("files", "file-id-123", map[string]any{"name": "New Name", "description": "Updated"})
-func (dbr *DBRepository) UpdateObject(tableName string, id string, values map[string]any) (DBEntityInterface, error) {
+func (dbr *DBRepository) UpdateObject(tableName string, id string, values map[string]any, metadata map[string]any) (DBEntityInterface, error) {
 	// Get the existing entity
 	existing := dbr.GetEntityByID(tableName, id)
 	if existing == nil {
@@ -258,6 +258,9 @@ func (dbr *DBRepository) UpdateObject(tableName string, id string, values map[st
 	// Update only the provided values
 	for key, value := range values {
 		existing.SetValue(key, value)
+	}
+	for key, value := range metadata {
+		existing.SetMetadata(key, value)
 	}
 
 	return dbr.Update(existing)

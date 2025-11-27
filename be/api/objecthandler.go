@@ -187,7 +187,7 @@ func UpdateObjectHandler(w http.ResponseWriter, r *http.Request) {
 	delete(updateValues, "deleted_date")
 
 	// Update the object
-	updated, err := repo.UpdateObject(tableName, objectID, updateValues)
+	updated, err := repo.UpdateObject(tableName, objectID, updateValues, nil)
 	if err != nil {
 		log.Printf("UpdateObjectHandler: Failed to update object: %v", err)
 		RespondSimpleError(w, ErrInternalServer, "Failed to update object: "+err.Error(), http.StatusInternalServerError)
