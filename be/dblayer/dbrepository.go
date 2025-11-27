@@ -238,8 +238,8 @@ func (dbr *DBRepository) searchWithTx(dbe DBEntityInterface, useLike bool, caseS
 
 // CreateObject creates and inserts a new entity with the provided values
 // Usage: repo.CreateObject("files", map[string]any{"name": "Test", "filename": "test.jpg"})
-func (dbr *DBRepository) CreateObject(tableName string, values map[string]any) (DBEntityInterface, error) {
-	instance := dbr.factory.GetInstanceByTableNameWithValues(tableName, values)
+func (dbr *DBRepository) CreateObject(tableName string, values map[string]any, metadata map[string]any) (DBEntityInterface, error) {
+	instance := dbr.factory.GetInstanceByTableNameWithValues(tableName, values, metadata)
 	if instance == nil {
 		return nil, fmt.Errorf("unknown table name: %s", tableName)
 	}
@@ -328,6 +328,7 @@ func (dbr *DBRepository) insertWithTx(dbe DBEntityInterface, tx *sql.Tx) (DBEnti
 	result, err := tx.Exec(query, args...)
 	if err != nil {
 		log.Print("DBRepository::insertWithTx: Exec error:", err)
+		log.Print("DBRepository::insertWithTx: Error - query=", query, " args=", args)
 		return nil, err
 	}
 
