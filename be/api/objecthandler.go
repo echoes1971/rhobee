@@ -3,8 +3,11 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -86,6 +89,7 @@ func CreateObjectHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Create the object
 	// TODO: pass metadata if any
+	log.Print("CreateObjectHandler: requestData ", requestData)
 	created, err := repo.CreateObject(tableName, requestData, nil)
 	if err != nil {
 		log.Printf("CreateObjectHandler: Failed to create object: %v", err)
@@ -136,6 +140,9 @@ func UpdateObjectHandler(w http.ResponseWriter, r *http.Request) {
 		RespondSimpleError(w, ErrInvalidRequest, "Missing object ID", http.StatusBadRequest)
 		return
 	}
+	if len(objectID) == 18 {
+		objectID = strings.ReplaceAll(objectID, "-", "")
+	}
 
 	// Get existing object to determine classname and check permissions
 	existingObj := repo.ObjectByID(objectID, true)
@@ -166,12 +173,81 @@ func UpdateObjectHandler(w http.ResponseWriter, r *http.Request) {
 
 	tableName := fullObj.GetTableName()
 
-	// Decode update values
+	// Decode update values based on Content-Type
 	var updateValues map[string]interface{}
-	if err := json.NewDecoder(r.Body).Decode(&updateValues); err != nil {
-		log.Printf("UpdateObjectHandler: Failed to decode request body: %v", err)
-		RespondSimpleError(w, ErrInvalidRequest, "Invalid request body", http.StatusBadRequest)
-		return
+	var metadataValues map[string]interface{}
+	contentType := r.Header.Get("Content-Type")
+
+	if strings.HasPrefix(contentType, "multipart/form-data") {
+		// Parse multipart form for file uploads
+		err := r.ParseMultipartForm(32 << 20) // 32 MB max
+		if err != nil {
+			log.Printf("UpdateObjectHandler: Failed to parse multipart form: %v", err)
+			RespondSimpleError(w, ErrInvalidRequest, "Invalid multipart form", http.StatusBadRequest)
+			return
+		}
+
+		updateValues = make(map[string]interface{})
+		metadataValues = make(map[string]interface{})
+
+		// Extract form fields
+		for key, values := range r.MultipartForm.Value {
+			if len(values) > 0 {
+				updateValues[key] = values[0]
+			}
+		}
+
+		// Handle file upload if present
+		file, header, err := r.FormFile("file")
+		if err == nil {
+			defer file.Close()
+
+			// Create files directory if it doesn't exist
+			filesDir := filepath.Join(dbFiles_root_directory, dbFiles_dest_directory)
+			log.Print("UpdateObjectHandler: filesDir=", filesDir)
+			if err := os.MkdirAll(filesDir, 0755); err != nil {
+				log.Printf("UpdateObjectHandler: Failed to create files directory: %v", err)
+				RespondSimpleError(w, ErrInternalServer, "Failed to create storage directory", http.StatusInternalServerError)
+				return
+			}
+
+			// Generate filename with r_{id}_ prefix
+			baseFilename := filepath.Base(header.Filename)
+			savedFilename := "r_" + objectID + "_" + baseFilename
+			filePath := filepath.Join(filesDir, savedFilename)
+
+			// Create destination file
+			dst, err := os.Create(filePath)
+			if err != nil {
+				log.Printf("UpdateObjectHandler: Failed to create file %s: %v", filePath, err)
+				RespondSimpleError(w, ErrInternalServer, "Failed to save file", http.StatusInternalServerError)
+				return
+			}
+			defer dst.Close()
+
+			// Copy uploaded file to destination
+			if _, err := io.Copy(dst, file); err != nil {
+				log.Printf("UpdateObjectHandler: Failed to copy file data: %v", err)
+				os.Remove(filePath) // Clean up partial file
+				RespondSimpleError(w, ErrInternalServer, "Failed to save file data", http.StatusInternalServerError)
+				return
+			}
+
+			// Update database fields
+			updateValues["filename"] = savedFilename
+			updateValues["mime"] = header.Header.Get("Content-Type")
+			// updateValues["path"] = filePath
+			metadataValues["path"] = filePath
+
+			log.Printf("UpdateObjectHandler: File saved successfully: %s (%s)", savedFilename, header.Header.Get("Content-Type"))
+		}
+	} else {
+		// Parse JSON body
+		if err := json.NewDecoder(r.Body).Decode(&updateValues); err != nil {
+			log.Printf("UpdateObjectHandler: Failed to decode request body: %v", err)
+			RespondSimpleError(w, ErrInvalidRequest, "Invalid request body", http.StatusBadRequest)
+			return
+		}
 	}
 
 	// Set automatic update fields
@@ -187,7 +263,7 @@ func UpdateObjectHandler(w http.ResponseWriter, r *http.Request) {
 	delete(updateValues, "deleted_date")
 
 	// Update the object
-	updated, err := repo.UpdateObject(tableName, objectID, updateValues, nil)
+	updated, err := repo.UpdateObject(tableName, objectID, updateValues, metadataValues)
 	if err != nil {
 		log.Printf("UpdateObjectHandler: Failed to update object: %v", err)
 		RespondSimpleError(w, ErrInternalServer, "Failed to update object: "+err.Error(), http.StatusInternalServerError)
@@ -234,6 +310,9 @@ func DeleteObjectHandler(w http.ResponseWriter, r *http.Request) {
 	if objectID == "" {
 		RespondSimpleError(w, ErrInvalidRequest, "Missing object ID", http.StatusBadRequest)
 		return
+	}
+	if len(objectID) == 18 {
+		objectID = strings.ReplaceAll(objectID, "-", "")
 	}
 
 	// Get existing object to check permissions
@@ -482,4 +561,102 @@ func SearchObjectsHandler(w http.ResponseWriter, r *http.Request) {
 		"success": true,
 		"objects": resultList,
 	})
+}
+
+// DownloadFileHandler serves file content for DBFile objects
+// GET /api/files/{id}/download
+func DownloadFileHandler(w http.ResponseWriter, r *http.Request) {
+	claims, err := GetClaimsFromRequest(r)
+	if err != nil {
+		RespondSimpleError(w, ErrUnauthorized, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	dbContext := &dblayer.DBContext{
+		UserID:   claims["user_id"],
+		GroupIDs: strings.Split(claims["groups"], ","),
+		Schema:   dblayer.DbSchema,
+	}
+	repo := dblayer.NewDBRepository(dbContext, dblayer.Factory, dblayer.DbConnection)
+
+	vars := mux.Vars(r)
+	fileID := vars["id"]
+
+	// Load the DBFile object
+	tableName := "files"
+	entity := repo.GetEntityByID(tableName, fileID)
+	if entity == nil {
+		log.Printf("DownloadFileHandler: Failed to load file %s", fileID)
+		RespondSimpleError(w, ErrObjectNotFound, "File not found", http.StatusNotFound)
+		return
+	}
+
+	// Cast to DBFile to use getFullpath
+	dbFile, ok := entity.(*dblayer.DBFile)
+	if !ok {
+		log.Printf("DownloadFileHandler: Entity is not a DBFile")
+		RespondSimpleError(w, ErrInternalServer, "Invalid file entity", http.StatusInternalServerError)
+		return
+	}
+
+	// Get file metadata
+	filename := dbFile.GetValue("filename")
+	if filename == nil {
+		log.Printf("DownloadFileHandler: File %s has no filename", fileID)
+		RespondSimpleError(w, ErrInternalServer, "File has no filename", http.StatusInternalServerError)
+		return
+	}
+
+	mime := dbFile.GetValue("mime")
+	if mime == nil {
+		mime = "application/octet-stream"
+	}
+
+	// Construct file path: ./files/{father_id}//{filename}
+	baseDir := filepath.Join(dbFiles_root_directory, dbFiles_dest_directory)
+	fatherID := dbFile.GetValue("father_id")
+	var filePath string
+	if fatherID != nil && fatherID != "" && fatherID != "0" {
+		// The beforeUpdate creates: files/{father_id}/$/{filename}
+		// This structure includes the filename as both a directory and the final file
+		filePath = filepath.Join(baseDir, fatherID.(string), filename.(string))
+	} else {
+		filePath = filepath.Join(baseDir, filename.(string))
+	}
+
+	// Open file from disk
+	file, err := os.Open(filePath)
+	if err != nil {
+		log.Printf("DownloadFileHandler: Failed to open file %s: %v", filePath, err)
+		RespondSimpleError(w, ErrObjectNotFound, "File not found on disk", http.StatusNotFound)
+		return
+	}
+	defer file.Close()
+
+	// Get file info for size
+	fileInfo, err := file.Stat()
+	if err != nil {
+		log.Printf("DownloadFileHandler: Failed to stat file %s: %v", filePath, err)
+		RespondSimpleError(w, ErrInternalServer, "Failed to read file info", http.StatusInternalServerError)
+		return
+	}
+
+	// Set headers
+	w.Header().Set("Content-Type", mime.(string))
+	w.Header().Set("Content-Length", fmt.Sprintf("%d", fileInfo.Size()))
+
+	// For images, display inline; for other files, force download
+	if strings.HasPrefix(mime.(string), "image/") {
+		w.Header().Set("Content-Disposition", fmt.Sprintf("inline; filename=\"%s\"", filename))
+	} else {
+		w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", filename))
+	}
+
+	// Stream file to response
+	if _, err := io.Copy(w, file); err != nil {
+		log.Printf("DownloadFileHandler: Failed to stream file %s: %v", filePath, err)
+		return
+	}
+
+	log.Printf("DownloadFileHandler: Served file %s (%s)", filename, mime)
 }

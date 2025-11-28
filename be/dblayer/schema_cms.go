@@ -286,7 +286,7 @@ func (dbFile *DBFile) generateObjectPath(a_dbe DBEntityInterface) string {
 		dest_path = ""
 	}
 	father_id := mydbe.GetValue("father_id")
-	if father_id != nil && father_id.(string) != "" {
+	if father_id != nil && father_id.(string) != "" && father_id.(string) != "0" {
 		if dest_path != "" {
 			dest_path = father_id.(string) + "/" + dest_path
 		} else {
@@ -524,6 +524,11 @@ func (dbFile *DBFile) beforeInsert(dbr *DBRepository, tx *sql.Tx) error {
 		}
 		dbFile.SetValue("filename", new_filename)
 	}
+	if dbFile.GetValue("filename") == nil || strings.TrimSpace(dbFile.GetValue("filename").(string)) == "" {
+		// return fmt.Errorf("filename cannot be empty after processing")
+		dbFile.SetValue("filename", "")
+		return nil
+	}
 	// Checksum
 	fullpath := dbFile.getFullpath(nil)
 	if _, err := os.Stat(fullpath); err == nil {
@@ -636,24 +641,30 @@ func (dbFile *DBFile) beforeUpdate(dbr *DBRepository, tx *sql.Tx) error {
 		// Error: should not happen
 		return nil
 	}
-	if dbFile.GetValue("filename") != nil && dbFile.GetValue("filename").(string) != "" && myself.GetValue("filename").(string) != dbFile.GetValue("filename").(string) {
-		// Different filenames ==> delete the old one
-		dest_path := myself.generateObjectPath(nil)
-		dest_dir := dbFiles_root_directory + "/" + dbFiles_dest_directory
-		if dest_path != "" {
-			dest_dir = dest_dir + "/" + dest_path
-		}
-		dest_file := dest_dir + "/" + myself.GetValue("filename").(string)
-		if _, err := os.Stat(dest_file); os.IsNotExist(err) {
-			// Do nothing
-		} else {
-			err := os.Remove(dest_file)
-			if err != nil {
-				return err
+	myself_has_a_file := myself.GetValue("filename") != nil && myself.GetValue("filename").(string) != ""
+	// dbFile_has_a_file := dbFile.GetValue("filename") != nil && dbFile.GetValue("filename").(string) != ""
+	// If I had a file and now I don't, delete the old one
+	if myself_has_a_file {
+		// TODO very ugly nesting
+		if dbFile.GetValue("filename") != nil && dbFile.GetValue("filename").(string) != "" && myself.GetValue("filename").(string) != dbFile.GetValue("filename").(string) {
+			// Different filenames ==> delete the old one
+			dest_path := myself.generateObjectPath(nil)
+			dest_dir := dbFiles_root_directory + "/" + dbFiles_dest_directory
+			if dest_path != "" {
+				dest_dir = dest_dir + "/" + dest_path
 			}
-			// Image
-			if dbFile.isImage() {
-				dbFile.deleteThumbnail(dest_file)
+			dest_file := dest_dir + "/" + myself.GetValue("filename").(string)
+			if _, err := os.Stat(dest_file); os.IsNotExist(err) {
+				// Do nothing
+			} else {
+				err := os.Remove(dest_file)
+				if err != nil {
+					return err
+				}
+				// Image
+				if dbFile.isImage() {
+					dbFile.deleteThumbnail(dest_file)
+				}
 			}
 		}
 	}
@@ -670,10 +681,12 @@ func (dbFile *DBFile) beforeUpdate(dbr *DBRepository, tx *sql.Tx) error {
 		new_filename := dbFile.generateFilename(dbFile.GetValue("id"), filepath.Base(dbFile.GetValue("filename").(string)))
 		err := os.Rename(from_dir+"/"+dbFile.GetValue("filename").(string), dest_dir+"/"+new_filename)
 		if err != nil {
+			log.Print("DBFile.beforeUpdate: error renaming file: ", err)
 			return err
 		}
 		dbFile.SetValue("filename", new_filename)
-	} else if myself.GetValue("path") != dbFile.GetValue("path") {
+	} else if myself_has_a_file && myself.GetValue("path") != dbFile.GetValue("path") {
+		// } else if myself.GetValue("filename") != nil && myself.GetValue("filename").(string) != "" && myself.GetValue("path") != dbFile.GetValue("path") {
 		from_path := myself.generateObjectPath(nil)
 		from_dir := dbFiles_root_directory + "/" + dbFiles_dest_directory
 		if from_path != "" {
@@ -692,7 +705,7 @@ func (dbFile *DBFile) beforeUpdate(dbr *DBRepository, tx *sql.Tx) error {
 		}
 		// TODO check if it works
 		dbFile.SetValue("filename", myself.GetValue("filename"))
-	} else {
+	} else if myself_has_a_file {
 		// TODO check if it works
 		dbFile.SetValue("filename", myself.GetValue("filename"))
 	}
