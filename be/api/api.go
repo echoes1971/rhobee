@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"rprj/be/dblayer"
+	"rprj/be/models"
 
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -35,6 +36,17 @@ type TokenResponse struct {
 	ExpiresAt   int64    `json:"expires_at"`
 	UserID      string   `json:"user_id"`
 	Groups      []string `json:"groups"`
+}
+
+/* *** DBFiles *** */
+var dbFiles_root_directory string = "."
+var dbFiles_dest_directory string = "files"
+
+func InitAPI(config models.Config) {
+	JWTKey = []byte(config.JWTSecret)
+	dbFiles_root_directory = config.RootDirectory
+	dbFiles_dest_directory = config.FilesDirectory
+	log.Print("API initialized with JWT key from config")
 }
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {

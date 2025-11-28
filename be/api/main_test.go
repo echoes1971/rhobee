@@ -26,7 +26,7 @@ func TestMain(m *testing.M) {
 		log.Fatalf("Error loading configuration: %v", err)
 	}
 
-	dblayer.InitDBLayer(AppConfig.DBEngine, AppConfig.DBUrl, AppConfig.TablePrefix)
+	dblayer.InitDBLayer(AppConfig)
 	log.Println("DB initialized for tests")
 
 	repo := SetupTestRepo(nil, "-1", []string{"-2"}, AppConfig.TablePrefix)
