@@ -255,6 +255,8 @@ func (dbr *DBRepository) UpdateObject(tableName string, id string, values map[st
 		return nil, fmt.Errorf("entity not found: %s with id %s", tableName, id)
 	}
 
+	// TODO if we want to update only the selected fields, we should use factory.GetInstanceByTableNameWithValues
+
 	// Update only the provided values
 	for key, value := range values {
 		existing.SetValue(key, value)

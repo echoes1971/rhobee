@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"rprj/be/models"
 	"strings"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -20,11 +21,13 @@ var Factory *DBEFactory
 var dbFiles_root_directory string = "."
 var dbFiles_dest_directory string = "files"
 
-func InitDBLayer(dbEngineName, dbUrlAddress, schema string) {
-	dbEngine = dbEngineName
-	dbUrl = dbUrlAddress
-	DbSchema = strings.ReplaceAll(schema, "_", "")
+func InitDBLayer(config models.Config) {
+	dbEngine = config.DBEngine
+	dbUrl = config.DBUrl
+	DbSchema = strings.ReplaceAll(config.TablePrefix, "_", "")
 	log.Print("DB Schema:", DbSchema)
+	dbFiles_root_directory = config.RootDirectory
+	dbFiles_dest_directory = config.FilesDirectory
 
 	log.Print("Initializing DBEFactory...")
 
@@ -121,7 +124,7 @@ func ensureTableExistsAndUpdatedForSqlite(dbe DBEntityInterface) error {
 }
 
 func InitDBData() {
-
+	log.Print("Initializing DB data...")
 	// Check if the anonymous user exists, if not create it and associate it to the group "Guests"
 	// Setup
 	dbContext := &DBContext{
@@ -137,13 +140,13 @@ func InitDBData() {
 	guestGroup.SetValue("name", "Guests")
 	results, err := repo.Search(guestGroup, false, false, "")
 	if err != nil {
-		log.Printf("Failed to find or create 'Guests' group: %v\n", err)
+		log.Printf(" Failed to find or create 'Guests' group: %v\n", err)
 		return
 	}
 	var guestGroupID string
 	if len(results) == 1 {
 		guestGroupID = results[0].GetValue("id").(string)
-		log.Printf("Found existing 'Guests' group with ID %s\n", guestGroupID)
+		log.Printf(" Found existing 'Guests' group with ID %s\n", guestGroupID)
 	} else {
 		// Create the group
 		newGroup := repo.GetInstanceByTableName("groups")
@@ -151,11 +154,11 @@ func InitDBData() {
 		newGroup.SetValue("description", "Default group for anonymous users")
 		created, err := repo.Insert(newGroup)
 		if err != nil {
-			log.Printf("Failed to create 'Guests' group: %v\n", err)
+			log.Printf(" Failed to create 'Guests' group: %v\n", err)
 			return
 		}
 		guestGroupID = created.GetValue("id").(string)
-		log.Printf("Created 'Guests' group with ID %s\n", guestGroupID)
+		log.Printf(" Created 'Guests' group with ID %s\n", guestGroupID)
 	}
 
 	// Check for anonymous user
@@ -163,11 +166,11 @@ func InitDBData() {
 	anonUser.SetValue("login", "anonymous")
 	results, err = repo.Search(anonUser, false, false, "")
 	if err != nil {
-		log.Printf("Failed to find or create 'anonymous' user: %v\n", err)
+		log.Printf(" Failed to find or create 'anonymous' user: %v\n", err)
 		return
 	}
 	if len(results) == 1 {
-		log.Printf("Found existing 'anonymous' user with ID %s\n", results[0].GetValue("id").(string))
+		log.Printf(" Found existing 'anonymous' user with ID %s\n", results[0].GetValue("id").(string))
 	} else {
 		// Create the user
 		newUser := repo.GetInstanceByTableName("users")
@@ -178,11 +181,12 @@ func InitDBData() {
 		newUser.SetMetadata("group_ids", []string{guestGroupID})
 		created, err := repo.Insert(newUser)
 		if err != nil {
-			log.Printf("Failed to create 'anonymous' user: %v\n", err)
+			log.Printf(" Failed to create 'anonymous' user: %v\n", err)
 			return
 		}
-		log.Printf("Created 'anonymous' user with ID %s\n", created.GetValue("id").(string))
+		log.Printf(" Created 'anonymous' user with ID %s\n", created.GetValue("id").(string))
 	}
+	log.Print("DB data initialization completed.")
 }
 
 // Iterate over all registered DBEntity types and create tables if they do not exist or update their schema

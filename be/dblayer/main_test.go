@@ -1,14 +1,31 @@
 package dblayer
 
 import (
+	"log"
 	"math/rand"
 	"os"
 	"path/filepath"
+	"rprj/be/models"
 	"testing"
 )
 
 func TestMain(m *testing.M) {
-	InitDBLayer("mysql", "root:mysecret@tcp(localhost:3306)/rproject", "rprj")
+	// config := models.Config{
+	// 	AppName:        "R-Project Test Suite",
+	// 	ServerPort:     1971,
+	// 	DBEngine:       "mysql",
+	// 	DBUrl:          "root:mysecret@tcp(localhost:3306)/rproject",
+	// 	TablePrefix:    "rprj",
+	// 	RootDirectory:  ".",
+	// 	FilesDirectory: "files",
+	// }
+	var config models.Config
+	err := models.LoadConfig("../config.json", &config)
+	if err != nil {
+		log.Fatalf("Error loading configuration: %v", err)
+	}
+
+	InitDBLayer(config)
 
 	// Esegui i test
 	m.Run()

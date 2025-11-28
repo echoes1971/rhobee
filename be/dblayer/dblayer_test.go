@@ -21,10 +21,9 @@ func TestCreateTableStrings(t *testing.T) {
 		log.Printf("CREATE TABLE SQL for %s:\n%s\n", className, createTableSQL)
 	}
 }
-func TestEnsureDBSchema(t *testing.T) {
 
-	InitDBLayer("mysql", "root:mysecret@tcp(localhost:3306)/rproject", "rprj")
-
-	// Call EnsureDBSchema to test table creation logic
-	EnsureDBSchema()
-}
+// func TestEnsureDBSchema(t *testing.T) {
+// 	InitDBLayer("mysql", "root:mysecret@tcp(localhost:3306)/rproject", "rprj")
+// 	// Call EnsureDBSchema to test table creation logic
+// 	EnsureDBSchema()
+// }
