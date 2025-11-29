@@ -138,10 +138,10 @@ function GroupProfile() {
   return (
     <Container className={`mt-4 ${themeClass}`}>
       <Card bg={dark ? "dark" : "light"} text={dark ? "light" : "dark"}>
-        <Card.Header>
+        <Card.Header className={dark ? 'bg-secondary bg-opacity-25' : ''} style={dark ? { borderBottom: '1px solid rgba(255,255,255,0.1)' } : {}}>
           <h2>{t("groups.group")}: {group.name}</h2>
         </Card.Header>
-        <Card.Body>
+        <Card.Body className={dark ? 'bg-secondary bg-opacity-25' : ''}>
           {errorMessage && <Alert variant="danger">{errorMessage}</Alert>}
           {successMessage && <Alert variant="success">{successMessage}</Alert>}
 
@@ -186,6 +186,7 @@ function GroupProfile() {
                 }
                 labelKey="Fullname"
                 valueKey="ID"
+                dark={dark}
               />
             </Form.Group>
 

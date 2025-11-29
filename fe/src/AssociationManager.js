@@ -22,7 +22,8 @@ function AssociationManager({
     labelKey = "name", 
     valueKey = "id",
     disabled = false,
-    compact = null // auto-detect se null
+    compact = null, // auto-detect se null
+    dark = false
 }) {
     const { t } = useTranslation();
     const { themeClass } = useContext(ThemeContext);
@@ -73,7 +74,7 @@ function AssociationManager({
 
     return (
         <div className={`card mb-3 ${themeClass}`}>
-            <div className="card-header d-flex justify-content-between align-items-center">
+            <div className={`card-header d-flex justify-content-between align-items-center ${dark ? 'bg-secondary bg-opacity-25' : ''}`}>
                 <h5 className="mb-0">{title}</h5>
                 <span className="badge bg-primary">{selected.length} / {available.length}</span>
             </div>
@@ -177,7 +178,7 @@ function AssociationManager({
                 )}
 
                 {/* Modalità compatta: risultati della ricerca */}
-                {isCompactMode && (
+                {isCompactMode && displayUnselectedItems.length > 0 && (
                     <div>
                         {!searchTerm && (
                             <div className="alert alert-info">

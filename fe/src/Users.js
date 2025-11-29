@@ -319,6 +319,7 @@ function Users() {
             onChange={(newGroupIds) => setEditingUser(prev => ({ ...prev, group_ids: newGroupIds }))}
             labelKey="Name"
             valueKey="ID"
+            dark={dark}
           />
 
           <div>

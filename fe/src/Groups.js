@@ -248,6 +248,7 @@ function Groups() {
             onChange={(newUserIds) => setEditingGroup(prev => ({ ...prev, user_ids: newUserIds }))}
             labelKey="Fullname"
             valueKey="ID"
+            dark={dark}
           />
           }
 
