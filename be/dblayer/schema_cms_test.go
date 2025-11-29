@@ -102,7 +102,7 @@ func TestDBFileUpload(t *testing.T) {
 	}
 
 	// Verify thumbnail was created
-	fullpath := file.getFullpath(nil)
+	fullpath := file.GetFullpath(nil)
 	thumbPath := fullpath + "_thumb.jpg"
 	if _, err := os.Stat(thumbPath); os.IsNotExist(err) {
 		t.Errorf("Expected thumbnail to be created at '%s'", thumbPath)
@@ -139,7 +139,7 @@ func TestDBFileUploadPNG(t *testing.T) {
 	}
 
 	// Verify thumbnail created
-	fullpath := file.getFullpath(nil)
+	fullpath := file.GetFullpath(nil)
 	thumbPath := fullpath + "_thumb.jpg"
 	if _, err := os.Stat(thumbPath); os.IsNotExist(err) {
 		t.Errorf("Expected thumbnail to be created at '%s'", thumbPath)
@@ -164,7 +164,7 @@ func TestDBFileUploadGIF(t *testing.T) {
 	}
 
 	// Verify thumbnail created
-	fullpath := file.getFullpath(nil)
+	fullpath := file.GetFullpath(nil)
 	thumbPath := fullpath + "_thumb.jpg"
 	if _, err := os.Stat(thumbPath); os.IsNotExist(err) {
 		t.Errorf("Expected thumbnail to be created at '%s'", thumbPath)
@@ -189,7 +189,7 @@ func TestDBFileUploadNonImage(t *testing.T) {
 	}
 
 	// Verify NO thumbnail was created (not an image)
-	fullpath := file.getFullpath(nil)
+	fullpath := file.GetFullpath(nil)
 	thumbPath := fullpath + "_thumb.jpg"
 	if _, err := os.Stat(thumbPath); !os.IsNotExist(err) {
 		t.Errorf("Expected NO thumbnail for text file, but found one at '%s'", thumbPath)
@@ -215,7 +215,7 @@ func TestDBFileUploadPDF(t *testing.T) {
 	}
 
 	// Verify NO thumbnail was created (not an image)
-	fullpath := file.getFullpath(nil)
+	fullpath := file.GetFullpath(nil)
 	thumbPath := fullpath + "_thumb.jpg"
 	if _, err := os.Stat(thumbPath); !os.IsNotExist(err) {
 		t.Errorf("Expected NO thumbnail for PDF file, but found one at '%s'", thumbPath)
@@ -237,7 +237,7 @@ func TestDBFileSmallImage(t *testing.T) {
 	}, nil)
 
 	// Verify thumbnail was still created even for small image
-	fullpath := file.getFullpath(nil)
+	fullpath := file.GetFullpath(nil)
 	thumbPath := fullpath + "_thumb.jpg"
 	if _, err := os.Stat(thumbPath); os.IsNotExist(err) {
 		t.Errorf("Expected thumbnail to be created even for small image at '%s'", thumbPath)
@@ -303,7 +303,7 @@ func TestDBFileSoftDelete(t *testing.T) {
 		"name": "File to Delete",
 	}, nil)
 
-	fullpath := file.getFullpath(nil)
+	fullpath := file.GetFullpath(nil)
 	thumbPath := fullpath + "_thumb.jpg"
 
 	// Verify file and thumbnail exist

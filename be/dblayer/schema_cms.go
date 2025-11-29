@@ -304,7 +304,7 @@ func (dbFile *DBFile) generateObjectPath(a_dbe DBEntityInterface) string {
 // 	return $dest_path;
 // }
 
-func (dbFile *DBFile) getFullpath(a_dbe DBEntityInterface) string {
+func (dbFile *DBFile) GetFullpath(a_dbe DBEntityInterface) string {
 	var mydbe *DBFile
 	if a_dbe != nil {
 		mydbe = a_dbe.(*DBFile)
@@ -530,7 +530,7 @@ func (dbFile *DBFile) beforeInsert(dbr *DBRepository, tx *sql.Tx) error {
 		return nil
 	}
 	// Checksum
-	fullpath := dbFile.getFullpath(nil)
+	fullpath := dbFile.GetFullpath(nil)
 	if _, err := os.Stat(fullpath); err == nil {
 		// File exists
 		checksum, err := dbFile.computeSHA1(fullpath)
@@ -714,7 +714,7 @@ func (dbFile *DBFile) beforeUpdate(dbr *DBRepository, tx *sql.Tx) error {
 		dbFile.SetValue("filename", myself.GetValue("filename"))
 	}
 	// Checksum
-	fullpath := dbFile.getFullpath(nil)
+	fullpath := dbFile.GetFullpath(nil)
 	if _, err := os.Stat(fullpath); err == nil {
 		// File exists
 		checksum, err := dbFile.computeSHA1(fullpath)
