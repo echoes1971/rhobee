@@ -11,20 +11,25 @@ function GroupProfile() {
   const { t } = useTranslation();
   const { groupId } = useParams();
   const navigate = useNavigate();
+  const [user, setUser] = useState(null);
   const [group, setGroup] = useState(null);
   const [users, setUsers] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const { dark, themeClass } = useContext(ThemeContext);
 
+  const currentUserId = localStorage.getItem("user_id");
   const userGroups = localStorage.getItem("groups") ? JSON.parse(localStorage.getItem("groups")) : [];
   const isAdmin = userGroups.includes("-2");
 
   useEffect(() => {
     // Check permissions: must be admin
     if (!isAdmin) {
-      navigate("/");
-      return;
+      // User can modify only its own group
+      checkUser();
+
+      // navigate("/");
+      // return;
     }
 
     fetchGroup();
@@ -45,6 +50,22 @@ function GroupProfile() {
       return () => clearTimeout(timer);
     }
   }, [successMessage]);
+
+  const checkUser = async () => {
+    const token = localStorage.getItem("token");
+    try {
+      const res = await api.get(`/users/${currentUserId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setUser({ ...res.data, pwd: "" });
+      if (groupId !== res.data.group_id) {
+        navigate("/");
+      }
+    } catch (err) {
+      setErrorMessage(getErrorMessage(err, t));
+      console.error("Error loading user:", err);
+    }
+  };
 
   const fetchGroup = async () => {
     const token = localStorage.getItem("token");
@@ -197,9 +218,11 @@ function GroupProfile() {
               <Button variant="secondary" onClick={handleCancel}>
                 {t("common.cancel")}
               </Button>
+              {isAdmin && (
               <Button variant="danger" onClick={handleDelete}>
                 {t("common.delete")}
               </Button>
+              )}
             </div>
           </Form>
         </Card.Body>

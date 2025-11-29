@@ -43,7 +43,7 @@ function App() {
         {/* Group profile - only for admins */}
         <Route
           path="/groups/:groupId"
-          element={token && isAdmin ? <GroupProfile /> : <Navigate to="/" />}
+          element={token ? <GroupProfile /> : <Navigate to="/" />}
         />
 
         {/* Protected routes - only for admins (group -2) */}
