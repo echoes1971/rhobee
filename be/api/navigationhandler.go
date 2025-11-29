@@ -4,9 +4,11 @@ import (
 	"encoding/json"
 	"net/http"
 	"strings"
+	"time"
 
 	"rprj/be/dblayer"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/gorilla/mux"
 )
 
@@ -62,6 +64,21 @@ func GetNavigationHandler(w http.ResponseWriter, r *http.Request) {
 	// Check permissions
 	canEdit := repo.CheckWritePermission(obj)
 	obj.SetMetadata("can_edit", canEdit)
+
+	// IF is a file, add download token
+	if obj.GetTypeName() == "DBFile" || obj.GetMetadata("classname") == "DBFile" {
+		// Genera JWT
+		expiration := time.Now().Add(15 * time.Minute)
+		claims := &jwt.MapClaims{
+			"id":  objectID,
+			"exp": expiration.Unix(),
+		}
+		token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+		tokenString, err := token.SignedString(JWTKey)
+		if err == nil {
+			obj.SetMetadata("download_token", tokenString)
+		}
+	}
 
 	// Returns { data: { ... } , metadata: { ... } }
 	response := map[string]interface{}{

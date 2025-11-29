@@ -175,7 +175,7 @@ func main() {
 
 	// Endpoint protected: File download
 	fileRoutes := r.PathPrefix("/files").Subrouter()
-	fileRoutes.Use(api.AuthMiddleware)
+	// fileRoutes.Use(api.AuthMiddleware)
 	fileRoutes.HandleFunc("/{id}/download", api.DownloadFileHandler).Methods("GET")
 
 	log.Println("Server in ascolto su :", AppConfig.ServerPort)

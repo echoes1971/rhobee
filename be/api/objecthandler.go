@@ -13,6 +13,7 @@ import (
 
 	"rprj/be/dblayer"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/gorilla/mux"
 )
 
@@ -589,12 +590,40 @@ func DownloadFileHandler(w http.ResponseWriter, r *http.Request) {
 	fileID := vars["id"]
 
 	// Load the DBFile object
-	tableName := "files"
-	entity := repo.GetEntityByID(tableName, fileID)
+	// tableName := "files"
+	// entity := repo.GetEntityByID(tableName, fileID)
+	entity := repo.FullObjectById(fileID, true)
 	if entity == nil {
 		log.Printf("DownloadFileHandler: Failed to load file %s", fileID)
 		RespondSimpleError(w, ErrObjectNotFound, "File not found", http.StatusNotFound)
 		return
+	}
+
+	// Check token is valid
+	tokenString := r.URL.Query().Get("token")
+	if tokenString != "" {
+		// IF I have a token, I check it
+		claimsDownload := jwt.MapClaims{}
+		token, err := jwt.ParseWithClaims(tokenString, claimsDownload, func(t *jwt.Token) (interface{}, error) {
+			return JWTKey, nil
+		})
+		// log.Printf("Claims: %+v\n", claimsDownload)
+		// log.Printf("err: %v\n", err)
+		if err != nil || !token.Valid {
+			RespondSimpleError(w, ErrInvalidToken, "Invalid or expired token", http.StatusUnauthorized)
+			return
+		}
+		downloadID, ok := claimsDownload["id"].(string)
+		if !ok || downloadID != fileID {
+			RespondSimpleError(w, ErrInvalidToken, "Token does not match file ID", http.StatusUnauthorized)
+			return
+		}
+	} else {
+		// No token: check read permissions
+		if !repo.CheckReadPermission(entity) {
+			RespondSimpleError(w, ErrUnauthorized, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
 	}
 
 	// Cast to DBFile to use getFullpath
@@ -604,6 +633,7 @@ func DownloadFileHandler(w http.ResponseWriter, r *http.Request) {
 		RespondSimpleError(w, ErrInternalServer, "Invalid file entity", http.StatusInternalServerError)
 		return
 	}
+	log.Print("DownloadFileHandler: dbFile=", dbFile.ToJSON())
 
 	// Get file metadata
 	filename := dbFile.GetValue("filename")
@@ -619,16 +649,19 @@ func DownloadFileHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Construct file path: ./files/{father_id}//{filename}
-	baseDir := filepath.Join(dbFiles_root_directory, dbFiles_dest_directory)
-	fatherID := dbFile.GetValue("father_id")
-	var filePath string
-	if fatherID != nil && fatherID != "" && fatherID != "0" {
-		// The beforeUpdate creates: files/{father_id}/$/{filename}
-		// This structure includes the filename as both a directory and the final file
-		filePath = filepath.Join(baseDir, fatherID.(string), filename.(string))
-	} else {
-		filePath = filepath.Join(baseDir, filename.(string))
-	}
+	// baseDir := filepath.Join(dbFiles_root_directory, dbFiles_dest_directory)
+	// fatherID := dbFile.GetValue("father_id")
+	// var filePath string
+	// if fatherID != nil && fatherID != "" && fatherID != "0" {
+	// 	// The beforeUpdate creates: files/{father_id}/{filename}
+	// 	// This structure includes the filename as both a directory and the final file
+	// 	filePath = filepath.Join(baseDir, fatherID.(string), filename.(string))
+	// } else {
+	// 	filePath = filepath.Join(baseDir, filename.(string))
+	// }
+	// log.Print("DownloadFileHandler: filePath=", filePath)
+	// log.Print("DownloadFileHandler: filename=", dbFile.GetFullpath(nil))
+	filePath := dbFile.GetFullpath(nil)
 
 	// Open file from disk
 	file, err := os.Open(filePath)
