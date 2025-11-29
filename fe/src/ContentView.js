@@ -217,9 +217,11 @@ function PersonView({ data, metadata, objectData, dark }) {
                     <p>👤 User: <UserLinkView user_id={data.fk_users_id} dark={dark} /></p>
                 )}
                 <p>
-                {data.street}<br/>
-                {data.zip} {data.city} ({data.state})<br/>
-                <CountryView country_id={data.fk_countrylist_id} dark={dark} />
+                {data.street}{data.street ? <br/> : ""}
+                {data.zip} {data.city} {data.state ? `(${data.state})` : ''}{data.street || data.zip || data.city || data.state ? <br/> : ""}
+                {data.fk_countrylist_id && (
+                    <CountryView country_id={data.fk_countrylist_id} dark={dark} />
+                )}
                 </p>
                 {data.fk_companies_id && data.fk_companies_id !== "0" && (
                     <p><ObjectLinkView obj_id={data.fk_companies_id} dark={dark} /></p>
