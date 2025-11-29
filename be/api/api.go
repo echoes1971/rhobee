@@ -77,7 +77,13 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	foundUser, ok := foundUsers[0].(*dblayer.DBUser)
-	if !ok || foundUser.GetUnencryptedPwd() != creds.Pwd {
+	if !ok {
+		RespondSimpleError(w, ErrUnauthorized, "Invalid credentials", http.StatusUnauthorized)
+		return
+	}
+
+	// Verify password (supports both encrypted and legacy unencrypted passwords)
+	if !foundUser.VerifyPassword(creds.Pwd) {
 		RespondSimpleError(w, ErrUnauthorized, "Invalid credentials", http.StatusUnauthorized)
 		return
 	}

@@ -79,14 +79,14 @@ function Users() {
       const res = await api.get(`/users/${user.ID}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setEditingUser({ ...user, group_ids: res.data.group_ids || [], Pwd: "" });
+      setEditingUser({ ...user, group_ids: res.data.group_ids || [], pwd: "" });
       setConfirmPwd("");
       setPwdError("");
       setErrorMessage("");
     } catch (err) {
       console.log("Error loading user details.");
       // Fallback ai dati base se la chiamata fallisce
-      setEditingUser({ ...user, group_ids: [], Pwd: "" });
+      setEditingUser({ ...user, group_ids: [], pwd: "" });
       setConfirmPwd("");
       setPwdError("");
       setErrorMessage("");
@@ -101,17 +101,17 @@ function Users() {
 
   const handleSave = async () => {
     // Validazione
-    if (!editingUser.Login || editingUser.Login.trim() === "") {
+    if (!editingUser.login || editingUser.login.trim() === "") {
       setPwdError(t("users.login_required") || "Login is required");
       return;
     }
     
-    if (!editingUser.ID && (!editingUser.Pwd || editingUser.Pwd.trim() === "")) {
+    if (!editingUser.id && (!editingUser.pwd || editingUser.pwd.trim() === "")) {
       setPwdError(t("users.password_required") || "Password is required for new users");
       return;
     }
     
-    if (editingUser.Pwd && editingUser.Pwd !== confirmPwd) {
+    if (editingUser.pwd && editingUser.pwd !== confirmPwd) {
       setPwdError(t("users.password_mismatch") || "Passwords do not match");
       return;
     }
@@ -119,13 +119,13 @@ function Users() {
     setPwdError("");
     const token = localStorage.getItem("token");
     try {
-      if (!editingUser.ID) {
+      if (!editingUser.id) {
         // Nuovo utente
         await api.post(`/users`, {
-          login: editingUser.Login,
-          pwd: editingUser.Pwd,
-          fullname: editingUser.Fullname,
-          group_id: editingUser.GroupID,
+          login: editingUser.login,
+          pwd: editingUser.pwd,
+          fullname: editingUser.fullname,
+          group_id: editingUser.group_id,
           group_ids: editingUser.group_ids || []
         }, { headers: { Authorization: `Bearer ${token}` } } );
         setEditingUser(null);
@@ -136,15 +136,15 @@ function Users() {
       }
       // Utente esistente - invia password solo se modificata
       const updateData = {
-        login: editingUser.Login,
-        fullname: editingUser.Fullname,
-        group_id: editingUser.GroupID,
+        login: editingUser.login,
+        fullname: editingUser.fullname,
+        group_id: editingUser.group_id,
         group_ids: editingUser.group_ids || []
       };
-      if (editingUser.Pwd && editingUser.Pwd.trim() !== "") {
-        updateData.pwd = editingUser.Pwd;
+      if (editingUser.pwd && editingUser.pwd.trim() !== "") {
+        updateData.pwd = editingUser.pwd;
       }
-      await api.put(`/users/${editingUser.ID}`, updateData, { headers: { Authorization: `Bearer ${token}` } } );
+      await api.put(`/users/${editingUser.id}`, updateData, { headers: { Authorization: `Bearer ${token}` } } );
       setEditingUser(null);
       setConfirmPwd("");
       fetchUsers();
@@ -158,7 +158,7 @@ function Users() {
   const handleDelete = async () => {
     if (window.confirm("Are you sure to delete this user?")) {
       const token = localStorage.getItem("token");
-      await api.delete(`/users/${editingUser.ID}`, {
+      await api.delete(`/users/${editingUser.id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setEditingUser(null);
@@ -188,7 +188,7 @@ function Users() {
         <button
           className="btn btn-success mb-3"
           onClick={() => {
-            setEditingUser({ ID: "", Login: "", Fullname: "", GroupID: "", group_ids: [], Pwd: "" });
+            setEditingUser({ id: "", login: "", fullname: "", group_id: "", group_ids: [], pwd: "" });
             setConfirmPwd("");
             setPwdError("");
             setErrorMessage("");
@@ -235,7 +235,7 @@ function Users() {
       {/* Form di editing */}
       {editingUser && (
         <div className={`card p-3 mt-3 ${dark ? "bg-dark text-light" : "bg-light text-dark" }`}>
-          <h4>{editingUser.ID>'' ? t("common.edit") : t("common.create")} {t("users.user")}</h4>
+          <h4>{editingUser.id>'' ? t("common.edit") : t("common.create")} {t("users.user")}</h4>
           
           {/* Error message at the top */}
           {errorMessage && (
@@ -247,47 +247,47 @@ function Users() {
           
           <input
             className={`form-control mb-2 ${dark ? "bg-secondary text-light" : ""}`}
-            name="ID"
+            name="id"
             title="ID"
-            value={editingUser.ID}
+            value={editingUser.id}
             readOnly
             onChange={handleEditChange}
           />
           <label className="form-label">{t("users.login") || "Login"} *</label>
           <input
             className={`form-control mb-2 ${dark ? "bg-secondary text-light" : ""}`}
-            name="Login"
+            name="login"
             placeholder={t("users.login") || "Login"}
-            value={editingUser.Login}
-            disabled={editingUser.ID !== ""}
+            value={editingUser.login}
+            disabled={editingUser.id !== ""}
             onChange={handleEditChange}
             required
           />
           <label className="form-label">{t("users.fullname") || "Fullname"}</label>
           <input
             className={`form-control mb-2 ${dark ? "bg-secondary text-light" : ""}`}
-            name="Fullname"
+            name="fullname"
             placeholder={t("users.fullname") || "Fullname"}
-            value={editingUser.Fullname}
+            value={editingUser.fullname}
             onChange={handleEditChange}
           />
           <label className="form-label">
             {t("users.password") || "Password"}
-            {!editingUser.ID && " *"}
-            {editingUser.ID && " (" + (t("users.leave_blank") || "leave blank to keep current") + ")"}
+            {!editingUser.id && " *"}
+            {editingUser.id && " (" + (t("users.leave_blank") || "leave blank to keep current") + ")"}
           </label>
           <input
             className={`form-control mb-2 ${dark ? "bg-secondary text-light" : ""}`}
-            name="Pwd"
+            name="pwd"
             type="password"
             placeholder={t("users.password") || "Password"}
-            value={editingUser.Pwd || ""}
+            value={editingUser.pwd || ""}
             onChange={handleEditChange}
-            required={!editingUser.ID}
+            required={!editingUser.id}
           />
           <label className="form-label">
             {t("users.confirm_password") || "Confirm Password"}
-            {!editingUser.ID && " *"}
+            {!editingUser.id && " *"}
           </label>
           <input
             className={`form-control mb-2 ${dark ? "bg-secondary text-light" : ""}`}
@@ -295,7 +295,7 @@ function Users() {
             placeholder={t("users.confirm_password") || "Confirm Password"}
             value={confirmPwd}
             onChange={(e) => setConfirmPwd(e.target.value)}
-            required={!editingUser.ID}
+            required={!editingUser.id}
           />
           {pwdError && (
             <div className="alert alert-danger" role="alert">
@@ -304,9 +304,9 @@ function Users() {
           )}
           <input
             className={`form-control mb-2 ${dark ? "bg-secondary text-light" : ""}`}
-            name="GroupID"
+            name="group_id"
             title="GroupID"
-            value={getGroupName(editingUser.GroupID)}
+            value={getGroupName(editingUser.group_id)}
             readOnly
             onChange={handleEditChange}
           />
@@ -331,7 +331,7 @@ function Users() {
             >
               { t("common.cancel") }
             </button>
-            {editingUser.ID>"" ?
+            {editingUser.id>"" ?
                       <button
                         className="btn btn-danger"
                         onClick={handleDelete}

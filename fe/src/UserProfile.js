@@ -57,7 +57,7 @@ function UserProfile() {
       const res = await api.get(`/users/${userId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setUser({ ...res.data, Pwd: "" });
+      setUser({ ...res.data, pwd: "" });
     } catch (err) {
       setErrorMessage(getErrorMessage(err, t));
       console.error("Error loading user:", err);
@@ -104,7 +104,7 @@ function UserProfile() {
 
     // Only include password if it was changed
     if (user.pwd && user.pwd.trim() !== "") {
-      payload.pwd = user.Pwd;
+      payload.pwd = user.pwd;
     }
 
     // Only admin can change groups

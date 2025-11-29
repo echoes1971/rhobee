@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"time"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 /*
@@ -139,12 +141,54 @@ func (dbUser *DBUser) GetValue(columnName string) any {
 func (dbUser *DBUser) SetValue(columnName string, value any) {
 	dbUser.DBEntity.SetValue(columnName, value)
 }
+
+// HashPassword encrypts the password using bcrypt
+func (dbUser *DBUser) HashPassword(plainPassword string) error {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(plainPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return fmt.Errorf("failed to hash password: %w", err)
+	}
+	dbUser.SetValue("pwd", string(hashedPassword))
+	dbUser.SetValue("pwd_salt", "bcry") // Marker that password is encrypted with bcrypt
+	return nil
+}
+
+// VerifyPassword checks if the provided password matches the stored hash
+// Returns true if password matches, false otherwise
+// Strategy: IF salt is empty => password not encrypted ELSE password is encrypted
+func (dbUser *DBUser) VerifyPassword(plainPassword string) bool {
+	salt := dbUser.GetValue("pwd_salt")
+	storedPassword := dbUser.GetValue("pwd").(string)
+
+	// If salt is empty, password is not encrypted (legacy compatibility)
+	if salt == nil || salt == "" {
+		return storedPassword == plainPassword
+	}
+
+	// Password is encrypted, use bcrypt to verify
+	err := bcrypt.CompareHashAndPassword([]byte(storedPassword), []byte(plainPassword))
+	return err == nil
+}
+
 func (dbUser *DBUser) GetUnencryptedPwd() string {
+	// DEPRECATED: This method should not be used anymore
+	// Use VerifyPassword instead
 	// TODO: implement proper password hashing and verification
 	return dbUser.GetValue("pwd").(string)
 }
 func (dbUser *DBUser) beforeInsert(dbr *DBRepository, tx *sql.Tx) error {
-	// 1. Check that user with same login does not already exist
+	// 1. Hash password if not already hashed
+	if pwd := dbUser.GetValue("pwd"); pwd != nil && pwd != "" {
+		salt := dbUser.GetValue("pwd_salt")
+		// If salt is empty, password needs to be hashed
+		if salt == nil || salt == "" {
+			if err := dbUser.HashPassword(pwd.(string)); err != nil {
+				return fmt.Errorf("failed to hash password: %w", err)
+			}
+		}
+	}
+
+	// 2. Check that user with same login does not already exist
 	existingUser := dbUser.NewInstance()
 	existingUser.SetValue("login", dbUser.GetValue("login"))
 	results, err := dbr.searchWithTx(existingUser, false, false, "login", tx)
@@ -155,7 +199,7 @@ func (dbUser *DBUser) beforeInsert(dbr *DBRepository, tx *sql.Tx) error {
 		return fmt.Errorf("user with login '%s' already exists", dbUser.GetValue("login"))
 	}
 
-	// 2. Generate IDs
+	// 3. Generate IDs
 	userID, _ := uuid16HexGo()
 	groupID, _ := uuid16HexGo()
 
@@ -208,6 +252,20 @@ func (dbUser *DBUser) afterInsert(dbr *DBRepository, tx *sql.Tx) error {
 		if err != nil {
 			log.Print("DBUser::afterInsert: error inserting userGroup for additional group:", err)
 			return err
+		}
+	}
+	return nil
+}
+
+func (dbUser *DBUser) beforeUpdate(dbr *DBRepository, tx *sql.Tx) error {
+	// Hash password if it was changed and not already hashed
+	if pwd := dbUser.GetValue("pwd"); pwd != nil && pwd != "" {
+		salt := dbUser.GetValue("pwd_salt")
+		// If salt is empty, password needs to be hashed
+		if salt == nil || salt == "" {
+			if err := dbUser.HashPassword(pwd.(string)); err != nil {
+				return fmt.Errorf("failed to hash password: %w", err)
+			}
 		}
 	}
 	return nil
