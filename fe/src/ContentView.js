@@ -16,6 +16,87 @@ import {
 } from './sitenavigation_utils';
 import axiosInstance from './axios';
 
+function FileView({ data, metadata, objectData, dark }) {
+    const navigate = useNavigate();
+    const { t } = useTranslation();
+    const [preview, setPreview] = useState(null);
+    
+    useEffect(() => {
+        console.log('FileEdit useEffect:', { id: data.id, filename: data.filename });
+        // Load preview if file exists
+        if (data.id && data.filename && data.mime.indexOf('image') === 0) {
+            // Fetch the file with authorization header and create a blob URL
+            const loadPreview = async () => {
+                try {
+                    console.log('Loading file preview for:', data.id, 'filename:', data.filename);
+                    const response = await axiosInstance.get(`/files/${data.id}/download`, {
+                        responseType: 'blob'
+                    });
+                    console.log('File loaded, blob size:', response.data.size, 'type:', response.data.type);
+                    const blobUrl = URL.createObjectURL(response.data);
+                    console.log('Blob URL created:', blobUrl);
+                    setPreview(blobUrl);
+                } catch (error) {
+                    console.error('Failed to load file preview:', error);
+                    setPreview(null);
+                }
+            };
+            loadPreview();
+
+            // Cleanup blob URL on unmount
+            return () => {
+                if (preview && preview.startsWith('blob:')) {
+                    console.log('Revoking blob URL:', preview);
+                    URL.revokeObjectURL(preview);
+                }
+            };
+        } else {
+            console.log('Skipping preview load - condition not met');
+        }
+    }, [data.id, data.filename]);
+
+    return (
+        <div>
+            {data.name && (
+                <h2 className={dark ? 'text-light' : 'text-dark'}>{data.name}</h2>
+            )}
+            {data.description && (
+                <p style={{ opacity: 0.7 }} dangerouslySetInnerHTML={{ __html: formatDescription(data.description) }}></p>
+            )}
+            {data.filename && preview && (
+                <div>
+                    <img 
+                        src={preview}
+                        alt="Preview"
+                        title={data.name}
+                        style={{ maxWidth: '100%', maxHeight: '300px', marginBottom: '10px' }}
+                    />
+                    {/* <div>
+                        <small className={dark ? "text-white-50" : "text-muted"}>{data.name}</small>
+                    </div> */}
+                    <div>
+                        <a href={preview} download={data.filename}>
+                            <Button variant="primary">
+                                <i className="bi bi-download"></i> {t('dbobjects.download_file')}
+                                {/* ({data.filename}) */}
+                            </Button>
+                        </a>
+                    </div>
+                </div>
+            )}
+            {data.filename && data.mime.indexOf('image') !== 0 && (
+                <div>
+                    <a href={`../api/files/${data.id}/download?token=${metadata.download_token}`} download={data.filename}>
+                        <Button variant="primary">
+                            <i className="bi bi-download"></i> {t('dbobjects.download_file')}
+                        </Button>
+                    </a>
+                </div>
+            )}
+        </div>
+    );
+}
+
 // View for DBFolder
 function FolderView({ data, metadata, dark }) {
     const { i18n } = useTranslation();
@@ -379,8 +460,8 @@ function ContentView({ data, metadata, dark }) {
         // // CMS
         // case 'DBEvent':
         //     return <EventView data={data} metadata={metadata} dark={dark} />;
-        // case 'DBFile':
-        //     return <FileView data={data} metadata={metadata} dark={dark} />;
+        case 'DBFile':
+            return <FileView data={data} metadata={metadata} dark={dark} />;
         case 'DBFolder':
             return <FolderView data={data} metadata={metadata} dark={dark} />;
         case 'DBNote':

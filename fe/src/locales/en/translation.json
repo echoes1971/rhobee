@@ -97,7 +97,8 @@
     "modified": "Modified",
     "deleted": "Deleted",
     "parent": "Parent",
-    "linked_to": "Linked to"
+    "linked_to": "Linked to",
+    "download_file": "Download File"
   },
   "permissions": {
     "read": "Read",
