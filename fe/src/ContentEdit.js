@@ -831,6 +831,7 @@ function FileEdit({ data, onSave, onCancel, onDelete, saving, error, dark }) {
         alt_link: data.alt_link || '',
         fk_obj_id: data.fk_obj_id || '0',
         permissions: data.permissions || 'rwxr-x---',
+        father_id: data.father_id || '0',
     });
     const [selectedFile, setSelectedFile] = useState(null);
     const [dragActive, setDragActive] = useState(false);
@@ -961,6 +962,17 @@ function FileEdit({ data, onSave, onCancel, onDelete, saving, error, dark }) {
     return (
         <Form onSubmit={handleSubmit}>
             <Form.Group className="mb-3">
+                {/* <Form.Label>{t('dbobjects.parent')}</Form.Label> */}
+                <ObjectLinkSelector
+                    value={formData.father_id || '0'}
+                    onChange={handleChange}
+                    classname="DBObject"
+                    fieldName="father_id"
+                    label={t('dbobjects.parent')}
+                />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
                 <Form.Label>{t('common.name')}</Form.Label>
                 <Form.Control
                     type="text"
@@ -1074,7 +1086,7 @@ function FileEdit({ data, onSave, onCancel, onDelete, saving, error, dark }) {
             <ObjectLinkSelector
                 value={formData.fk_obj_id}
                 onChange={handleChange}
-                classname="DBPage"
+                classname="DBObject"
                 fieldName="fk_obj_id"
                 label={t('files.linked_object') || 'Linked Object'}
                 required={false}
@@ -1145,11 +1157,13 @@ function FileEdit({ data, onSave, onCancel, onDelete, saving, error, dark }) {
 function FolderEdit({ data, onSave, onCancel, onDelete, saving, error, dark }) {
     const { t } = useTranslation();
     const [formData, setFormData] = useState({
+        father_id: data.father_id || '0',
         name: data.name || '',
         description: data.description || '',
         fk_obj_id: data.fk_obj_id || '0',
         permissions: data.permissions || 'rwxr-x---',
         childs_sort_order: data.childs_sort_order || '',
+        father_id: data.father_id || '0',
     });
     const [children, setChildren] = useState([]);
     const [loadingChildren, setLoadingChildren] = useState(false);
@@ -1246,6 +1260,19 @@ function FolderEdit({ data, onSave, onCancel, onDelete, saving, error, dark }) {
 
     return (
         <Form onSubmit={handleSubmit}>
+
+            <Form.Group className="mb-3">
+                {/* <Form.Label>{t('dbobjects.parent')}</Form.Label> */}
+                <ObjectLinkSelector
+                    value={formData.father_id || '0'}
+                    onChange={handleChange}
+                    classname="DBObject"
+                    fieldName="father_id"
+                    name="father_id"
+                    label={t('dbobjects.parent')}
+                />
+            </Form.Group>
+
             <Form.Group className="mb-3">
                 <Form.Label>{t('common.name')}</Form.Label>
                 <Form.Control
@@ -1269,14 +1296,18 @@ function FolderEdit({ data, onSave, onCancel, onDelete, saving, error, dark }) {
                     disabled={saving}
                 />
             </Form.Group>
-
+<h2 className='text-danger'>TODO: Edit the index page, automatically create if not existing for the current language.</h2>
             <Form.Group className="mb-3">
                 <Form.Label>{t('files.linked_object')}</Form.Label>
                 <ObjectLinkSelector
-                    value={formData.fk_obj_id}
-                    onChange={(value) => setFormData(prev => ({ ...prev, fk_obj_id: value }))}
-                    disabled={saving}
-                    allowedTypes={['DBPage', 'DBNews']}
+                    value={formData.fk_obj_id || '0'}
+                    // onChange={(value) => setFormData(prev => ({ ...prev, fk_obj_id: value }))}
+                    onChange={handleChange}
+                    name="fk_obj_id"
+                    fieldName="fk_obj_id"
+                    // disabled={saving}
+                    classname="DBObject"
+                    // allowedTypes={['DBPage', 'DBNews']}
                 />
             </Form.Group>
 

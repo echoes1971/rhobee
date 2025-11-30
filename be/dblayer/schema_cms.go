@@ -679,7 +679,7 @@ func (dbFile *DBFile) beforeUpdate(dbr *DBRepository, tx *sql.Tx) error {
 		// Create destination directory if it does not exist
 		os.MkdirAll(dest_dir, os.FileMode(0755))
 		new_filename := dbFile.generateFilename(dbFile.GetValue("id"), filepath.Base(dbFile.GetValue("filename").(string)))
-		log.Print("DBFile.beforeUpdate: moving file from ", from_dir+"/"+myself.GetValue("filename").(string), " to ", dest_dir+"/"+myself.GetValue("filename").(string))
+		log.Print("DBFile.beforeUpdate: moving file from ", from_dir+"/"+myself.GetValue("filename").(string), " to ", dest_dir+"/"+new_filename)
 		// Move the file only if it exists
 		if _, err := os.Stat(from_dir + "/" + dbFile.GetValue("filename").(string)); err == nil {
 			err := os.Rename(from_dir+"/"+dbFile.GetValue("filename").(string), dest_dir+"/"+new_filename)
@@ -689,7 +689,9 @@ func (dbFile *DBFile) beforeUpdate(dbr *DBRepository, tx *sql.Tx) error {
 			}
 		}
 		dbFile.SetValue("filename", new_filename)
+		// }
 	} else if myself_has_a_file && myself.GetValue("path") != dbFile.GetValue("path") {
+		// if myself_has_a_file && myself.GetValue("path") != dbFile.GetValue("path") {
 		// } else if myself.GetValue("filename") != nil && myself.GetValue("filename").(string) != "" && myself.GetValue("path") != dbFile.GetValue("path") {
 		from_path := myself.generateObjectPath(nil)
 		from_dir := dbFiles_root_directory + "/" + dbFiles_dest_directory
@@ -713,6 +715,27 @@ func (dbFile *DBFile) beforeUpdate(dbr *DBRepository, tx *sql.Tx) error {
 		// TODO check if it works
 		dbFile.SetValue("filename", myself.GetValue("filename"))
 	}
+
+	// Check if father_id has changed and move file accordingly
+	if dbFile.GetValue("father_id") != nil && dbFile.GetValue("father_id") != myself.GetValue("father_id") {
+		from_path := myself.generateObjectPath(nil)
+		from_dir := dbFiles_root_directory + "/" + dbFiles_dest_directory
+		if from_path != "" {
+			from_dir = from_dir + "/" + from_path
+		}
+		dest_path := dbFile.generateObjectPath(nil)
+		dest_dir := dbFiles_root_directory + "/" + dbFiles_dest_directory
+		if dest_path != "" {
+			dest_dir = dest_dir + "/" + dest_path
+		}
+		// Create destination directory if it does not exist
+		os.MkdirAll(dest_dir, os.FileMode(0755))
+		err := os.Rename(from_dir+"/"+myself.GetValue("filename").(string), dest_dir+"/"+myself.GetValue("filename").(string))
+		if err != nil {
+			return err
+		}
+	}
+
 	// Checksum
 	fullpath := dbFile.GetFullpath(nil)
 	if _, err := os.Stat(fullpath); err == nil {
