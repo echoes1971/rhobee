@@ -256,7 +256,8 @@ function NoteView({ data, metadata, objectData, dark }) {
     return (
         <Card className="mb-3 border-warning" bg={dark ? 'dark' : 'light'} text={dark ? 'light' : 'dark'}>
             <Card.Header className={dark ? 'bg-warning bg-opacity-25' : 'bg-warning bg-opacity-10'}>
-                <ObjectHeaderView data={data} metadata={metadata} objectData={objectData} dark={dark} />
+                <br />
+                {/* <ObjectHeaderView data={data} metadata={metadata} objectData={objectData} dark={dark} /> */}
             </Card.Header>
             <Card.Body>
                 <h2 className={dark ? 'text-light' : 'text-dark'}>{data.name}</h2>
@@ -269,7 +270,8 @@ function NoteView({ data, metadata, objectData, dark }) {
                 )}
             </Card.Body>
             <Card.Footer className={dark ? 'bg-warning bg-opacity-25' : 'bg-warning bg-opacity-10'}>
-                <ObjectFooterView data={data} metadata={metadata} objectData={objectData} dark={dark} />
+                <br />
+                {/* <ObjectFooterView data={data} metadata={metadata} objectData={objectData} dark={dark} /> */}
             </Card.Footer>
         </Card>
     );
@@ -280,47 +282,39 @@ function PersonView({ data, metadata, objectData, dark }) {
     const { t } = useTranslation();
     
     return (
-        <Card className="mb-3" bg={dark ? 'dark' : 'light'} text={dark ? 'light' : 'dark'}>
-            <Card.Header className={dark ? 'bg-secondary bg-opacity-10' : ''} style={dark ? { borderBottom: '1px solid rgba(255,255,255,0.1)' } : {}}>
-                <ObjectHeaderView data={data} metadata={metadata} objectData={objectData} dark={dark} />
-            </Card.Header>
-            <Card.Body className={dark ? 'bg-secondary bg-opacity-10' : ''}>
-                <h2 className={dark ? 'text-light' : 'text-dark'}>{data.name}</h2>
-                {!data.html && data.description && <hr />}
-                {data.description && (
-                    <Card.Text dangerouslySetInnerHTML={{ __html: formatDescription(data.description) }}></Card.Text>
-                )}
-                {data.html && <hr />}
-                {data.html && (
-                    <HtmlFieldView htmlContent={data.html} dark={dark} />
-                )}
-                <hr />
-                {data.fk_users_id && data.fk_users_id !== "0" && (
-                    <p>👤 User: <UserLinkView user_id={data.fk_users_id} dark={dark} /></p>
-                )}
-                <p>
-                {data.street}{data.street ? <br/> : ""}
-                {data.zip} {data.city} {data.state ? `(${data.state})` : ''}{data.street || data.zip || data.city || data.state ? <br/> : ""}
-                {data.fk_countrylist_id && (
-                    <CountryView country_id={data.fk_countrylist_id} dark={dark} />
-                )}
-                </p>
-                {data.fk_companies_id && data.fk_companies_id !== "0" && (
-                    <p><ObjectLinkView obj_id={data.fk_companies_id} dark={dark} /></p>
-                )}
-                {data.phone && <p>📞 {data.phone}</p>}
-                {data.office_phone && <p>🏢 {data.office_phone}</p>}
-                {data.mobile && <p>📱 {data.mobile}</p>}
-                {data.fax && <p>📠 {data.fax}</p>}
-                {data.email && <p>✉️ <a href={`mailto:${data.email}`}>{data.email}</a></p>}
-                {data.url && <p>🔗 <a href={data.url} target="_blank" rel="noopener noreferrer">{data.url}</a></p>}
-                {data.codice_fiscale && <p>🆔 {data.codice_fiscale}</p>}
-                {data.p_iva && <p>💰 {data.p_iva}</p>}
-            </Card.Body>
-            <Card.Footer className={dark ? 'bg-secondary bg-opacity-10' : ''} style={dark ? { borderTop: '1px solid rgba(255,255,255,0.1)' } : {}}>
-                <ObjectFooterView data={data} metadata={metadata} objectData={objectData} dark={dark} />
-            </Card.Footer>
-        </Card>
+        <div>
+            <h2 className={dark ? 'text-light' : 'text-dark'}>{data.name}</h2>
+            {!data.html && data.description && <hr />}
+            {data.description && (
+                <Card.Text dangerouslySetInnerHTML={{ __html: formatDescription(data.description) }}></Card.Text>
+            )}
+            {data.html && <hr />}
+            {data.html && (
+                <HtmlFieldView htmlContent={data.html} dark={dark} />
+            )}
+            <hr />
+            {data.fk_users_id && data.fk_users_id !== "0" && (
+                <p>👤 User: <UserLinkView user_id={data.fk_users_id} dark={dark} /></p>
+            )}
+            <p>
+            {data.street}{data.street ? <br/> : ""}
+            {data.zip} {data.city} {data.state ? `(${data.state})` : ''}{data.street || data.zip || data.city || data.state ? <br/> : ""}
+            {data.fk_countrylist_id && (
+                <CountryView country_id={data.fk_countrylist_id} dark={dark} />
+            )}
+            </p>
+            {data.fk_companies_id && data.fk_companies_id !== "0" && (
+                <p><ObjectLinkView obj_id={data.fk_companies_id} dark={dark} /></p>
+            )}
+            {data.phone && <p>📞 {data.phone}</p>}
+            {data.office_phone && <p>🏢 {data.office_phone}</p>}
+            {data.mobile && <p>📱 {data.mobile}</p>}
+            {data.fax && <p>📠 {data.fax}</p>}
+            {data.email && <p>✉️ <a href={`mailto:${data.email}`}>{data.email}</a></p>}
+            {data.url && <p>🔗 <a href={data.url} target="_blank" rel="noopener noreferrer">{data.url}</a></p>}
+            {data.codice_fiscale && <p>🆔 {data.codice_fiscale}</p>}
+            {data.p_iva && <p>💰 {data.p_iva}</p>}
+        </div>
     );
 }
 
@@ -329,38 +323,30 @@ function CompanyView({ data, metadata, objectData, dark }) {
     const { t } = useTranslation();
     
     return (
-        <Card className="mb-3" bg={dark ? 'dark' : 'light'} text={dark ? 'light' : 'dark'}>
-            <Card.Header className={dark ? 'bg-secondary bg-opacity-10' : ''} style={dark ? { borderBottom: '1px solid rgba(255,255,255,0.1)' } : {}}>
-                <ObjectHeaderView data={data} metadata={metadata} objectData={objectData} dark={dark} />
-            </Card.Header>
-            <Card.Body className={dark ? 'bg-secondary bg-opacity-10' : ''}>
-                <h2 className={dark ? 'text-light' : 'text-dark'}>{data.name}</h2>
-                {!data.html && data.description && <hr />}
-                {data.description && (
-                    <Card.Text dangerouslySetInnerHTML={{ __html: formatDescription(data.description) }}></Card.Text>
-                )}
-                {data.html && <hr />}
-                {data.html && (
-                    <HtmlFieldView htmlContent={data.html} dark={dark} />
-                )}
-                <hr />
-                <p>
-                {data.street}<br/>
-                {data.zip} {data.city} ({data.state})<br/>
-                <CountryView country_id={data.fk_countrylist_id} dark={dark} />
-                </p>
-                {data.phone && <p>📞 {data.phone}</p>}
-                {data.office_phone && <p>🏢 {data.office_phone}</p>}
-                {data.mobile && <p>📱 {data.mobile}</p>}
-                {data.fax && <p>📠 {data.fax}</p>}
-                {data.email && <p>✉️ <a href={`mailto:${data.email}`}>{data.email}</a></p>}
-                {data.url && <p>🔗 <a href={data.url} target="_blank" rel="noopener noreferrer">{data.url}</a></p>}
-                {data.p_iva && <p>💰 {data.p_iva}</p>}
-            </Card.Body>
-            <Card.Footer className={dark ? 'bg-secondary bg-opacity-10' : ''} style={dark ? { borderTop: '1px solid rgba(255,255,255,0.1)' } : {}}>
-                <ObjectFooterView data={data} metadata={metadata} objectData={objectData} dark={dark} />
-            </Card.Footer>
-        </Card>
+        <div>
+            <h2 className={dark ? 'text-light' : 'text-dark'}>{data.name}</h2>
+            {!data.html && data.description && <hr />}
+            {data.description && (
+                <Card.Text dangerouslySetInnerHTML={{ __html: formatDescription(data.description) }}></Card.Text>
+            )}
+            {data.html && <hr />}
+            {data.html && (
+                <HtmlFieldView htmlContent={data.html} dark={dark} />
+            )}
+            <hr />
+            <p>
+            {data.street}<br/>
+            {data.zip} {data.city} ({data.state})<br/>
+            <CountryView country_id={data.fk_countrylist_id} dark={dark} />
+            </p>
+            {data.phone && <p>📞 {data.phone}</p>}
+            {data.office_phone && <p>🏢 {data.office_phone}</p>}
+            {data.mobile && <p>📱 {data.mobile}</p>}
+            {data.fax && <p>📠 {data.fax}</p>}
+            {data.email && <p>✉️ <a href={`mailto:${data.email}`}>{data.email}</a></p>}
+            {data.url && <p>🔗 <a href={data.url} target="_blank" rel="noopener noreferrer">{data.url}</a></p>}
+            {data.p_iva && <p>💰 {data.p_iva}</p>}
+        </div>
     );
 }
 

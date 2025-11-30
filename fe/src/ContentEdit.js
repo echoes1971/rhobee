@@ -31,6 +31,8 @@ function NoteEdit({ data, onSave, onCancel, onDelete, saving, error, dark }) {
     const [formData, setFormData] = useState({
         name: data.name || '',
         description: data.description || '',
+        fk_obj_id: data.fk_obj_id || '0',
+        father_id: data.father_id || '0',
     });
 
     const handleChange = (e) => {
@@ -48,6 +50,15 @@ function NoteEdit({ data, onSave, onCancel, onDelete, saving, error, dark }) {
 
     return (
         <Form onSubmit={handleSubmit}>
+
+            <ObjectLinkSelector
+                value={formData.father_id || '0'}
+                onChange={handleChange}
+                classname="DBObject"
+                fieldName="father_id"
+                label={t('dbobjects.parent')}
+            />
+
             <Form.Group className="mb-3">
                 <Form.Label>{t('common.name')}</Form.Label>
                 <Form.Control
@@ -69,6 +80,15 @@ function NoteEdit({ data, onSave, onCancel, onDelete, saving, error, dark }) {
                     onChange={handleChange}
                 />
             </Form.Group>
+
+            <ObjectLinkSelector
+                value={formData.fk_obj_id}
+                onChange={handleChange}
+                classname="DBObject"
+                fieldName="fk_obj_id"
+                label={t('files.linked_object') || 'Linked Object'}
+                required={false}
+            />
 
             {error && (
                 <Alert variant="danger" className="mb-3">
@@ -132,6 +152,8 @@ function PageEdit({ data, onSave, onCancel, onDelete, saving, error, dark }) {
         description: data.description || '',
         html: data.html || '',
         language: data.language || 'en',
+        father_id: data.father_id || '0',
+        fk_obj_id: data.fk_obj_id || '0',
     });
 
     const handleChange = (e) => {
@@ -149,6 +171,15 @@ function PageEdit({ data, onSave, onCancel, onDelete, saving, error, dark }) {
 
     return (
         <Form onSubmit={handleSubmit}>
+
+            <ObjectLinkSelector
+                value={formData.father_id || '0'}
+                onChange={handleChange}
+                classname="DBObject"
+                fieldName="father_id"
+                label={t('dbobjects.parent')}
+            />
+
             <Form.Group className="mb-3">
                 <Form.Label>{t('common.name')}</Form.Label>
                 <Form.Control
@@ -234,6 +265,15 @@ function PageEdit({ data, onSave, onCancel, onDelete, saving, error, dark }) {
                 </Form.Text>
             </Form.Group>
 
+            <ObjectLinkSelector
+                value={formData.fk_obj_id}
+                onChange={handleChange}
+                classname="DBObject"
+                fieldName="fk_obj_id"
+                label={t('files.linked_object') || 'Linked Object'}
+                required={false}
+            />
+
             {error && (
                 <Alert variant="danger" className="mb-3">
                     {error}
@@ -309,6 +349,7 @@ function PersonEdit({ data, onSave, onCancel, onDelete, saving, error, dark }) {
         fk_users_id: data.fk_users_id || '0',
         fk_companies_id: data.fk_companies_id || '0',
         permissions: data.permissions || 'rwxr-x---',
+        father_id: data.father_id || '0',
     });
 
     const handleChange = (e) => {
@@ -326,6 +367,15 @@ function PersonEdit({ data, onSave, onCancel, onDelete, saving, error, dark }) {
 
     return (
         <Form onSubmit={handleSubmit}>
+
+            <ObjectLinkSelector
+                value={formData.father_id || '0'}
+                onChange={handleChange}
+                classname="DBObject"
+                fieldName="father_id"
+                label={t('dbobjects.parent')}
+            />
+
             <Form.Group className="mb-3">
                 <Form.Label>{t('common.name')}</Form.Label>
                 <Form.Control
@@ -603,6 +653,7 @@ function CompanyEdit({ data, onSave, onCancel, onDelete, saving, error, dark }) 
         url: data.url || '',
         p_iva: data.p_iva || '',
         permissions: data.permissions || 'rwxr-x---',
+        father_id: data.father_id || '0',
     });
 
     const handleChange = (e) => {
@@ -620,6 +671,15 @@ function CompanyEdit({ data, onSave, onCancel, onDelete, saving, error, dark }) 
 
     return (
         <Form onSubmit={handleSubmit}>
+
+            <ObjectLinkSelector
+                value={formData.father_id || '0'}
+                onChange={handleChange}
+                classname="DBObject"
+                fieldName="father_id"
+                label={t('dbobjects.parent')}
+            />
+
             <Form.Group className="mb-3">
                 <Form.Label>{t('common.name')}</Form.Label>
                 <Form.Control
