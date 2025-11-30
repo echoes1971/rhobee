@@ -510,12 +510,14 @@ func SearchObjectsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Search with LIKE and case-insensitive
-	results, err := repo.Search(searchInstance, true, false, orderBy)
-	if err != nil {
-		log.Printf("SearchObjectsHandler: Search failed: %v", err)
-		RespondSimpleError(w, ErrInternalServer, "Search failed: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
+	// results, err := repo.Search(searchInstance, true, false, orderBy)
+	// if err != nil {
+	// 	log.Printf("SearchObjectsHandler: Search failed: %v", err)
+	// 	RespondSimpleError(w, ErrInternalServer, "Search failed: "+err.Error(), http.StatusInternalServerError)
+	// 	return
+	// }
+	results := repo.SearchByName(namePattern, orderBy, true)
+	log.Print("SearchObjectsHandler: Total results found: ", len(results))
 
 	// Apply limit if specified
 	maxResults := len(results)

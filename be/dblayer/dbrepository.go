@@ -665,6 +665,40 @@ func (dbr *DBRepository) FullObjectById(objectID string, ignoreDeleted bool) DBE
 	}
 	return foundEntities[0]
 }
+func (dbr *DBRepository) SearchByName(name string, orderBy string, ignoreDeleted bool) []DBEntityInterface {
+	registeredTypes := dbr.factory.GetAllClassNames()
+	var queries []string
+
+	for _, className := range registeredTypes {
+		dbe := dbr.GetInstanceByClassName(className)
+		if dbe == nil {
+			continue
+		}
+		if !dbe.IsDBObject() {
+			continue
+		}
+		query := "SELECT '" + className + "' as classname, id,owner,group_id,permissions,creator," +
+			"creation_date,last_modify,last_modify_date," +
+			"deleted_by,deleted_date," +
+			"father_id,name,description" +
+			" from " + dbr.buildTableName(dbe) +
+			" WHERE name like '%" + name + "%'"
+		if ignoreDeleted {
+			query += " AND deleted_date IS NULL"
+		}
+		queries = append(queries, query)
+	}
+	searchString := strings.Join(queries, " UNION ")
+	if orderBy != "" {
+		searchString += " ORDER BY " + orderBy
+	}
+	log.Print("DBRepository::SearchByName: searchString=", searchString)
+	if dbr.Verbose {
+		log.Print("DBRepository::SearchByName: searchString=", searchString)
+	}
+	results := dbr.Select("DBObject", searchString)
+	return results
+}
 
 // GetChildren returns all direct children of a folder (objects with father_id = parentID)
 // Filters results by read permissions
@@ -699,9 +733,9 @@ func (dbr *DBRepository) GetChildren(parentID string, ignoreDeleted bool) []DBEn
 		clause := "father_id='" + parentID + "'"
 
 		switch className {
-		case "DBCompany":
-		case "DBObject":
-			continue
+		// case "DBCompany":
+		// case "DBObject":
+		// 	continue
 		case "DBPerson":
 			clause = "father_id='" + parentID + "'" + " or " + "fk_companies_id='" + parentID + "'"
 		default:
