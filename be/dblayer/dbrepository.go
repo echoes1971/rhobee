@@ -692,7 +692,6 @@ func (dbr *DBRepository) SearchByName(name string, orderBy string, ignoreDeleted
 	if orderBy != "" {
 		searchString += " ORDER BY " + orderBy
 	}
-	log.Print("DBRepository::SearchByName: searchString=", searchString)
 	if dbr.Verbose {
 		log.Print("DBRepository::SearchByName: searchString=", searchString)
 	}

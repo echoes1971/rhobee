@@ -67,7 +67,8 @@ function ObjectLinkSelector({ value, onChange, classname, fieldName, label, requ
                 params: {
                     classname: classname,
                     name: term,
-                    limit: 20
+                    limit: 20,
+                    type: "link" // I want only objects that I can attach to (write permission)
                 }
             });
 

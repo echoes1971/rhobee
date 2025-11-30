@@ -767,7 +767,6 @@ func (dbObject *DBObject) beforeUpdate(dbr *DBRepository, tx *sql.Tx) error {
 		dbObject.SetValue("last_modify", userID)
 	}
 	dbObject.SetValue("last_modify_date", CurrentDateTimeString())
-	log.Println("DBObject.beforeUpdate: values=", dbObject.ToJSON())
 	return nil
 }
 

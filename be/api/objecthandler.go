@@ -470,6 +470,7 @@ func SearchObjectsHandler(w http.ResponseWriter, r *http.Request) {
 	classname := r.URL.Query().Get("classname")
 	namePattern := r.URL.Query().Get("name")
 	limit := r.URL.Query().Get("limit")
+	searchType := r.URL.Query().Get("type") // optional, "link" to filter only linkable objects i.e. objects I can write
 
 	if classname == "" {
 		RespondSimpleError(w, ErrInvalidRequest, "Missing classname parameter", http.StatusBadRequest)
@@ -509,15 +510,18 @@ func SearchObjectsHandler(w http.ResponseWriter, r *http.Request) {
 		orderBy = "Common_Name"
 	}
 
+	var results []dblayer.DBEntityInterface
 	// Search with LIKE and case-insensitive
-	// results, err := repo.Search(searchInstance, true, false, orderBy)
-	// if err != nil {
-	// 	log.Printf("SearchObjectsHandler: Search failed: %v", err)
-	// 	RespondSimpleError(w, ErrInternalServer, "Search failed: "+err.Error(), http.StatusInternalServerError)
-	// 	return
-	// }
-	results := repo.SearchByName(namePattern, orderBy, true)
-	log.Print("SearchObjectsHandler: Total results found: ", len(results))
+	if classname == "DBUser" || classname == "DBCountry" {
+		results, err = repo.Search(searchInstance, true, false, orderBy)
+		if err != nil {
+			log.Printf("SearchObjectsHandler: Search failed: %v", err)
+			RespondSimpleError(w, ErrInternalServer, "Search failed: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+	} else {
+		results = repo.SearchByName(namePattern, orderBy, true)
+	}
 
 	// Apply limit if specified
 	maxResults := len(results)
@@ -528,13 +532,27 @@ func SearchObjectsHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	log.Print("SearchObjectsHandler: results=", len(results))
+	log.Print("SearchObjectsHandler: classname=", classname)
 	// Convert results to map array
 	var resultList []map[string]interface{}
 	for i := 0; i < maxResults && i < len(results); i++ {
 		entity := results[i]
-		// Check read permission
-		if !repo.CheckReadPermission(entity) {
-			continue
+		// IF searched classname is != DBObject, then filter other classnames
+		if classname != "DBUser" && classname != "DBCountry" {
+			if classname != "DBObject" && entity.GetMetadata("classname") != classname {
+				continue
+			}
+
+			// Check read permission
+			if !repo.CheckReadPermission(entity) {
+				continue
+			}
+
+			// If type=link, check write permission (I want only objects that I can attach to)
+			if searchType == "link" && !repo.CheckWritePermission(entity) {
+				continue
+			}
 		}
 
 		resultMap := make(map[string]interface{})
@@ -553,10 +571,13 @@ func SearchObjectsHandler(w http.ResponseWriter, r *http.Request) {
 		if desc := entity.GetValue("fullname"); desc != nil {
 			resultMap["description"] = desc
 		}
+
+		resultMap["classname"] = entity.GetMetadata("classname")
+
 		resultList = append(resultList, resultMap)
 	}
 
-	log.Printf("SearchObjectsHandler: Found %d %s objects matching '%s'", len(resultList), classname, namePattern)
+	// log.Printf("SearchObjectsHandler: Found %d %s objects matching '%s'", len(resultList), classname, namePattern)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
