@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Form, Button, Spinner, InputGroup, ListGroup } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import axiosInstance from './axios';
+import { classname2bootstrapIcon } from './sitenavigation_utils';
 
 /**
  * Generic object link selector component
@@ -42,6 +43,7 @@ function ObjectLinkSelector({ value, onChange, classname, fieldName, label, requ
                 setSelectedObject({
                     id: classname == 'DBUser' ? response.data.id : response.data.data.id,
                     name: classname == 'DBUser' ? response.data.login || 'Unnamed' : response.data.data.name || 'Unnamed',
+                    classname: classname == 'DBUser' ? 'DBUser' : response.data.metadata.classname,
                 });
             }
         } catch (error) {
@@ -115,6 +117,12 @@ function ObjectLinkSelector({ value, onChange, classname, fieldName, label, requ
             
             {selectedObject ? (
                 <InputGroup>
+                    <Button 
+                        variant="outline-secondary"
+                        disabled
+                    >
+                    <i className={`bi bi-${classname2bootstrapIcon(selectedObject.classname)}`} title={selectedObject.classname}></i>&nbsp;
+                    </Button>
                     <Form.Control
                         type="text"
                         value={selectedObject.name}
@@ -155,6 +163,8 @@ function ObjectLinkSelector({ value, onChange, classname, fieldName, label, requ
                                 >
                                     <div className="d-flex justify-content-between align-items-start">
                                         <div>
+                                            <i className={`bi bi-${classname2bootstrapIcon(obj.classname)}`} title={obj.classname}></i>
+                                            &nbsp;
                                             <strong>{obj.name}</strong>
                                             {obj.description && (
                                                 <div className="text-muted small">
