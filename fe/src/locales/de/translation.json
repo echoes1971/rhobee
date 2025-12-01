@@ -6,13 +6,15 @@
     "new": "Neu",
     "edit": "Bearbeiten",
     "save": "Speichern",
+    "saved": "Gespeichert",
     "saving": "Speichern...",
     "cancel": "Abbrechen",
     "delete": "Löschen",
-    "search": "Suche",
+    "search": "Suchen",
     "select": "Auswählen",
     "loading": "Laden...",
     "name": "Name",
+    "language": "Sprache",
     "description": "Beschreibung",
     "address": "Adresse",
     "street": "Straße",
@@ -130,8 +132,11 @@
   },
   "folder": {
     "children_order": "Reihenfolge der Kinder",
-    "drag_to_reorder": "Ziehen zum Neu-Ordnen",
+    "drag_to_reorder": "Ziehen zum Neuordnen",
     "no_children_selected": "Keine Kinder für benutzerdefinierte Reihenfolge ausgewählt",
-    "available_children": "Verfügbare Kinder"
+    "available_children": "Verfügbare Kinder",
+    "index_page_editor": "Index-Seiten-Editor",
+    "index_page_hint": "Bearbeiten Sie den HTML-Inhalt, der als Startseite des Ordners angezeigt wird. Erstellen Sie eine für jede Sprache.",
+    "save_index": "Indexseite Speichern"
   }
 }

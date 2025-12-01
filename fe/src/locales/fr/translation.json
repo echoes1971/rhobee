@@ -6,6 +6,7 @@
     "new": "Nouveau",
     "edit": "Modifier",
     "save": "Enregistrer",
+    "saved": "Enregistré",
     "saving": "Enregistrement...",
     "cancel": "Annuler",
     "delete": "Supprimer",
@@ -13,6 +14,7 @@
     "select": "Sélectionner",
     "loading": "Chargement...",
     "name": "Nom",
+    "language": "Langue",
     "description": "Description",
     "address": "Adresse",
     "street": "Rue",
@@ -132,6 +134,9 @@
         "children_order": "Ordre des Enfants",
         "drag_to_reorder": "Glisser pour réorganiser",
         "no_children_selected": "Aucun enfant sélectionné pour l'ordre personnalisé",
-        "available_children": "Enfants Disponibles"
+        "available_children": "Enfants Disponibles",
+        "index_page_editor": "Éditeur de Page d'Index",
+        "index_page_hint": "Modifiez le contenu HTML qui sera affiché comme page d'accueil du dossier. Créez-en une pour chaque langue.",
+        "save_index": "Enregistrer la Page d'Index"
     }
 }

@@ -6,6 +6,7 @@
     "new": "New",
     "edit": "Edit",
     "save": "Save",
+    "saved": "Saved",
     "saving": "Saving...",
     "cancel": "Cancel",
     "delete": "Delete",
@@ -13,6 +14,7 @@
     "select": "Select",
     "loading": "Loading...",
     "name": "Name",
+    "language": "Language",
     "description": "Description",
     "address": "Address",
     "street": "Street",
@@ -132,6 +134,9 @@
     "children_order": "Children Sort Order",
     "drag_to_reorder": "Drag to reorder",
     "no_children_selected": "No children selected for custom order",
-    "available_children": "Available Children"
+    "available_children": "Available Children",
+    "index_page_editor": "Index Page Editor",
+    "index_page_hint": "Edit the HTML content that will be displayed as the folder's landing page. Create one for each language.",
+    "save_index": "Save Index Page"
   }
 }

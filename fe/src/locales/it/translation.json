@@ -6,6 +6,7 @@
         "new": "Nuovo",
         "edit": "Modifica",
         "save": "Salva",
+        "saved": "Salvato",
         "saving": "Salvataggio...",
         "cancel": "Annulla",
         "delete": "Elimina",
@@ -13,6 +14,7 @@
         "select": "Seleziona",
         "loading": "Caricamento...",
         "name": "Nome",
+        "language": "Lingua",
         "description": "Descrizione",
         "address": "Indirizzo",
         "street": "Via",
@@ -132,6 +134,9 @@
         "children_order": "Ordine Figli",
         "drag_to_reorder": "Trascina per riordinare",
         "no_children_selected": "Nessun figlio selezionato per l'ordinamento personalizzato",
-        "available_children": "Figli Disponibili"
+        "available_children": "Figli Disponibili",
+        "index_page_editor": "Editor Pagina Indice",
+        "index_page_hint": "Modifica il contenuto HTML che verrà mostrato come pagina principale della cartella. Creane una per ogni lingua.",
+        "save_index": "Salva Pagina Indice"
     }
 }

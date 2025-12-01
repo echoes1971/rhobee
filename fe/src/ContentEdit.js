@@ -1434,11 +1434,23 @@ function FolderEdit({ data, onSave, onCancel, onDelete, saving, error, dark }) {
     const [loadingChildren, setLoadingChildren] = useState(false);
     const [sortedChildrenIds, setSortedChildrenIds] = useState([]);
     const [draggedIndex, setDraggedIndex] = useState(null);
+    
+    // Index page editor states
+    const [indexPages, setIndexPages] = useState([]);
+    const [selectedIndexLanguage, setSelectedIndexLanguage] = useState('en');
+    const [indexHtml, setIndexHtml] = useState('');
+    const [indexHtmlWithTokens, setIndexHtmlWithTokens] = useState('');
+    const [loadingIndexTokens, setLoadingIndexTokens] = useState(false);
+    const [savingIndex, setSavingIndex] = useState(false);
+    const [quillRefIndex, setQuillRefIndex] = useState(null);
+    const [showFileSelectorIndex, setShowFileSelectorIndex] = useState(false);
+    const [fileSelectorTypeIndex, setFileSelectorTypeIndex] = useState('file');
 
-    // Load children on mount
+    // Load children and index pages on mount
     useEffect(() => {
         if (data.id) {
             loadChildren();
+            loadIndexPages();
         }
     }, [data.id]);
 
@@ -1465,12 +1477,137 @@ function FolderEdit({ data, onSave, onCancel, onDelete, saving, error, dark }) {
         }
     };
 
+    const loadIndexPages = async () => {
+        try {
+            const response = await axiosInstance.get(`/nav/${data.id}/indexes`);
+            const pages = response.data.indexes || [];
+            setIndexPages(pages);
+            // Load HTML for current language if exists
+            const currentPage = pages.find(p => p.data.language && p.data.language.indexOf(selectedIndexLanguage) >= 0);
+            if (currentPage) {
+                setIndexHtml(currentPage.data.html || '');
+                await loadIndexTokens(currentPage.data.html || '');
+            } else {
+                setIndexHtml('');
+                setIndexHtmlWithTokens('');
+            }
+        } catch (error) {
+            console.error('Failed to load index pages:', error);
+            setIndexPages([]);
+        }
+    };
+
+    const loadIndexTokens = async (html) => {
+        if (!html) {
+            setIndexHtmlWithTokens('');
+            return;
+        }
+        setLoadingIndexTokens(true);
+        try {
+            const fileIDs = extractFileIDs(html);
+            if (fileIDs.length > 0) {
+                const tokens = await requestFileTokens(fileIDs);
+                const htmlWithTokens = injectTokensForEditing(html, tokens);
+                setIndexHtmlWithTokens(htmlWithTokens);
+            } else {
+                setIndexHtmlWithTokens(html);
+            }
+        } catch (error) {
+            console.error('Failed to load tokens for index:', error);
+            setIndexHtmlWithTokens(html);
+        } finally {
+            setLoadingIndexTokens(false);
+        }
+    };
+
+    // Reload index HTML when language changes
+    useEffect(() => {
+        const currentPage = indexPages.find(p => p.data.language && p.data.language.indexOf(selectedIndexLanguage) >= 0);
+        if (currentPage) {
+            setIndexHtml(currentPage.data.html || '');
+            loadIndexTokens(currentPage.data.html || '');
+        } else {
+            setIndexHtml('');
+            setIndexHtmlWithTokens('');
+        }
+    }, [selectedIndexLanguage, indexPages]);
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({
             ...prev,
             [name]: value
         }));
+    };
+
+    const handleIndexHtmlChange = (content) => {
+        setIndexHtml(content);
+        setIndexHtmlWithTokens(content);
+    };
+
+    const handleFileSelectIndex = (file) => {
+        if (!quillRefIndex) return;
+        
+        const quill = quillRefIndex.getEditor();
+        const range = quill.getSelection(true);
+        
+        if (fileSelectorTypeIndex === 'image') {
+            const imgHtml = `<img src="/api/files/${file.id}/download" data-dbfile-id="${file.id}" alt="${file.name}" style="max-width: 100%;" />`;
+            quill.clipboard.dangerouslyPasteHTML(range.index, imgHtml);
+        } else {
+            const linkHtml = `<a href="/api/files/${file.id}/download" data-dbfile-id="${file.id}">${file.name}</a>`;
+            quill.clipboard.dangerouslyPasteHTML(range.index, linkHtml);
+        }
+        
+        // Update state
+        handleIndexHtmlChange(quill.root.innerHTML);
+    };
+
+    const handleInsertFileIndex = () => {
+        setFileSelectorTypeIndex('file');
+        setShowFileSelectorIndex(true);
+    };
+
+    const handleInsertImageIndex = () => {
+        setFileSelectorTypeIndex('image');
+        setShowFileSelectorIndex(true);
+    };
+
+    const handleSaveIndex = async () => {
+        setSavingIndex(true);
+        try {
+            const cleanedHtml = cleanTokensBeforeSave(indexHtml);
+            const currentPage = indexPages.find(p => p.data.language && p.data.language.indexOf(selectedIndexLanguage) >= 0);
+            
+            if (currentPage) {
+                // Update existing page
+                await axiosInstance.put(`/objects/${currentPage.data.id}`, {
+                    ...currentPage.data,
+                    html: cleanedHtml
+                });
+            } else {
+                // Create new index page
+                await axiosInstance.post('/objects', {
+                    classname: 'DBPage',
+                    name: 'index',
+                    // description: `Index page for ${selectedIndexLanguage}`,
+                    description: '',
+                    language: selectedIndexLanguage,
+                    html: cleanedHtml,
+                    father_id: data.id,
+                    permissions: data.permissions || ''
+                });
+            }
+            
+            // Reload index pages
+            await loadIndexPages();
+            alert(t('common.saved'));
+        } catch (error) {
+            console.error('Failed to save index:', error);
+            alert(t('errors.save_failed'));
+        } finally {
+            setSavingIndex(false);
+        }
     };
 
     const handleDragStart = (e, index) => {
@@ -1561,7 +1698,91 @@ function FolderEdit({ data, onSave, onCancel, onDelete, saving, error, dark }) {
                     disabled={saving}
                 />
             </Form.Group>
-<h2 className='text-danger'>TODO: Edit the index page, automatically create if not existing for the current language.</h2>
+
+            {/* Index Page Editor */}
+            <div className="mb-4 p-3 border rounded">
+                <h5>{t('folder.index_page_editor')}</h5>
+                <p className="text-muted small">{t('folder.index_page_hint')}</p>
+                
+                <Form.Group className="mb-3">
+                    <Form.Label>{t('common.language')}</Form.Label>
+                    <Form.Select
+                        value={selectedIndexLanguage}
+                        onChange={(e) => setSelectedIndexLanguage(e.target.value)}
+                        disabled={savingIndex || loadingIndexTokens}
+                    >
+                        <option value="en">English</option>
+                        <option value="it">Italiano</option>
+                        <option value="de">Deutsch</option>
+                        <option value="fr">Français</option>
+                    </Form.Select>
+                </Form.Group>
+
+                {loadingIndexTokens ? (
+                    <div className="text-center p-3">
+                        <Spinner animation="border" />
+                    </div>
+                ) : (
+                    <>
+                        <div className="mb-2">
+                            <Button
+                                variant="outline-secondary"
+                                size="sm"
+                                onClick={handleInsertFileIndex}
+                                disabled={savingIndex}
+                                className="me-2"
+                            >
+                                <i className="bi bi-file-earmark"></i> {t('files.insert_file')}
+                            </Button>
+                            <Button
+                                variant="outline-secondary"
+                                size="sm"
+                                onClick={handleInsertImageIndex}
+                                disabled={savingIndex}
+                            >
+                                <i className="bi bi-image"></i> {t('files.insert_image')}
+                            </Button>
+                        </div>
+                        
+                        <ReactQuill
+                            ref={setQuillRefIndex}
+                            theme="snow"
+                            value={indexHtmlWithTokens}
+                            onChange={handleIndexHtmlChange}
+                            modules={{
+                                toolbar: [
+                                    [{ 'header': [1, 2, 3, false] }],
+                                    ['bold', 'italic', 'underline', 'strike'],
+                                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                                    [{ 'color': [] }, { 'background': [] }],
+                                    ['link', 'blockquote', 'code-block'],
+                                    ['clean']
+                                ]
+                            }}
+                        />
+                        
+                        <div className="mt-2">
+                            <Button
+                                variant="primary"
+                                onClick={handleSaveIndex}
+                                disabled={savingIndex}
+                            >
+                                {savingIndex ? (
+                                    <>
+                                        <Spinner animation="border" size="sm" className="me-2" />
+                                        {t('common.saving')}
+                                    </>
+                                ) : (
+                                    <>
+                                        <i className="bi bi-save"></i> {t('folder.save_index')}
+                                    </>
+                                )}
+                            </Button>
+                        </div>
+                    </>
+                )}
+            </div>
+
             <Form.Group className="mb-3">
                 <Form.Label>{t('files.linked_object')}</Form.Label>
                 <ObjectLinkSelector
@@ -1665,8 +1886,9 @@ function FolderEdit({ data, onSave, onCancel, onDelete, saving, error, dark }) {
                 <Form.Label>{t('common.permissions')}</Form.Label>
                 <PermissionsEditor
                     value={formData.permissions}
-                    onChange={(value) => setFormData(prev => ({ ...prev, permissions: value }))}
-                    disabled={saving}
+                    onChange={handleChange}
+                    name="permissions"
+                    label={t('permissions.current') || 'Permissions'}
                     dark={dark}
                 />
             </Form.Group>
@@ -1709,6 +1931,13 @@ function FolderEdit({ data, onSave, onCancel, onDelete, saving, error, dark }) {
                     {t('common.delete')}
                 </Button>
             </div>
+            
+            <FileSelector
+                show={showFileSelectorIndex}
+                onHide={() => setShowFileSelectorIndex(false)}
+                onSelect={handleFileSelectIndex}
+                fileType={fileSelectorTypeIndex}
+            />
         </Form>
     );
 }
