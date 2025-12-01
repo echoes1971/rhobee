@@ -1,10 +1,239 @@
-# R-Project NextGen: Roadmap.
+# R-Project NextGen: Roadmap
 
+## Project Name: ρBee (rhobee)
+A lightweight CMS framework based on a flexible DBObject architecture.
 
 References:
 - Link to the old project: https://github.com/echoes1971/r-prj
   See the php subfolder.
 - db/00_initial.sql
+
+---
+
+## 🎯 MVP - Priority Features
+
+### Search & Discovery (NEXT - MVP BLOCKER)
+- [ ] Full-text search in HTML content
+  - [ ] Anonymous user search (public content only)
+  - [ ] Logged user search (public + accessible content)
+- [ ] Advanced filters
+  - [ ] Date range filter
+  - [ ] File type filter
+  - [ ] Author filter
+  - [ ] Language filter
+- [ ] Search results highlighting
+- [ ] Search in name, description, and HTML content
+- [ ] Pagination for search results
+
+### Rich Text Editor Improvements (HIGH PRIORITY)
+- [ ] Tables support in ReactQuill
+- [ ] Markdown alternative editor
+  - [ ] Toggle between WYSIWYG and Markdown
+  - [ ] Markdown preview
+- [ ] Code syntax highlighting
+- [ ] Custom CSS classes selector
+- [ ] Emoji picker
+
+### OAuth Integration (HIGH PRIORITY - if not complicated)
+- [ ] Google OAuth login
+- [ ] GitHub OAuth login
+- [ ] Facebook OAuth login (optional)
+- [ ] Link existing account with OAuth
+- [ ] OAuth user creation with default permissions
+
+---
+
+## ✅ Completed Features
+
+### CMS Core
+- [x] DBFolder with index pages (multi-language)
+- [x] DBFolder children sort order (drag & drop)
+- [x] DBPage with WYSIWYG editor
+- [x] DBNote
+- [x] DBFile upload/download
+- [x] DBPerson
+- [x] DBCompany
+- [x] File embedding system with JWT tokens
+- [x] FileSelector with write permission filtering
+- [x] Multi-language support (EN, IT, DE, FR)
+
+### Site Navigation
+- [x] Tree view sidebar with expandable nodes
+- [x] Breadcrumb navigation
+- [x] Language-based content filtering
+- [x] Public/private content access control
+- [x] URL-based object access (/<object-id>)
+- [x] Edit button for authorized users
+
+### User Management
+- [x] Login/logout
+- [x] JWT authentication
+- [x] User profile page
+- [x] Group management
+- [x] Permissions system (rwx-------)
+- [x] Language preference per user
+
+### File System
+- [x] File upload with drag & drop
+- [x] Image preview
+- [x] File download with token-based auth
+- [x] Write permission check for embedding
+- [x] MIME type filtering
+- [x] Alternative link support
+
+---
+
+## 📋 TODO - Organized by Priority
+
+### Security & Performance
+- [ ] Token auto-refresh (file preview tokens expire after 15 min)
+- [ ] Session storage/caching for tokens
+- [ ] Rate limiting for file download
+- [ ] Rate limiting for API endpoints (general)
+- [ ] CSRF protection
+- [ ] Content Security Policy headers
+- [ ] Password encryption with salt (already in plan, not implemented)
+- [ ] Rainbow table attack protection
+
+### CMS Features
+- [ ] DBLink implementation (mentioned but not implemented)
+- [ ] DBEvent implementation (mentioned but not implemented)
+- [ ] Versioning/History for DBPage (track who modified what when)
+- [ ] Draft system for content (save without publishing)
+- [ ] Content scheduling (publish at specific date/time)
+- [ ] Bulk operations
+  - [ ] Delete multiple objects
+  - [ ] Move multiple objects
+  - [ ] Change permissions for multiple
+- [ ] Content duplication/cloning
+- [ ] Recently viewed/edited list
+- [ ] Favorites/bookmarks system
+- [ ] Tags system for better categorization
+- [ ] Content templates
+
+### File Management
+- [ ] File upload progress indicator
+- [ ] Image resizing/thumbnails on upload (backend exists, integrate in UI)
+- [ ] File storage optimization (nested directory structure: `files/XX/YY/ZZZZ...`)
+- [ ] Quota management per user/group
+- [ ] File versioning
+- [ ] Batch file upload (multiple files at once)
+- [ ] Preview for more file types (PDF viewer, video player)
+- [ ] Image editing tools (crop, rotate, filters)
+
+### User Experience
+- [ ] Mobile responsive improvements
+- [ ] Dark mode polish
+- [ ] Accessibility improvements
+  - [ ] ARIA labels
+  - [ ] Keyboard navigation
+  - [ ] Screen reader support
+- [ ] Undo/Redo system for editors
+- [ ] Auto-save drafts (local storage)
+- [ ] Copy/paste improvements in editor
+- [ ] Drag & drop file insertion in editor
+
+### Administration
+- [ ] Admin dashboard with statistics
+  - [ ] User activity
+  - [ ] Content statistics
+  - [ ] Storage usage
+  - [ ] Popular pages
+- [ ] Audit log (comprehensive who/what/when tracking)
+- [ ] User activity monitoring
+- [ ] Backup/restore functionality
+- [ ] Database migrations management
+- [ ] System health check endpoint
+- [ ] Email configuration for notifications
+
+### Frontend
+- [ ] Handle error messages refinement
+- [ ] Error translation in 4 languages (partial)
+- [ ] Unit tests with React Testing Library
+- [ ] Registration process
+  - [ ] Non-logged user can register
+  - [ ] Email confirmation to activate account
+  - [ ] Add user_enabled field to table
+  - [ ] New users start with private group only (rwx------)
+
+### Backend
+- [ ] Add Swagger/OpenAPI documentation
+- [ ] Database transactionality for writes
+- [ ] Transaction isolation level configuration
+- [ ] Error handling improvements
+  - [ ] Structured logging
+  - [ ] Error messages to UI
+- [ ] Logging strategy
+  - [ ] What to log (access, errors, changes, etc.)
+  - [ ] Log rotation
+  - [ ] Log levels (debug, info, warn, error)
+- [ ] Unit tests
+  - [ ] Database layer tests
+  - [ ] Handler tests
+  - [ ] Permission tests
+- [ ] Pagination for large result sets
+- [ ] Support for PostgreSQL and SQLite3
+
+### Developer Experience
+- [ ] API documentation improvements
+- [ ] GraphQL endpoint (alternative to REST)?
+- [ ] Webhook system for events (onCreate, onUpdate, onDelete)
+- [ ] Plugin/extension system
+- [ ] CLI tools for admin tasks
+- [ ] Docker compose for development
+- [ ] Hot reload for backend (air or similar)
+
+### Nice to Have
+- [ ] Comments system for pages
+- [ ] Sharing links with expiry date
+- [ ] Email notifications
+  - [ ] Content published
+  - [ ] User mentioned
+  - [ ] Permission granted
+- [ ] Two-factor authentication (2FA)
+- [ ] ~~OAuth providers (Google, GitHub, etc.)~~ (moved to MVP priorities)
+- [ ] Export content (PDF, ZIP, JSON)
+- [ ] Import content (from WordPress, other CMS)
+- [ ] RSS/Atom feeds for content
+- [ ] Sitemap generation (XML for SEO)
+- [ ] OpenGraph meta tags for social sharing
+- [ ] Print-friendly page styles
+
+---
+
+## 🔧 Technical Debt & Known Issues
+
+### File Storage
+- Current: Flat directory structure per object ID
+- Issue: Scalability concerns with many files
+- Solution: Nested structure (files/XX/YY/ZZZZ...)
+
+### Database
+- Transaction isolation levels need definition
+- Add indexes for performance (especially search)
+- Consider migration strategy for future schema changes
+
+### Error Handling
+- Standardize error responses across API
+- Better error messages for users
+- Error tracking/monitoring system
+
+### Code Organization
+- Extract token management into custom React hook
+- Separate API client from components
+- Backend: Consider hexagonal architecture
+
+---
+
+## OLD NOTES (To be organized/removed)
+
+## TODO
+
+FE
+- ~~edit index page of a folder~~ ✅ DONE
+
+
+
 
 ## Features
 
@@ -59,9 +288,15 @@ Features
 
 
 Frontend
+- refine the UI for all data types (objects)
 - handle error messages
   - translation in the 4 languages
 - unit tests: React Testing Library
+- registration process
+  - a non logged user can register a new account
+  - a new user has only his own private group and can add objects only visible to himself rwx------
+  - send confirmation email to activate the user: how?
+  - add a field user_enabled to the table?
 
 Backend
 - add swagger
@@ -81,6 +316,7 @@ Backend
   - any user created or modified with this tool MUST have the password encrypted
   - beware of rainbow tables attacks
 - pagination
+- support for postgresql and sqlite3
 
 
 ## The framework: a detailed analisys of the backend
