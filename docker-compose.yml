@@ -29,9 +29,9 @@ services:
     depends_on:
       - be
     environment:
-      # - REACT_APP_ENDPOINT=http://localhost:8080/api  # Per connettere FE a BE
-      - REACT_APP_API_URL=/api  # Per connettere FE a BE
-      - REACT_APP_HOME_OBJECT_ID=-10  # Object ID della home page
+      - REACT_APP_SITE_TITLE=ρBee CMS
+      - REACT_APP_ENDPOINT=/api
+      - REACT_APP_HOME_OBJECT_ID=-10
 
   be:
     build:
