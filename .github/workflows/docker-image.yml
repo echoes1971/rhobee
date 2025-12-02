@@ -1,0 +1,22 @@
+name: Docker Image CI
+
+env:
+  DOCKER_IMAGE_NAME: rprj-ng
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build the BE Docker image
+      run:
+        cd be
+        docker build . --file Dockerfile --tag ${DOCKER_IMAGE_NAME}-be:$(cat ../VERSION)
