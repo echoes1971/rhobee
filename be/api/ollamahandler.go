@@ -26,12 +26,13 @@ func OllamaInit(appName, url, model string) error {
 	if ollamaURL != "" && ollamaModel != "" {
 		// go UpdateOllamaDefaultPageResponse("en")
 		log.Printf("Ollama initialized with URL: %s and Model: %s\n", ollamaURL, ollamaModel)
+
+		OllamaFolderInit("Ollama Pages")
+
 	} else {
 		log.Println("Ollama not configured - using fallback responses")
 	}
 	lastDefaultPageResponse = "<h2>Welcome! 👋</h2><p>Please log in to continue using the application.</p>"
-
-	OllamaFolderInit("Ollama Pages")
 
 	return nil
 }
