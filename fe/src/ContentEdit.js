@@ -330,9 +330,24 @@ function PageEdit({ data, onSave, onCancel, onDelete, saving, error, dark }) {
         }));
     };
 
-    const handleHtmlChange = (value) => {
+    const handleHtmlChange = async (value) => {
         setFormData(prev => ({...prev, html: value}));
-        setHtmlWithTokens(value);
+        
+        // Extract file IDs and reload tokens for immediate preview
+        const fileIDs = extractFileIDs(value);
+        if (fileIDs.length === 0) {
+            setHtmlWithTokens(value);
+            return;
+        }
+        
+        try {
+            const tokens = await requestFileTokens(fileIDs);
+            const htmlWithTokens = injectTokensForEditing(value, tokens);
+            setHtmlWithTokens(htmlWithTokens);
+        } catch (error) {
+            console.error('Failed to reload tokens after HTML change:', error);
+            setHtmlWithTokens(value);
+        }
     };
 
     // Handle file selection from modal
@@ -1591,9 +1606,24 @@ function FolderEdit({ data, onSave, onCancel, onDelete, saving, error, dark }) {
         }));
     };
 
-    const handleIndexHtmlChange = (content) => {
+    const handleIndexHtmlChange = async (content) => {
         setIndexHtml(content);
-        setIndexHtmlWithTokens(content);
+        
+        // Extract file IDs and reload tokens for immediate preview
+        const fileIDs = extractFileIDs(content);
+        if (fileIDs.length === 0) {
+            setIndexHtmlWithTokens(content);
+            return;
+        }
+        
+        try {
+            const tokens = await requestFileTokens(fileIDs);
+            const htmlWithTokens = injectTokensForEditing(content, tokens);
+            setIndexHtmlWithTokens(htmlWithTokens);
+        } catch (error) {
+            console.error('Failed to reload tokens after index HTML change:', error);
+            setIndexHtmlWithTokens(content);
+        }
     };
 
     const handleFileSelectIndex = (file) => {
