@@ -46,7 +46,6 @@ jobs:
         context: ./be
         file: ./be/Dockerfile        # optional if Dockerfile is named Dockerfile in ./be
         push: true
-        tags: ghcr.io/${{ github.repository_owner }}/${{DOCKER_IMAGE_NAME}}-be:latest,ghcr.io/${{ github.repository_owner }}/${{DOCKER_IMAGE_NAME}}-be:${{ steps.ver.outputs.tag }}
-
-    - name: Check images
-      run: docker image ls
+        tags: |
+          ghcr.io/${{ github.repository_owner }}/${{ env.DOCKER_IMAGE_NAME }}-be:latest
+          ghcr.io/${{ github.repository_owner }}/${{ env.DOCKER_IMAGE_NAME }}-be:${{ steps.ver.outputs.tag }}
