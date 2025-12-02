@@ -13,7 +13,7 @@ References:
 ## 🎯 MVP - Priority Features
 
 ### Search & Discovery (NEXT - MVP BLOCKER)
-- [ ] Full-text search in HTML content
+- [ ] Full-text search in HTML content // 👤 Roberto: A search box in the NavBar that leads to a /nav/search with results and filters
   - [ ] Anonymous user search (public content only)
   - [ ] Logged user search (public + accessible content)
 - [ ] Advanced filters
@@ -22,24 +22,29 @@ References:
   - [ ] Author filter
   - [ ] Language filter
 - [ ] Search results highlighting
-- [ ] Search in name, description, and HTML content
+- [ ] Search in name, description, and HTML content // ⚠️ all objects have name and description, only page and news have html
 - [ ] Pagination for search results
+
+### Documentation
+- [ ] Easy steps to get the CMS up and running on your machine
+- [ ] Project description: brief description of the project, some how-to, feature list, history?
+- [ ] License: gpl? lgpl? apache 2.0?
 
 ### Rich Text Editor Improvements (HIGH PRIORITY)
 - [ ] Tables support in ReactQuill
-- [ ] Markdown alternative editor
-  - [ ] Toggle between WYSIWYG and Markdown
+- [ ] Markdown alternative editor // ❓ where do we store the markdown, in the html field or another? if it's the same field, how do we distinguish the 2 in View and Edit?
+  - [ ] Toggle between WYSIWYG and Markdown // 👤 Roberto: I love Markdown, I don't know why :)
   - [ ] Markdown preview
-- [ ] Code syntax highlighting
-- [ ] Custom CSS classes selector
-- [ ] Emoji picker
+- [ ] Code syntax highlighting // I'd say "nice to have" (it will give a professional feeling to the end user), by now it seems redundant as we have a wysiwig editor
+- [ ] Custom CSS classes selector // 👤 Roberto: YES ! Let's customize the site colors at first (should be easy with bootstrap primary etc.). I'd like to have selectable skins for the public site, but that looks too much for now?
+- [ ] Emoji picker // 👤 Roberto: YES !
 
 ### OAuth Integration (HIGH PRIORITY - if not complicated)
-- [ ] Google OAuth login
+- [ ] Google OAuth login // 👤 Roberto: YES !
 - [ ] GitHub OAuth login
 - [ ] Facebook OAuth login (optional)
 - [ ] Link existing account with OAuth
-- [ ] OAuth user creation with default permissions
+- [ ] OAuth user creation with default permissions // 👤 Roberto: YES !
 
 ---
 
@@ -92,74 +97,75 @@ References:
 - [ ] Rate limiting for API endpoints (general)
 - [ ] CSRF protection
 - [ ] Content Security Policy headers
-- [ ] Password encryption with salt (already in plan, not implemented)
+- [x] Password encryption with salt (already in plan, not implemented) // 👤 Roberto: it's done
 - [ ] Rainbow table attack protection
 
 ### CMS Features
-- [ ] DBLink implementation (mentioned but not implemented)
-- [ ] DBEvent implementation (mentioned but not implemented)
+- [ ] DBLink implementation (mentioned but not implemented) // 👤 Roberto: I'm not sure if I want to port it from the old project
+- [ ] DBEvent implementation (mentioned but not implemented) // 👤 Roberto: it's basically a calendar entry, with field about recurring events too
 - [ ] Versioning/History for DBPage (track who modified what when)
 - [ ] Draft system for content (save without publishing)
-- [ ] Content scheduling (publish at specific date/time)
-- [ ] Bulk operations
+- [ ] Content scheduling (publish at specific date/time) // 👤 Roberto: simple fields with publish date start and publush date end?
+- [ ] Bulk operations // 👤 Roberto: yes
   - [ ] Delete multiple objects
   - [ ] Move multiple objects
   - [ ] Change permissions for multiple
 - [ ] Content duplication/cloning
 - [ ] Recently viewed/edited list
-- [ ] Favorites/bookmarks system
+- [ ] Favorites/bookmarks system // 👤 Roberto: nice to have, but requires db modifications
 - [ ] Tags system for better categorization
 - [ ] Content templates
+- [ ] Ollama integration? For assisted document redacting or automatic translation? llama3.2 seems light and efficient enough. Open to suggestions
 
 ### File Management
 - [ ] File upload progress indicator
-- [ ] Image resizing/thumbnails on upload (backend exists, integrate in UI)
-- [ ] File storage optimization (nested directory structure: `files/XX/YY/ZZZZ...`)
+- [ ] Image resizing/thumbnails on upload (backend exists, integrate in UI) // 👤 Roberto: we have already thumbnails in the BE. Are not yet used in the FE
+- [ ] File storage optimization (nested directory structure: `files/XX/YY/ZZZZ...`) // 👤 Roberto: now the structure is <father_id>/<file>
 - [ ] Quota management per user/group
 - [ ] File versioning
-- [ ] Batch file upload (multiple files at once)
-- [ ] Preview for more file types (PDF viewer, video player)
-- [ ] Image editing tools (crop, rotate, filters)
+- [ ] Batch file upload (multiple files at once) // 👤 Roberto: yes
+- [ ] Preview for more file types (PDF viewer, video player) // 👤 Roberto: yes! how?
+- [ ] Image editing tools (crop, rotate, filters) // 👤 Roberto: if easy. "nice to have"
 
 ### User Experience
-- [ ] Mobile responsive improvements
+- [ ] Mobile responsive improvements // 👤 Roberto: it doesn't look so bad now in mobile, does it?
 - [ ] Dark mode polish
-- [ ] Accessibility improvements
+- [ ] Accessibility improvements // 👤 Roberto: "nice to have"
   - [ ] ARIA labels
   - [ ] Keyboard navigation
   - [ ] Screen reader support
 - [ ] Undo/Redo system for editors
-- [ ] Auto-save drafts (local storage)
+- [ ] Auto-save drafts (local storage) // 👤 Roberto: why not :)
 - [ ] Copy/paste improvements in editor
-- [ ] Drag & drop file insertion in editor
+- [ ] Drag & drop file insertion in editor // 👤 Roberto: yes
 
 ### Administration
 - [ ] Admin dashboard with statistics
-  - [ ] User activity
+  - [ ] User activity // 👤 Roberto: how?
   - [ ] Content statistics
-  - [ ] Storage usage
-  - [ ] Popular pages
-- [ ] Audit log (comprehensive who/what/when tracking)
-- [ ] User activity monitoring
-- [ ] Backup/restore functionality
+  - [ ] Storage usage // 👤 Roberto: should be easy
+  - [ ] Popular pages // 👤 Roberto: needs db support
+- [ ] Audit log (comprehensive who/what/when tracking) // 👤 Roberto: not easy
+- [ ] User activity monitoring // 👤 Roberto: not easy / how?
+- [ ] Backup/restore functionality // 👤 Roberto: mariadb dump/restore or something smarter?
 - [ ] Database migrations management
 - [ ] System health check endpoint
-- [ ] Email configuration for notifications
+- [ ] Email configuration for notifications // 👤 Roberto: hah! I think a local smtp server will not work, right?
 
 ### Frontend
 - [ ] Handle error messages refinement
 - [ ] Error translation in 4 languages (partial)
-- [ ] Unit tests with React Testing Library
-- [ ] Registration process
+- [ ] Unit tests with React Testing Library // 👤 Roberto: I need at least one as example, so I can work on it in my spare time
+- [ ] Registration process // 👤 Roberto: YES! See also OAuth
   - [ ] Non-logged user can register
   - [ ] Email confirmation to activate account
   - [ ] Add user_enabled field to table
   - [ ] New users start with private group only (rwx------)
 
 ### Backend
-- [ ] Add Swagger/OpenAPI documentation
-- [ ] Database transactionality for writes
-- [ ] Transaction isolation level configuration
+- [ ] Add Swagger/OpenAPI documentation // 👤 Roberto: if easy, I'd say to put it in place ASAP
+- [ ] Database transactionality for writes // 👤 Roberto: we have it, haven't we?
+- [ ] Transaction isolation level configuration // 👤 Roberto: we have it, haven't we?
 - [ ] Error handling improvements
   - [ ] Structured logging
   - [ ] Error messages to UI
@@ -176,28 +182,30 @@ References:
 
 ### Developer Experience
 - [ ] API documentation improvements
-- [ ] GraphQL endpoint (alternative to REST)?
+- [ ] GraphQL endpoint (alternative to REST)? // 👤 Roberto: interesting, I need to learn about this new (for me) tool
 - [ ] Webhook system for events (onCreate, onUpdate, onDelete)
-- [ ] Plugin/extension system
+- [ ] Plugin/extension system // 👤 Roberto: "nice to have" how can we make the project extendable, both in BE and in FE?
 - [ ] CLI tools for admin tasks
-- [ ] Docker compose for development
-- [ ] Hot reload for backend (air or similar)
+- [ ] Docker compose for development // 👤 Roberto: ongoing?
+- [ ] Hot reload for backend (air or similar) // 👤 Roberto: is active, check the .dev compose file
 
 ### Nice to Have
 - [ ] Comments system for pages
-- [ ] Sharing links with expiry date
-- [ ] Email notifications
+- [ ] Sharing links with expiry date // 👤 Roberto: nice
+- [ ] Email notifications // 👤 Roberto: I fear we need a provider
   - [ ] Content published
   - [ ] User mentioned
   - [ ] Permission granted
 - [ ] Two-factor authentication (2FA)
 - [ ] ~~OAuth providers (Google, GitHub, etc.)~~ (moved to MVP priorities)
-- [ ] Export content (PDF, ZIP, JSON)
+- [ ] Export content (PDF, ZIP, JSON) // 👤 Roberto: YES!
+  - [ ] Export single pages, multiple pages in a ZIP file
+  - [ ] Export a selected folder with all its subelements in a zip file that the user can download
 - [ ] Import content (from WordPress, other CMS)
-- [ ] RSS/Atom feeds for content
+- [ ] RSS/Atom feeds for content // 👤 Roberto: YES! it should be easy to implement
 - [ ] Sitemap generation (XML for SEO)
 - [ ] OpenGraph meta tags for social sharing
-- [ ] Print-friendly page styles
+- [ ] Print-friendly page styles // 👤 Roberto: YES !
 
 ---
 
