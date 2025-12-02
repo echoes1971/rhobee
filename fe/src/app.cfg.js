@@ -1,6 +1,8 @@
 // Get runtime config (from window.env injected by Docker) or fallback to build-time config
 const getRuntimeConfig = (key, fallback) => {
-    return window.env?.[key] || process.env[key] || fallback;
+    // alert("app.cfg.js: getRuntimeConfig key=" + key + " window.env?.[key]=" + window.env?.[key] + " process.env[key]=" + process.env[key] + " fallback=" + fallback);
+    const window_env = window.env?.[key] || "";
+    return (window_env>"" && window_env.indexOf("$%7B")!== -1 ? window.env?.[key] : null) || process.env[key] || fallback;
 };
 
 export const app_cfg = {
