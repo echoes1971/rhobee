@@ -194,6 +194,7 @@ export function FileEdit({ data, onSave, onCancel, onDelete, saving, error, dark
             setSelectedFile(file);
             setFormData(prev => ({
                 ...prev,
+                name: prev.name==='' || prev.name==='New File' ? file.name : prev.name,
                 filename: file.name,
                 mime: file.type
             }));
@@ -265,6 +266,14 @@ export function FileEdit({ data, onSave, onCancel, onDelete, saving, error, dark
                     onChange={handleChange}
                 />
             </Form.Group>
+
+            <PermissionsEditor
+                value={formData.permissions}
+                onChange={handleChange}
+                name="permissions"
+                label={t('permissions.current') || 'Permissions'}
+                dark={dark}
+            />
 
             {/* File Upload */}
             <Form.Group className="mb-3">
@@ -362,14 +371,6 @@ export function FileEdit({ data, onSave, onCancel, onDelete, saving, error, dark
                 fieldName="fk_obj_id"
                 label={t('files.linked_object') || 'Linked Object'}
                 required={false}
-            />
-
-            <PermissionsEditor
-                value={formData.permissions}
-                onChange={handleChange}
-                name="permissions"
-                label={t('permissions.current') || 'Permissions'}
-                dark={dark}
             />
 
             {error && (

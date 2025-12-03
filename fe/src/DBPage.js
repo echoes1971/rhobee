@@ -8,6 +8,7 @@ import 'react-quill/dist/quill.snow.css';
 import { useTranslation } from 'react-i18next';
 import FileSelector from './FileSelector';
 import ObjectLinkSelector from './ObjectLinkSelector';
+import PermissionsEditor from './PermissionsEditor';
 import { 
     formateDateTimeString, 
     formatDescription, 
@@ -291,6 +292,7 @@ export function PageEdit({ data, onSave, onCancel, onDelete, saving, error, dark
     const [formData, setFormData] = useState({
         name: data.name || '',
         description: data.description || '',
+        permissions: data.permissions || 'rwx------',
         html: data.html || '',
         language: data.language || 'en',
         father_id: data.father_id || '0',
@@ -429,6 +431,14 @@ export function PageEdit({ data, onSave, onCancel, onDelete, saving, error, dark
                     onChange={handleChange}
                 />
             </Form.Group>
+
+            <PermissionsEditor
+                value={formData.permissions}
+                onChange={handleChange}
+                name="permissions"
+                label={t('permissions.current') || 'Permissions'}
+                dark={dark}
+            />
 
             <Form.Group className="mb-3">
                 <Form.Label>Language</Form.Label>

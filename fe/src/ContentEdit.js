@@ -243,6 +243,14 @@ function PersonEdit({ data, onSave, onCancel, onDelete, saving, error, dark }) {
                 />
             </Form.Group>
 
+            <PermissionsEditor
+                value={formData.permissions}
+                onChange={handleChange}
+                name="permissions"
+                label={t('permissions.current') || 'Permissions'}
+                dark={dark}
+            />
+
             <h5 className="mt-4 mb-3">{t('common.address')}</h5>
 
             <Form.Group className="mb-3">
@@ -420,14 +428,6 @@ function PersonEdit({ data, onSave, onCancel, onDelete, saving, error, dark }) {
                 required={false}
             />
 
-            <PermissionsEditor
-                value={formData.permissions}
-                onChange={handleChange}
-                name="permissions"
-                label={t('permissions.current') || 'Permissions'}
-                dark={dark}
-            />
-
             {error && (
                 <Alert variant="danger" className="mb-3">
                     {error}
@@ -547,6 +547,14 @@ function CompanyEdit({ data, onSave, onCancel, onDelete, saving, error, dark }) 
                 />
             </Form.Group>
 
+            <PermissionsEditor
+                value={formData.permissions}
+                onChange={handleChange}
+                name="permissions"
+                label={t('permissions.current') || 'Permissions'}
+                dark={dark}
+            />
+
             <h5 className="mt-4 mb-3">{t('common.address')}</h5>
 
             <Form.Group className="mb-3">
@@ -664,14 +672,6 @@ function CompanyEdit({ data, onSave, onCancel, onDelete, saving, error, dark }) 
                 />
             </Form.Group>
 
-            <PermissionsEditor
-                value={formData.permissions}
-                onChange={handleChange}
-                name="permissions"
-                label={t('permissions.current') || 'Permissions'}
-                dark={dark}
-            />
-
             {error && (
                 <Alert variant="danger" className="mb-3">
                     {error}
@@ -728,6 +728,7 @@ function CompanyEdit({ data, onSave, onCancel, onDelete, saving, error, dark }) 
 // Edit form for DBFolder
 function FolderEdit({ data, onSave, onCancel, onDelete, saving, error, dark }) {
     const { t } = useTranslation();
+    const [htmlMode, setHtmlMode] = useState('wysiwyg'); // 'wysiwyg' or 'source'
     const [formData, setFormData] = useState({
         father_id: data.father_id || '0',
         name: data.name || '',
@@ -1006,6 +1007,14 @@ function FolderEdit({ data, onSave, onCancel, onDelete, saving, error, dark }) {
                 />
             </Form.Group>
 
+            <PermissionsEditor
+                value={formData.permissions}
+                onChange={handleChange}
+                name="permissions"
+                label={t('permissions.current') || 'Permissions'}
+                dark={dark}
+            />
+
             {/* Index Page Editor */}
             <div className="mb-4 p-3 border rounded">
                 <h5>{t('folder.index_page_editor')}</h5>
@@ -1188,17 +1197,6 @@ function FolderEdit({ data, onSave, onCancel, onDelete, saving, error, dark }) {
                     )}
                 </Form.Group>
             )}
-
-            <Form.Group className="mb-3">
-                <Form.Label>{t('common.permissions')}</Form.Label>
-                <PermissionsEditor
-                    value={formData.permissions}
-                    onChange={handleChange}
-                    name="permissions"
-                    label={t('permissions.current') || 'Permissions'}
-                    dark={dark}
-                />
-            </Form.Group>
 
             {error && (
                 <Alert variant="danger" className="mb-3">
