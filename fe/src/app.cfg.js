@@ -2,7 +2,7 @@
 const getRuntimeConfig = (key, fallback) => {
     // alert("app.cfg.js: getRuntimeConfig key=" + key + " window.env?.[key]=" + window.env?.[key] + " process.env[key]=" + process.env[key] + " fallback=" + fallback);
     const window_env = window.env?.[key] || "";
-    return (window_env>"" && window_env.indexOf("$%7B")!== -1 ? window.env?.[key] : null) || process.env[key] || fallback;
+    return (window_env>"" && window_env.indexOf("${")=== -1 ? window.env?.[key] : null) || process.env[key] || fallback;
 };
 
 export const app_cfg = {
