@@ -167,7 +167,7 @@ func main() {
 	objectRoutes := r.PathPrefix("/objects").Subrouter()
 	objectRoutes.Use(api.AuthMiddleware) // applica il middleware
 
-	objectRoutes.HandleFunc("/search", api.SearchObjectsHandler).Methods("GET")
+	// objectRoutes.HandleFunc("/search", api.SearchObjectsHandler).Methods("GET")
 	objectRoutes.HandleFunc("/creatable-types", api.GetCreatableTypesHandler).Methods("GET")
 	objectRoutes.HandleFunc("", api.CreateObjectHandler).Methods("POST")
 	objectRoutes.HandleFunc("/{id}", api.UpdateObjectHandler).Methods("PUT")
@@ -180,6 +180,7 @@ func main() {
 
 	// File download without auth middleware (uses token or permission check)
 	r.HandleFunc("/files/{id}/download", api.DownloadFileHandler).Methods("GET")
+	r.HandleFunc("/objects/search", api.SearchObjectsHandler).Methods("GET")
 
 	log.Println("Server in ascolto su :", AppConfig.ServerPort)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", AppConfig.ServerPort), r))

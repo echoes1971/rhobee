@@ -452,19 +452,36 @@ func GetCreatableTypesHandler(w http.ResponseWriter, r *http.Request) {
 // SearchObjectsHandler searches for objects by classname and name pattern
 // GET /api/objects/search?classname=DBCompany&name=acme&limit=10
 func SearchObjectsHandler(w http.ResponseWriter, r *http.Request) {
+	// claims, err := GetClaimsFromRequest(r)
+	// if err != nil {
+	// 	RespondSimpleError(w, ErrUnauthorized, "Unauthorized", http.StatusUnauthorized)
+	// 	return
+	// }
+
+	// dbContext := &dblayer.DBContext{
+	// 	UserID:   claims["user_id"],
+	// 	GroupIDs: strings.Split(claims["groups"], ","),
+	// 	Schema:   dblayer.DbSchema,
+	// }
+
 	claims, err := GetClaimsFromRequest(r)
-	if err != nil {
-		RespondSimpleError(w, ErrUnauthorized, "Unauthorized", http.StatusUnauthorized)
-		return
+
+	var dbContext dblayer.DBContext
+	if err == nil {
+		dbContext = dblayer.DBContext{
+			UserID:   claims["user_id"],
+			GroupIDs: strings.Split(claims["groups"], ","),
+			Schema:   dblayer.DbSchema,
+		}
+	} else {
+		dbContext = dblayer.DBContext{
+			UserID:   "-7",           // Anonymous user
+			GroupIDs: []string{"-4"}, // Guests group
+			Schema:   dblayer.DbSchema,
+		}
 	}
 
-	dbContext := &dblayer.DBContext{
-		UserID:   claims["user_id"],
-		GroupIDs: strings.Split(claims["groups"], ","),
-		Schema:   dblayer.DbSchema,
-	}
-
-	repo := dblayer.NewDBRepository(dbContext, dblayer.Factory, dblayer.DbConnection)
+	repo := dblayer.NewDBRepository(&dbContext, dblayer.Factory, dblayer.DbConnection)
 	repo.Verbose = false
 
 	classname := r.URL.Query().Get("classname")
