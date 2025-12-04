@@ -483,6 +483,7 @@ func SearchObjectsHandler(w http.ResponseWriter, r *http.Request) {
 		RespondSimpleError(w, ErrInvalidRequest, "Unknown classname: "+classname, http.StatusBadRequest)
 		return
 	}
+	searchInstanceDescription := repo.GetInstanceByClassName(classname)
 
 	// if !searchInstance.IsDBObject() {
 	// 	RespondSimpleError(w, ErrInvalidRequest, "Classname is not a DBObject: "+classname, http.StatusBadRequest)
@@ -495,11 +496,14 @@ func SearchObjectsHandler(w http.ResponseWriter, r *http.Request) {
 		case "DBCountry":
 			// For countries, search by Common_Name field
 			searchInstance.SetValue("Common_Name", namePattern)
+			searchInstanceDescription.SetValue("Formal_Name", namePattern)
 		case "DBUser":
 			// For users, search by login field
 			searchInstance.SetValue("login", namePattern)
+			searchInstanceDescription.SetValue("fullname", namePattern)
 		default:
 			searchInstance.SetValue("name", namePattern)
+			searchInstanceDescription.SetValue("description", namePattern)
 		}
 	}
 	orderBy := "name"
@@ -519,12 +523,32 @@ func SearchObjectsHandler(w http.ResponseWriter, r *http.Request) {
 			RespondSimpleError(w, ErrInternalServer, "Search failed: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
+		resultsDescription, err := repo.Search(searchInstanceDescription, true, false, orderBy)
+		if err != nil {
+			log.Printf("SearchObjectsHandler: Search failed: %v", err)
+			RespondSimpleError(w, ErrInternalServer, "Search failed: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+		// Merge results
+		resultsIDs := make(map[string]bool)
+		for _, res := range results {
+			id := res.GetValue("id").(string)
+			resultsIDs[id] = true
+		}
+		for _, resDesc := range resultsDescription {
+			id := resDesc.GetValue("id").(string)
+			if _, exists := resultsIDs[id]; !exists {
+				results = append(results, resDesc)
+			}
+		}
 	} else {
-		results = repo.SearchByName(namePattern, orderBy, true)
+		// Search by name AND description for better results
+		results = repo.SearchByNameAndDescription(namePattern, orderBy, true)
 	}
 
 	// Apply limit if specified
 	maxResults := len(results)
+	log.Print("SearchObjectsHandler: limit=", limit)
 	if limit != "" {
 		var limitInt int
 		if _, err := fmt.Sscanf(limit, "%d", &limitInt); err == nil && limitInt > 0 && limitInt < maxResults {
@@ -536,9 +560,10 @@ func SearchObjectsHandler(w http.ResponseWriter, r *http.Request) {
 	log.Print("SearchObjectsHandler: classname=", classname)
 	// Convert results to map array
 	var resultList []map[string]interface{}
-	for i := 0; i < maxResults && i < len(results); i++ {
+	for i := 0; len(resultList) < maxResults && i < len(results); i++ {
+		// for i := 0; i < maxResults && i < len(results); i++ {
 		entity := results[i]
-		log.Print("SearchObjectsHandler: entity=", entity.ToString())
+		// log.Print("SearchObjectsHandler: entity=", entity.ToString())
 		// IF searched classname is != DBObject, then filter other classnames
 		if classname != "DBUser" && classname != "DBCountry" {
 			if classname != "DBObject" && entity.GetMetadata("classname") != classname {
@@ -582,7 +607,7 @@ func SearchObjectsHandler(w http.ResponseWriter, r *http.Request) {
 			resultMap["mime"] = mime
 			// }
 		}
-		log.Print("SearchObjectsHandler: resultMap=", resultMap)
+		// log.Print("SearchObjectsHandler: resultMap=", resultMap)
 
 		resultList = append(resultList, resultMap)
 	}

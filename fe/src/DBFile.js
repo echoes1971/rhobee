@@ -8,7 +8,7 @@ import 'react-quill/dist/quill.snow.css';
 import axiosInstance from './axios';
 import ObjectLinkSelector from './ObjectLinkSelector';
 import PermissionsEditor from './PermissionsEditor';
-import { formatObjectId } from './sitenavigation_utils';
+import { formatDescription, formatObjectId } from './sitenavigation_utils';
 import { ThemeContext } from './ThemeContext';
 
 

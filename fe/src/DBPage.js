@@ -383,6 +383,7 @@ export function PageEdit({ data, onSave, onCancel, onDelete, saving, error, dark
             // Insert image tag - CustomImage preserves data-dbfile-id
             const imageHtml = `<img src="/api/files/${file.id}/download" data-dbfile-id="${file.id}" alt="${file.name}" style="max-width: 100%;" />`;
             quill.clipboard.dangerouslyPasteHTML(range.index, imageHtml);
+            // TODO is it not redundant?
             handleHtmlChange(quill.root.innerHTML);
         } else {
             // Insert link

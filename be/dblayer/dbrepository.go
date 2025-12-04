@@ -700,6 +700,42 @@ func (dbr *DBRepository) SearchByName(name string, orderBy string, ignoreDeleted
 	return results
 }
 
+// SearchByNameAndDescription searches for DBObjects by name or description
+// Returns all objects where name OR description contains the search text
+func (dbr *DBRepository) SearchByNameAndDescription(searchText string, orderBy string, ignoreDeleted bool) []DBEntityInterface {
+	registeredTypes := dbr.factory.GetAllClassNames()
+	var queries []string
+
+	for _, className := range registeredTypes {
+		dbe := dbr.GetInstanceByClassName(className)
+		if dbe == nil {
+			continue
+		}
+		if !dbe.IsDBObject() {
+			continue
+		}
+		query := "SELECT '" + className + "' as classname, id,owner,group_id,permissions,creator," +
+			"creation_date,last_modify,last_modify_date," +
+			"deleted_by,deleted_date," +
+			"father_id,name,description" +
+			" from " + dbr.buildTableName(dbe) +
+			" WHERE ( name like '%" + searchText + "%' OR description like '%" + searchText + "%' ) "
+		if ignoreDeleted {
+			query += " AND deleted_date IS NULL"
+		}
+		queries = append(queries, query)
+	}
+	searchString := strings.Join(queries, " UNION ")
+	if orderBy != "" {
+		searchString += " ORDER BY " + orderBy
+	}
+	if dbr.Verbose {
+		log.Print("DBRepository::SearchByNameAndDescription: searchString=", searchString)
+	}
+	results := dbr.Select("DBObject", searchString)
+	return results
+}
+
 // GetChildren returns all direct children of a folder (objects with father_id = parentID)
 // Filters results by read permissions
 func (dbr *DBRepository) GetChildren(parentID string, ignoreDeleted bool) []DBEntityInterface {

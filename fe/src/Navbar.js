@@ -9,6 +9,8 @@ import axios from "./axios";
 function AppNavbar() {
   const navigate = useNavigate();
   const [username, setUsername] = useState(localStorage.getItem("username"));
+  const [searchVisible, setSearchVisible] = useState(false);
+  const [searchText, setSearchText] = useState('');
   const { dark, toggleTheme } = useContext(ThemeContext);
   const { t, i18n } = useTranslation();
   const site_title = app_cfg.site_title;
@@ -62,6 +64,15 @@ function AppNavbar() {
     }
   };
 
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (searchText.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchText.trim())}`);
+      setSearchText('');
+      setSearchVisible(false);
+    }
+  };
+
   return (
     <Navbar className={dark ? "navbar bg-gradient-dark" : "navbar bg-gradient-light"} bg={dark ? "dark" : "light"} variant={dark ? "dark" : "light"} expand="lg">
       <Container>
@@ -76,6 +87,41 @@ function AppNavbar() {
                 {child.data.name}
               </Nav.Link>
             ))}
+
+            {/* Search toggle and field */}
+            {searchVisible ? (
+              <form onSubmit={handleSearchSubmit} className="d-flex align-items-center me-2">
+                <input
+                  type="text"
+                  className="form-control form-control-sm"
+                  placeholder={t('common.search_placeholder') || 'Search...'}
+                  value={searchText}
+                  onChange={(e) => setSearchText(e.target.value)}
+                  autoFocus
+                  style={{ width: '200px' }}
+                />
+                <Button
+                  variant="link"
+                  size="sm"
+                  onClick={() => {
+                    setSearchVisible(false);
+                    setSearchText('');
+                  }}
+                  className="text-secondary ms-1"
+                >
+                  <i className="bi bi-x-lg"></i>
+                </Button>
+              </form>
+            ) : (
+              <Button
+                variant={dark ? "secondary" : "outline-secondary"}
+                size="sm"
+                onClick={() => setSearchVisible(true)}
+                className="me-2"
+              >
+                <i className="bi bi-search"></i>
+              </Button>
+            )}
 
             {username && isAdmin ? (
               <NavDropdown title="Admin ⚙️" id="admin-nav-dropdown" align="end">

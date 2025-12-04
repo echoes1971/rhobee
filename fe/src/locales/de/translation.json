@@ -11,6 +11,7 @@
     "cancel": "Abbrechen",
     "delete": "Löschen",
     "search": "Suchen",
+    "search_placeholder": "Nach Name oder Beschreibung suchen...",
     "select": "Auswählen",
     "loading": "Laden...",
     "name": "Name",
