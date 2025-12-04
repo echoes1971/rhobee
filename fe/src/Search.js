@@ -1,16 +1,13 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { Container, Form, ListGroup, Spinner, Alert } from 'react-bootstrap';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Container, Form, Spinner, Alert } from 'react-bootstrap';
+import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ThemeContext } from './ThemeContext';
-import { classname2bootstrapIcon } from './sitenavigation_utils';
+import ObjectList from './ObjectList';
 import axios from './axios';
 import './App.css';
 
 function Search() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
-  const { dark } = useContext(ThemeContext);
   const [searchParams, setSearchParams] = useSearchParams();
   
   const [searchText, setSearchText] = useState(searchParams.get('q') || '');
@@ -61,10 +58,6 @@ function Search() {
     }
   };
 
-  const handleResultClick = (objectId) => {
-    navigate(`/c/${objectId}`);
-  };
-
   return (
     <Container className="mt-4">
       <h2>{t('common.search') || 'Search'}</h2>
@@ -106,36 +99,11 @@ function Search() {
             {results.length} {results.length === 1 ? 'result' : 'results'} for "{searchParams.get('q')}"
           </p>
           
-          <ListGroup variant={dark ? 'dark' : undefined}>
-            {results.map((result) => (
-              <ListGroup.Item
-                key={result.id}
-                action
-                onClick={() => handleResultClick(result.id)}
-                style={{ cursor: 'pointer' }}
-                variant={dark ? 'dark' : undefined}
-              >
-                <div className="d-flex justify-content-between align-items-center">
-                  <div>
-                    <strong>{result.name || 'Untitled'}</strong>
-                    {result.description && (
-                      <div className="small" style={{ opacity: 0.7 }}>
-                        {result.description.length > 200
-                          ? result.description.substring(0, 200) + '...'
-                          : result.description}
-                      </div>
-                    )}
-                  </div>
-                  <span className="badge bg-secondary">
-                    <i 
-                      className={`bi bi-${classname2bootstrapIcon(result.classname)}`} 
-                      title={result.classname}
-                    ></i>
-                  </span>
-                </div>
-              </ListGroup.Item>
-            ))}
-          </ListGroup>
+          <ObjectList 
+            items={results}
+            showViewToggle={true}
+            storageKey="searchViewMode"
+          />
         </>
       )}
     </Container>
