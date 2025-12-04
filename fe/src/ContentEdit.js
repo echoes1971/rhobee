@@ -7,6 +7,7 @@ import 'react-quill/dist/quill.snow.css';
 import axiosInstance from './axios';
 import CountrySelector from './CountrySelector';
 import ObjectLinkSelector from './ObjectLinkSelector';
+import ObjectList from './ObjectList';
 import PermissionsEditor from './PermissionsEditor';
 import FileSelector from './FileSelector';
 import { FileEdit } from './DBFile';
@@ -1069,31 +1070,25 @@ function FolderEdit({ data, onSave, onCancel, onDelete, saving, error, dark }) {
                             {/* List of available children (not in sort order) */}
                             {children.filter(child => !sortedChildrenIds.includes(child.data.id)).length > 0 && (
                                 <>
-                                    <Form.Label className="mt-2">
+                                    <Form.Label className="mt-3 mb-2">
                                         {t('folder.available_children')}
                                     </Form.Label>
-                                    <div className={`border rounded p-2 ${dark ? 'border-secondary' : ''}`}>
-                                        {children
+                                    
+                                    <ObjectList
+                                        items={children
                                             .filter(child => !sortedChildrenIds.includes(child.data.id))
-                                            .map(child => (
-                                                <div
-                                                    key={child.data.id}
-                                                    className={`d-flex align-items-center p-2 mb-1 rounded ${
-                                                        dark ? 'bg-secondary bg-opacity-25' : 'bg-light'
-                                                    }`}
-                                                >
-                                                    <span className="flex-grow-1">{child.data.name}</span>
-                                                    <Button
-                                                        variant="outline-primary"
-                                                        size="sm"
-                                                        onClick={() => toggleChildInOrder(child.data.id)}
-                                                        disabled={saving}
-                                                    >
-                                                        <i className="bi bi-plus"></i>
-                                                    </Button>
-                                                </div>
-                                            ))}
-                                    </div>
+                                            .map(child => ({
+                                                id: child.data.id,
+                                                name: child.data.name,
+                                                description: child.data.description,
+                                                classname: child.metadata?.classname
+                                            }))
+                                        }
+                                        onItemClick={(item) => toggleChildInOrder(item.id)}
+                                        showViewToggle={true}
+                                        storageKey="folderChildrenViewMode"
+                                        defaultView="list"
+                                    />
                                 </>
                             )}
                         </>

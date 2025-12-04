@@ -1,14 +1,15 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Button, Container, Row, Col, Breadcrumb, Spinner, Alert, ListGroup } from 'react-bootstrap';
+import { Button, Container, Row, Col, Breadcrumb, Spinner, Alert } from 'react-bootstrap';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import axiosInstance from './axios';
 import { useTranslation } from 'react-i18next';
 import { app_cfg } from './app.cfg';
 import ContentView from './ContentView';
 import NewObjectButton from './NewObjectButton';
+import ObjectList from './ObjectList';
 import { getErrorMessage } from './errorHandler';
 import { ThemeContext } from './ThemeContext';
-import { formatObjectId, classname2bootstrapIcon } from './sitenavigation_utils';
+import { formatObjectId } from './sitenavigation_utils';
 
 function SiteNavigation() {
     const { objectId } = useParams();
@@ -146,32 +147,17 @@ function SiteNavigation() {
                     {/* Children List*/}
                     {children.length > 0 && (
                         <div className="mt-4">
-                            {/* <h4>Contents</h4> */}
-                            <ListGroup variant={dark ? 'dark' : undefined}>
-                                {children.map((child) => (
-                                    <ListGroup.Item
-                                        key={child.data.id}
-                                        action
-                                        onClick={() => handleNavigate(child.data.id)}
-                                        style={{ cursor: 'pointer' }}
-                                        variant={dark ? 'dark' : undefined}
-                                    >
-                                        <div className="d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <strong>{child.data.name}</strong>
-                                                {child.metadata.classname !== 'DBNote' && child.data.description && (
-                                                    <div className="small" style={{ opacity: 0.7 }}>
-                                                        {child.data.description}
-                                                    </div>
-                                                )}
-                                            </div>
-                                            <span className="badge bg-secondary">
-                                                <i className={`bi bi-${classname2bootstrapIcon(child.metadata.classname)}`} title={child.metadata.classname}></i>
-                                            </span>
-                                        </div>
-                                    </ListGroup.Item>
-                                ))}
-                            </ListGroup>
+                            <ObjectList
+                                items={children.map(child => ({
+                                    id: child.data.id,
+                                    name: child.data.name,
+                                    description: child.metadata.classname !== 'DBNote' ? child.data.description : '',
+                                    classname: child.metadata.classname
+                                }))}
+                                showViewToggle={true}
+                                storageKey="siteNavigationChildrenViewMode"
+                                defaultView="cards"
+                            />
                         </div>
                     )}
                 </Col>
