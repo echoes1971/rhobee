@@ -8,7 +8,57 @@ import 'react-quill/dist/quill.snow.css';
 import axiosInstance from './axios';
 import ObjectLinkSelector from './ObjectLinkSelector';
 import PermissionsEditor from './PermissionsEditor';
+import { formatObjectId } from './sitenavigation_utils';
 import { ThemeContext } from './ThemeContext';
+
+
+export function FileDownload() {
+    const { objectId } = useParams();
+    const navigate = useNavigate();
+
+    const currentObjectId = objectId || null;
+
+    const [content, setContent] = useState(null);
+
+    useEffect(() => {
+        const loadContent = async () => {
+            try {
+                const response = await axiosInstance.get(`/content/${formatObjectId(currentObjectId)}`);
+                setContent(response.data);
+                // alert(JSON.stringify(response.data));
+
+                // Trigger file download
+                const downloadUrl = `/api/files/${response.data.data.id}/download?token=${response.data.metadata.download_token}`;
+                window.location.href = downloadUrl;
+
+                // Optionally, navigate back or to another page after download
+                navigate(-1); // Go back to previous page
+
+                // Close the window after download starts with a slight delay
+                setTimeout(() => {
+                    window.close();
+                }, 500);
+
+            } catch (error) {
+                console.error('Error loading content for file download:', error);
+                setContent(null);
+            }
+        }
+        loadContent();
+    }, [currentObjectId]);
+    return (<Container className="mt-4">
+        {content ? (
+            <Alert variant="success">
+                {`Initiated download for file: ${content.name}`}
+            </Alert>
+        ) : (
+            <Spinner animation="border" role="status">
+                <span className="visually-hidden">Loading...</span>
+            </Spinner>
+        )}
+    </Container>
+    );
+}
 
 
 export function FileView({ data, metadata, objectData, dark }) {

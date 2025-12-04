@@ -13,6 +13,7 @@ import Groups from './Groups';
 import GroupProfile from './GroupProfile';
 import SiteNavigation from './SiteNavigation';
 import ContentEdit from './ContentEdit';
+import { FileDownload } from './DBFile';
 
 function App() {
   const token = localStorage.getItem("token");
@@ -30,6 +31,9 @@ function App() {
         {/* Site Navigation - content by object ID */}
         <Route path="/c/:objectId" element={<SiteNavigation />} />
         <Route path="/c" element={<SiteNavigation />} />
+
+        {/* File download by object ID */}
+        <Route path="/f/:objectId/download" element={<FileDownload />} />
 
         {/* Content Edit - edit object by ID (requires authentication) */}
         <Route path="/e/:id" element={token ? <ContentEdit /> : <Navigate to="/c/:id" />} />

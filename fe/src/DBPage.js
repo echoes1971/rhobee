@@ -40,37 +40,6 @@ class CustomImage extends Image {
 }
 Quill.register(CustomImage, true);
 
-// Configure Link to preserve data-dbfile-id
-const Link = Quill.import('formats/link');
-class CustomLink extends Link {
-    static formats(domNode) {
-        const url = super.formats(domNode); // This returns a string (the URL)
-        const fileId = domNode.getAttribute('data-dbfile-id');
-        
-        // Return an object with both URL and data-dbfile-id
-        if (fileId) {
-            return {
-                url: url,
-                'data-dbfile-id': fileId
-            };
-        }
-        return url; // Return just the URL if no data-dbfile-id
-    }
-    
-    format(name, value) {
-        if (name === 'data-dbfile-id') {
-            if (value) {
-                this.domNode.setAttribute('data-dbfile-id', value);
-            } else {
-                this.domNode.removeAttribute('data-dbfile-id');
-            }
-        } else {
-            super.format(name, value);
-        }
-    }
-}
-Quill.register(CustomLink, true);
-
 // Polyfill for findDOMNode (removed in React 19)
 if (!ReactDOM.findDOMNode) {
     ReactDOM.findDOMNode = (node) => {
@@ -411,12 +380,14 @@ export function PageEdit({ data, onSave, onCancel, onDelete, saving, error, dark
         const range = quill.getSelection(true);
         
         if (fileSelectorType === 'image') {
-            // Insert image tag
+            // Insert image tag - CustomImage preserves data-dbfile-id
             const imageHtml = `<img src="/api/files/${file.id}/download" data-dbfile-id="${file.id}" alt="${file.name}" style="max-width: 100%;" />`;
             quill.clipboard.dangerouslyPasteHTML(range.index, imageHtml);
+            handleHtmlChange(quill.root.innerHTML);
         } else {
             // Insert link
-            const linkHtml = `<a href="/api/files/${file.id}/download" data-dbfile-id="${file.id}">${file.name}</a>`;
+            // const linkHtml = `<a href="/api/files/${file.id}/download" data-dbfile-id="${file.id}">${file.name}</a>`;
+            const linkHtml = `<a href="/f/${file.id}/download" data-dbfile-id="${file.id}">${file.name}</a>`;
             quill.clipboard.dangerouslyPasteHTML(range.index, linkHtml);
         }
         
