@@ -129,7 +129,13 @@
     "select_image": "Bild Auswählen",
     "search_files_hint": "Dateien suchen (nur Dateien, die Sie bearbeiten können)",
     "search_images_hint": "Bilder suchen (nur Dateien, die Sie bearbeiten können)",
-    "type_to_search": "Mindestens 2 Zeichen eingeben zum Suchen"
+    "type_to_search": "Mindestens 2 Zeichen eingeben zum Suchen",
+    "drop_files_here": "Dateien hier ablegen zum Hochladen",
+    "drag_drop_hint": "Ziehen Sie Dateien hierher, um sie in diesen Ordner hochzuladen",
+    "max_files": "Maximal {{max}} Dateien auf einmal",
+    "too_many_files": "Zu viele Dateien! Maximal {{max}} Dateien auf einmal. Sie haben versucht, {{count}} Dateien hochzuladen.",
+    "uploading": "Hochladen",
+    "upload_errors": "Upload-Fehler"
   },
   "folder": {
     "children_order": "Reihenfolge der Kinder",

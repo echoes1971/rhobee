@@ -19,7 +19,7 @@ import axiosInstance from './axios';
 
 
 // View for DBFolder
-function FolderView({ data, metadata, dark }) {
+function FolderView({ data, metadata, dark, onFilesUploaded }) {
     const { i18n } = useTranslation();
     const currentLanguage = i18n.language; // 'it', 'en', 'de', 'fr'
 
@@ -28,6 +28,12 @@ function FolderView({ data, metadata, dark }) {
     
     const [indexContent, setIndexContent] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [isDragging, setIsDragging] = useState(false);
+    const [uploading, setUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 });
+    const [uploadError, setUploadError] = useState(null);
+
+    const MAX_FILES = 30;
 
     useEffect(() => {
         const loadIndexContent = async () => {
@@ -57,6 +63,89 @@ function FolderView({ data, metadata, dark }) {
         loadIndexContent();
     }, [data.id, currentLanguage, data.description]);
 
+    const handleDragEnter = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (metadata.can_edit && !uploading) {
+            setIsDragging(true);
+        }
+    };
+
+    const handleDragLeave = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        // Only set to false if leaving the main container
+        if (e.currentTarget === e.target) {
+            setIsDragging(false);
+        }
+    };
+
+    const handleDragOver = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+    };
+
+    const handleDrop = async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(false);
+
+        if (!metadata.can_edit || uploading) return;
+
+        const files = Array.from(e.dataTransfer.files);
+        
+        if (files.length === 0) return;
+
+        if (files.length > MAX_FILES) {
+            alert(t('files.too_many_files', { max: MAX_FILES, count: files.length }) || 
+                  `Too many files! Maximum ${MAX_FILES} files at once. You tried to upload ${files.length} files.`);
+            return;
+        }
+
+        await uploadFiles(files);
+    };
+
+    const uploadFiles = async (files) => {
+        setUploading(true);
+        setUploadProgress({ current: 0, total: files.length });
+        setUploadError(null);
+
+        const errors = [];
+
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            setUploadProgress({ current: i + 1, total: files.length });
+
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('name', file.name);
+                formData.append('father_id', data.id);
+                formData.append('permissions', 'rw-r-----'); // Default permissions
+
+                await axiosInstance.post('/objects', formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                });
+            } catch (error) {
+                console.error(`Error uploading ${file.name}:`, error);
+                errors.push(`${file.name}: ${error.response?.data?.error || 'Upload failed'}`);
+            }
+        }
+
+        setUploading(false);
+
+        if (errors.length > 0) {
+            setUploadError(errors.join('\n'));
+        }
+
+        // Notify parent to refresh children list
+        if (onFilesUploaded) {
+            onFilesUploaded();
+        }
+    };
+
     if (loading) {
         return (
             <Container className="mt-4 text-center">
@@ -68,7 +157,65 @@ function FolderView({ data, metadata, dark }) {
     }
 
     return (
-        <div>
+        <div
+            onDragEnter={handleDragEnter}
+            onDragLeave={handleDragLeave}
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
+            style={{
+                position: 'relative',
+                border: isDragging ? '3px dashed #0d6efd' : 'none',
+                borderRadius: '8px',
+                padding: isDragging ? '10px' : '0',
+                backgroundColor: isDragging ? (dark ? 'rgba(13, 110, 253, 0.1)' : 'rgba(13, 110, 253, 0.05)') : 'transparent',
+                transition: 'all 0.2s ease',
+            }}
+        >
+            {isDragging && metadata.can_edit && (
+                <div
+                    style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backgroundColor: dark ? 'rgba(0, 0, 0, 0.7)' : 'rgba(255, 255, 255, 0.7)',
+                        borderRadius: '8px',
+                        zIndex: 1000,
+                        pointerEvents: 'none',
+                    }}
+                >
+                    <div className="text-center">
+                        <i className="bi bi-cloud-upload" style={{ fontSize: '3rem', color: '#0d6efd' }}></i>
+                        <h4 className={dark ? 'text-light mt-2' : 'text-dark mt-2'}>
+                            {t('files.drop_files_here') || 'Drop files here to upload'}
+                        </h4>
+                        <p className="text-muted">
+                            {t('files.max_files', { max: MAX_FILES }) || `Maximum ${MAX_FILES} files at once`}
+                        </p>
+                    </div>
+                </div>
+            )}
+
+            {uploading && (
+                <div className="alert alert-info mb-3">
+                    <Spinner animation="border" size="sm" className="me-2" />
+                    {t('files.uploading') || 'Uploading'} {uploadProgress.current} / {uploadProgress.total}...
+                </div>
+            )}
+
+            {uploadError && (
+                <div className="alert alert-warning mb-3">
+                    <strong>{t('files.upload_errors') || 'Upload errors'}:</strong>
+                    <pre style={{ whiteSpace: 'pre-wrap', fontSize: '0.9em', marginTop: '0.5rem' }}>
+                        {uploadError}
+                    </pre>
+                </div>
+            )}
+
             {indexContent === null ? (
                 <p>No indexes found in this folder.</p>
             ) : (
@@ -80,6 +227,22 @@ function FolderView({ data, metadata, dark }) {
                     <small style={{ opacity: 0.7 }}>-{indexContent.description}</small>
                     )}
                     <HtmlView html={indexContent.html} dark={dark} />
+                </div>
+            )}
+            
+            {metadata.can_edit && !uploading && (
+                <div 
+                    className="alert alert-info mt-3" 
+                    style={{ 
+                        borderStyle: 'dashed',
+                        cursor: 'default'
+                    }}
+                >
+                    <i className="bi bi-cloud-upload me-2"></i>
+                    {t('files.drag_drop_hint') || 'Drag & drop files here to upload them to this folder'}
+                    <small className="d-block mt-1 text-muted">
+                        ({t('files.max_files', { max: MAX_FILES }) || `Maximum ${MAX_FILES} files at once`})
+                    </small>
                 </div>
             )}
         </div>
@@ -160,7 +323,7 @@ function CompanyView({ data, metadata, objectData, dark }) {
 }
 
 // Main ContentView component - switches based on classname
-function ContentView({ data, metadata, dark }) {
+function ContentView({ data, metadata, dark, onFilesUploaded }) {
     const [objectData, setObjectData] = useState(null);
     
     // const token = localStorage.getItem("token");
@@ -231,7 +394,7 @@ function ContentView({ data, metadata, dark }) {
         case 'DBFile':
             return <FileView data={data} metadata={metadata} dark={dark} />;
         case 'DBFolder':
-            return <FolderView data={data} metadata={metadata} dark={dark} />;
+            return <FolderView data={data} metadata={metadata} dark={dark} onFilesUploaded={onFilesUploaded} />;
         case 'DBNote':
             return <NoteView data={data} metadata={metadata} objectData={objectData} dark={dark} />;
         case 'DBNews':

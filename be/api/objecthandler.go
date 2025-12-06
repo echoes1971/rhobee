@@ -36,18 +36,94 @@ func CreateObjectHandler(w http.ResponseWriter, r *http.Request) {
 	repo := dblayer.NewDBRepository(dbContext, dblayer.Factory, dblayer.DbConnection)
 	repo.Verbose = false
 
+	// Decode request based on Content-Type
 	var requestData map[string]interface{}
-	if err := json.NewDecoder(r.Body).Decode(&requestData); err != nil {
-		log.Printf("CreateObjectHandler: Failed to decode request body: %v", err)
-		RespondSimpleError(w, ErrInvalidRequest, "Invalid request body", http.StatusBadRequest)
-		return
+	var metadataValues map[string]interface{}
+	contentType := r.Header.Get("Content-Type")
+
+	if strings.HasPrefix(contentType, "multipart/form-data") {
+		// Parse multipart form for file uploads
+		err := r.ParseMultipartForm(32 << 20) // 32 MB max
+		if err != nil {
+			log.Printf("CreateObjectHandler: Failed to parse multipart form: %v", err)
+			RespondSimpleError(w, ErrInvalidRequest, "Invalid multipart form", http.StatusBadRequest)
+			return
+		}
+
+		requestData = make(map[string]interface{})
+		metadataValues = make(map[string]interface{})
+
+		// Extract form fields
+		for key, values := range r.MultipartForm.Value {
+			if len(values) > 0 {
+				requestData[key] = values[0]
+			}
+		}
+
+		// Handle file upload if present - this makes it a DBFile
+		file, header, err := r.FormFile("file")
+		if err == nil {
+			defer file.Close()
+
+			// Create files directory if it doesn't exist
+			filesDir := filepath.Join(dbFiles_root_directory, dbFiles_dest_directory)
+			log.Print("CreateObjectHandler: filesDir=", filesDir)
+			if err := os.MkdirAll(filesDir, 0755); err != nil {
+				log.Printf("CreateObjectHandler: Failed to create files directory: %v", err)
+				RespondSimpleError(w, ErrInternalServer, "Failed to create storage directory", http.StatusInternalServerError)
+				return
+			}
+
+			// Generate filename with r_{id}_ prefix
+			baseFilename := filepath.Base(header.Filename)
+			savedFilename := baseFilename //"r_" + newID + "_" + baseFilename
+			filePath := filepath.Join(filesDir, savedFilename)
+
+			// Create destination file
+			dst, err := os.Create(filePath)
+			if err != nil {
+				log.Printf("CreateObjectHandler: Failed to create file %s: %v", filePath, err)
+				RespondSimpleError(w, ErrInternalServer, "Failed to save file", http.StatusInternalServerError)
+				return
+			}
+			defer dst.Close()
+
+			// Copy uploaded file to destination
+			if _, err := io.Copy(dst, file); err != nil {
+				log.Printf("CreateObjectHandler: Failed to copy file data: %v", err)
+				os.Remove(filePath) // Clean up partial file
+				RespondSimpleError(w, ErrInternalServer, "Failed to save file data", http.StatusInternalServerError)
+				return
+			}
+
+			// Set file fields - this indicates it's a DBFile
+			// requestData["id"] = newID
+			requestData["filename"] = savedFilename
+			requestData["mime"] = header.Header.Get("Content-Type")
+			// metadataValues["path"] = filePath
+
+			log.Printf("CreateObjectHandler: File saved successfully: %s (%s)", savedFilename, header.Header.Get("Content-Type"))
+		}
+	} else {
+		// Parse JSON body
+		if err := json.NewDecoder(r.Body).Decode(&requestData); err != nil {
+			log.Printf("CreateObjectHandler: Failed to decode request body: %v", err)
+			RespondSimpleError(w, ErrInvalidRequest, "Invalid request body", http.StatusBadRequest)
+			return
+		}
 	}
 
 	// Extract classname to determine table
 	classname, ok := requestData["classname"].(string)
 	if !ok || classname == "" {
-		RespondSimpleError(w, ErrMissingField, "Missing or invalid 'classname' field", http.StatusBadRequest)
-		return
+		// If no classname but we have a file, it's a DBFile
+		if _, hasFile := requestData["filename"]; hasFile {
+			classname = "DBFile"
+			requestData["classname"] = classname
+		} else {
+			RespondSimpleError(w, ErrMissingField, "Missing or invalid 'classname' field", http.StatusBadRequest)
+			return
+		}
 	}
 
 	// Get instance to determine table name
@@ -91,7 +167,7 @@ func CreateObjectHandler(w http.ResponseWriter, r *http.Request) {
 	// Create the object
 	// TODO: pass metadata if any
 	log.Print("CreateObjectHandler: requestData ", requestData)
-	created, err := repo.CreateObject(tableName, requestData, nil)
+	created, err := repo.CreateObject(tableName, requestData, metadataValues)
 	if err != nil {
 		log.Printf("CreateObjectHandler: Failed to create object: %v", err)
 		RespondSimpleError(w, ErrInternalServer, "Failed to create object: "+err.Error(), http.StatusInternalServerError)
@@ -569,11 +645,9 @@ func SearchObjectsHandler(w http.ResponseWriter, r *http.Request) {
 		// for i := 0; i < maxResults && i < len(results); i++ {
 		entity := results[i]
 		if entity.HasMetadata("classname") && entity.GetMetadata("classname") == "DBFile" {
-			log.Print("SearchObjectsHandler: entity=", entity.ToJSON())
 			// read the full object to get file metadata, so we can display an image preview
 			entity = repo.FullObjectById(entity.GetValue("id").(string), true)
 		}
-		// log.Print("SearchObjectsHandler: entity=", entity.ToString())
 		// IF searched classname is != DBObject, then filter other classnames
 		if classname != "DBUser" && classname != "DBCountry" {
 			if classname != "DBObject" && entity.GetMetadata("classname") != classname {

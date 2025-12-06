@@ -143,6 +143,7 @@ function SiteNavigation() {
                         data={content.data} 
                         metadata={content.metadata}
                         dark={dark}
+                        onFilesUploaded={loadChildren}
                     />
                     {/* Children List*/}
                     {children.length > 0 && (

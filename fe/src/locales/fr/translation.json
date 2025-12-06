@@ -127,9 +127,15 @@
         "insert_image": "Insérer Image",
         "select_file": "Sélectionner Fichier",
         "select_image": "Sélectionner Image",
-        "search_files_hint": "Rechercher des fichiers (uniquement les fichiers que vous pouvez modifier)",
-        "search_images_hint": "Rechercher des images (uniquement les fichiers que vous pouvez modifier)",
-        "type_to_search": "Tapez au moins 2 caractères pour rechercher"
+        "search_files_hint": "Rechercher des fichiers (seulement les fichiers que vous pouvez modifier)",
+        "search_images_hint": "Rechercher des images (seulement les fichiers que vous pouvez modifier)",
+        "type_to_search": "Tapez au moins 2 caractères pour rechercher",
+        "drop_files_here": "Déposez les fichiers ici pour les télécharger",
+        "drag_drop_hint": "Glissez-déposez les fichiers ici pour les télécharger dans ce dossier",
+        "max_files": "Maximum {{max}} fichiers à la fois",
+        "too_many_files": "Trop de fichiers ! Maximum {{max}} fichiers à la fois. Vous avez essayé d'en télécharger {{count}}.",
+        "uploading": "Téléchargement",
+        "upload_errors": "Erreurs de téléchargement"
     },
     "folder": {
         "children_order": "Ordre des Enfants",

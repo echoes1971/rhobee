@@ -129,7 +129,13 @@
     "select_image": "Select Image",
     "search_files_hint": "Search for files (only files you can edit)",
     "search_images_hint": "Search for images (only files you can edit)",
-    "type_to_search": "Type at least 2 characters to search"
+    "type_to_search": "Type at least 2 characters to search",
+    "drop_files_here": "Drop files here to upload",
+    "drag_drop_hint": "Drag & drop files here to upload them to this folder",
+    "max_files": "Maximum {{max}} files at once",
+    "too_many_files": "Too many files! Maximum {{max}} files at once. You tried to upload {{count}} files.",
+    "uploading": "Uploading",
+    "upload_errors": "Upload errors"
   },
   "folder": {
     "children_order": "Children Sort Order",

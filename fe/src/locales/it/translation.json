@@ -129,7 +129,13 @@
         "select_image": "Seleziona Immagine",
         "search_files_hint": "Cerca file (solo file che puoi modificare)",
         "search_images_hint": "Cerca immagini (solo file che puoi modificare)",
-        "type_to_search": "Digita almeno 2 caratteri per cercare"
+        "type_to_search": "Digita almeno 2 caratteri per cercare",
+        "drop_files_here": "Trascina qui i file per caricarli",
+        "drag_drop_hint": "Trascina i file qui per caricarli in questa cartella",
+        "max_files": "Massimo {{max}} file alla volta",
+        "too_many_files": "Troppi file! Massimo {{max}} file alla volta. Hai provato a caricarne {{count}}.",
+        "uploading": "Caricamento",
+        "upload_errors": "Errori di caricamento"
     },
     "folder": {
         "children_order": "Ordine Figli",
