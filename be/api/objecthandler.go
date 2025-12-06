@@ -452,18 +452,6 @@ func GetCreatableTypesHandler(w http.ResponseWriter, r *http.Request) {
 // SearchObjectsHandler searches for objects by classname and name pattern
 // GET /api/objects/search?classname=DBCompany&name=acme&limit=10
 func SearchObjectsHandler(w http.ResponseWriter, r *http.Request) {
-	// claims, err := GetClaimsFromRequest(r)
-	// if err != nil {
-	// 	RespondSimpleError(w, ErrUnauthorized, "Unauthorized", http.StatusUnauthorized)
-	// 	return
-	// }
-
-	// dbContext := &dblayer.DBContext{
-	// 	UserID:   claims["user_id"],
-	// 	GroupIDs: strings.Split(claims["groups"], ","),
-	// 	Schema:   dblayer.DbSchema,
-	// }
-
 	claims, err := GetClaimsFromRequest(r)
 
 	var dbContext dblayer.DBContext
@@ -580,6 +568,11 @@ func SearchObjectsHandler(w http.ResponseWriter, r *http.Request) {
 	for i := 0; len(resultList) < maxResults && i < len(results); i++ {
 		// for i := 0; i < maxResults && i < len(results); i++ {
 		entity := results[i]
+		if entity.HasMetadata("classname") && entity.GetMetadata("classname") == "DBFile" {
+			log.Print("SearchObjectsHandler: entity=", entity.ToJSON())
+			// read the full object to get file metadata, so we can display an image preview
+			entity = repo.FullObjectById(entity.GetValue("id").(string), true)
+		}
 		// log.Print("SearchObjectsHandler: entity=", entity.ToString())
 		// IF searched classname is != DBObject, then filter other classnames
 		if classname != "DBUser" && classname != "DBCountry" {
@@ -614,7 +607,6 @@ func SearchObjectsHandler(w http.ResponseWriter, r *http.Request) {
 		if desc := entity.GetValue("fullname"); desc != nil {
 			resultMap["description"] = desc
 		}
-
 		resultMap["classname"] = entity.GetMetadata("classname")
 
 		// Include mime type for DBFile objects (useful for filtering images)
@@ -663,6 +655,8 @@ func DownloadFileHandler(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	fileID := vars["id"]
+
+	previewParam := r.URL.Query().Get("preview")
 
 	// Load the DBFile object
 	// tableName := "files"
@@ -723,20 +717,13 @@ func DownloadFileHandler(w http.ResponseWriter, r *http.Request) {
 		mime = "application/octet-stream"
 	}
 
-	// Construct file path: ./files/{father_id}//{filename}
-	// baseDir := filepath.Join(dbFiles_root_directory, dbFiles_dest_directory)
-	// fatherID := dbFile.GetValue("father_id")
-	// var filePath string
-	// if fatherID != nil && fatherID != "" && fatherID != "0" {
-	// 	// The beforeUpdate creates: files/{father_id}/{filename}
-	// 	// This structure includes the filename as both a directory and the final file
-	// 	filePath = filepath.Join(baseDir, fatherID.(string), filename.(string))
-	// } else {
-	// 	filePath = filepath.Join(baseDir, filename.(string))
-	// }
-	// log.Print("DownloadFileHandler: filePath=", filePath)
-	// log.Print("DownloadFileHandler: filename=", dbFile.GetFullpath(nil))
 	filePath := dbFile.GetFullpath(nil)
+	// In future, a thumbnail could be provided also for non-image files
+	// e.g. PDF first page preview, video snapshot, etc.
+	if previewParam == "yes" || previewParam == "true" {
+		filePath = dbFile.GetThumbnailFullpath(nil)
+		log.Print("DownloadFileHandler: thumbnail filePath=", filePath)
+	}
 
 	// Open file from disk
 	file, err := os.Open(filePath)

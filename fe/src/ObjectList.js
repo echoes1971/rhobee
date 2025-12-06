@@ -2,7 +2,10 @@ import React, { useState, useContext } from 'react';
 import { ListGroup, Card, Row, Col, Button, ButtonGroup } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { ThemeContext } from './ThemeContext';
-import { classname2bootstrapIcon } from './sitenavigation_utils';
+import {
+  classname2bootstrapIcon,
+  ImageView
+ } from './sitenavigation_utils';
 
 /**
  * ObjectList - Reusable component to display a list of objects
@@ -87,12 +90,18 @@ function ObjectList({
                     </div>
                   )}
                 </div>
-                <span className="badge bg-secondary">
+                { item.classname === 'DBFile' && (
+                  <ImageView id={item.id} title={item.name || 'Image'} thumbnail={true} style={{ fontSize: '2rem', minHeight: '2rem', maxWidth: '50px', maxHeight: '50px', borderRadius: '0.5rem' }} />
+                )}
+                { item.classname !== 'DBFile' && (
+                // <span className="badge bg-secondary">
                   <i 
                     className={`bi bi-${classname2bootstrapIcon(item.classname)}`} 
                     title={item.classname}
+                    style={{ fontSize: '2rem' }}
                   ></i>
-                </span>
+                // </span>
+                )}
               </div>
             </ListGroup.Item>
           ))}
@@ -108,10 +117,15 @@ function ObjectList({
               >
                 <Card.Body>
                   <div className="d-flex justify-content-between align-items-start mb-2">
-                    <i 
+                    { item.classname !== 'DBFile' && (
+                      <i 
                       className={`bi bi-${classname2bootstrapIcon(item.classname)}`}
                       style={{ fontSize: '2rem' }}
                     ></i>
+                    )}
+                    { item.classname === 'DBFile' && (
+                      <ImageView id={item.id} title={item.name || 'Image'} thumbnail={false} style={{ fontSize: '2rem', minHeight: '2rem', maxWidth: '100px', maxHeight: '100px', borderRadius: '0.25rem' }} />
+                    )}
                     <span className="badge bg-secondary">
                       {item.classname}
                     </span>

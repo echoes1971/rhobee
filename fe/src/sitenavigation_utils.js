@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Spinner } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import axiosInstance from './axios';
 
@@ -160,6 +161,87 @@ export function GroupLinkView({ group_id, dark }) {
         <a href={'/groups/'+group_id} rel="noopener noreferrer">
             <i className="bi bi-person-circle" title={group ? group.name : ''}></i> {group ? group.name : group_id}
         </a>
+    );
+}
+
+/* Image Viewer Component
+
+Params:
+- id: file ID
+- title: alt/title text
+- thumbnail: boolean, whether to load thumbnail version
+- style: CSS styles for the image
+*/
+export function ImageView({id, title, thumbnail, style}) {
+    const [preview, setPreview] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        console.log('ImageView useEffect:', { id });
+        const loadPreview = async () => {
+            try {
+                console.log('Loading image preview for:', id);
+                const url = thumbnail ? `/files/${id}/download?preview=yes` : `/files/${id}/download`;
+                const response = await axiosInstance.get(url, {
+                    responseType: 'blob'
+                });
+                console.log('Image loaded, blob size:', response.data.size, 'type:', response.data.type);
+                // IF an image, create blob URL
+                if (response.data.type.startsWith('image/')) {
+                    const blobUrl = URL.createObjectURL(response.data);
+                    console.log('Blob URL created:', blobUrl);
+                    setPreview(blobUrl);
+                } else {
+                    setPreview(null);
+                }
+            } catch (error) {
+                console.error('Failed to load image preview:', error);
+                setPreview(null);
+            }
+            finally {
+                setLoading(false);
+            }
+        };
+        loadPreview();
+
+        // Cleanup blob URL on unmount
+        return () => {
+            if (preview && preview.startsWith('blob:')) {
+                console.log('Revoking blob URL:', preview);
+                URL.revokeObjectURL(preview);
+            }
+        };
+    }, [id]);
+
+    return (
+        <>
+        {preview && (
+            <img 
+                src={preview}
+                alt={title || 'Preview'}
+                title={title || 'Preview'}
+                style={style || { maxWidth: '100%', maxHeight: '300px' }}
+            />
+        )}
+        { !preview && loading && (
+            // Show a spinner or placeholder while loading
+            <div style={{style }}>
+                <Spinner animation="border" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                </Spinner>
+            </div>
+        )}
+        { !preview && !loading && (
+            // Show a placeholder if no preview is available
+            <i 
+                className={`bi bi-${classname2bootstrapIcon('DBFile')}`}
+                style={{ ...style }}
+            ></i>
+            // <div style={{...style, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f0f0f0', color: '#888' }}>
+            //     No Preview Available
+            // </div>
+        )}
+        </>
     );
 }
 

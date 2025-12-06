@@ -84,31 +84,6 @@ function FolderView({ data, metadata, dark }) {
             )}
         </div>
     );
-    
-    // return (
-    //     <Card className="mb-3" bg={dark ? 'dark' : 'light'} text={dark ? 'light' : 'dark'}>
-    //         <Card.Header>
-    //             <h2 className={dark ? 'text-light' : 'text-dark'}>{data.name}</h2>
-    //             <small style={{ opacity: 0.7 }}>Folder · ID: {data.id}</small>
-    //         </Card.Header>
-    //         <Card.Body>
-    //             {data.description && (
-    //                 <Card.Text>{data.description}</Card.Text>
-    //             )}
-    //             <div style={{ opacity: 0.7 }}>
-    //                 <small>Owner: {data.owner} | Group: {data.group_id}</small>
-    //                 <br />
-    //                 <small>Permissions: {data.permissions}</small>
-    //                 {data.creation_date && (
-    //                     <>
-    //                         <br />
-    //                         <small>Created: {data.creation_date}</small>
-    //                     </>
-    //                 )}
-    //             </div>
-    //         </Card.Body>
-    //     </Card>
-    // );
 }
 
 function PersonView({ data, metadata, objectData, dark }) {

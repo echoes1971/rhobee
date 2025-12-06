@@ -333,12 +333,26 @@ func (dbFile *DBFile) GetFullpath(a_dbe DBEntityInterface) string {
 // // Image management: start.
 
 // function getThumbnailFilename() { return $this->getValue('filename')."_thumb.jpg"; }
-func (dbFile *DBFile) getThumbnailFilename() string {
+func (dbFile *DBFile) getThumbnailFilename(fullpath string) string {
+	if fullpath != "" {
+		return fullpath + "_thumb.jpg"
+	}
 	return dbFile.GetValue("filename").(string) + "_thumb.jpg"
 }
+func (dbFile *DBFile) GetThumbnailFullpath(a_dbe DBEntityInterface) string {
+	var mydbe *DBFile
+	if a_dbe != nil {
+		mydbe = a_dbe.(*DBFile)
+	} else {
+		mydbe = dbFile
+	}
+	dest_path := mydbe.GetFullpath(nil)
+	thumbPath := mydbe.getThumbnailFilename(dest_path)
+	return thumbPath
+}
 
-// function isImage() { $_mime = $this->getValue('mime'); return $_mime>” && substr($_mime,0,5)=='image'; }
-func (dbFile *DBFile) isImage() bool {
+// function IsImage() { $_mime = $this->getValue('mime'); return $_mime>” && substr($_mime,0,5)=='image'; }
+func (dbFile *DBFile) IsImage() bool {
 	mime := dbFile.GetValue("mime")
 	if mime != nil && mime.(string) != "" && len(mime.(string)) >= 5 && mime.(string)[0:5] == "image" {
 		return true
@@ -552,7 +566,7 @@ func (dbFile *DBFile) beforeInsert(dbr *DBRepository, tx *sql.Tx) error {
 		dbFile.SetValue("mime", "text/plain")
 	}
 	// Image
-	if dbFile.isImage() {
+	if dbFile.IsImage() {
 		dbFile.createThumbnail(fullpath)
 	}
 	return nil
@@ -662,7 +676,7 @@ func (dbFile *DBFile) beforeUpdate(dbr *DBRepository, tx *sql.Tx) error {
 					return err
 				}
 				// Image
-				if dbFile.isImage() {
+				if dbFile.IsImage() {
 					dbFile.deleteThumbnail(dest_file)
 				}
 			}
@@ -759,7 +773,7 @@ func (dbFile *DBFile) beforeUpdate(dbr *DBRepository, tx *sql.Tx) error {
 		dbFile.SetValue("mime", "text/plain")
 	}
 	// Image
-	if dbFile.isImage() {
+	if dbFile.IsImage() {
 		dbFile.createThumbnail(fullpath)
 	}
 	return nil
@@ -878,7 +892,7 @@ func (dbFile *DBFile) beforeDelete(dbr *DBRepository, tx *sql.Tx) error {
 				log.Printf("Deleted file at %s", fullpath)
 			}
 			// Image
-			if dbFile.isImage() {
+			if dbFile.IsImage() {
 				dbFile.deleteThumbnail(fullpath)
 			}
 		}

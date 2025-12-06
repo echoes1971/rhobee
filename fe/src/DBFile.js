@@ -60,7 +60,6 @@ export function FileDownload() {
     );
 }
 
-
 export function FileView({ data, metadata, objectData, dark }) {
     const navigate = useNavigate();
     const { t } = useTranslation();
