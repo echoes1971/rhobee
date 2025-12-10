@@ -7,11 +7,11 @@ import { app_cfg } from "./app.cfg";
 import axios from "./axios";
 
 export function AppFooter() {
-    // const { dark, toggleTheme } = useContext(ThemeContext);
+    const { dark, toggleTheme } = useContext(ThemeContext);
     // const { t, i18n } = useTranslation();
 
     return (
-      <footer className="py-3 mt-auto">
+      <footer className="py-3 mt-3" style={dark ? { borderTop: '1px solid rgba(255,255,255,0.1)' } : { borderTop: '1px solid rgba(0,0,0,0.1)' }}>
         <div className="container">
           <div className="row">
             <div className="col-md-6 text-center text-md-start">
