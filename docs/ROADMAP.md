@@ -14,8 +14,8 @@ References:
 
 ### Search & Discovery (NEXT - MVP BLOCKER)
 - [ ] Full-text search in HTML content // 👤 Roberto: A search box in the NavBar that leads to a /nav/search with results and filters
-  - [ ] Anonymous user search (public content only)
-  - [ ] Logged user search (public + accessible content)
+  - [x] Anonymous user search (public content only)
+  - [x] Logged user search (public + accessible content)
 - [ ] Advanced filters
   - [ ] Date range filter
   - [ ] File type filter
@@ -32,6 +32,8 @@ References:
 
 ### Rich Text Editor Improvements (HIGH PRIORITY)
 - [ ] Tables support in ReactQuill
+- [ ] Image resize (simply put width="...")
+- [ ] Text and elements alignment
 - [ ] Markdown alternative editor // ❓ where do we store the markdown, in the html field or another? if it's the same field, how do we distinguish the 2 in View and Edit?
   - [ ] Toggle between WYSIWYG and Markdown // 👤 Roberto: I love Markdown, I don't know why :)
   - [ ] Markdown preview
@@ -44,7 +46,9 @@ References:
 - [ ] GitHub OAuth login
 - [ ] Facebook OAuth login (optional)
 - [ ] Link existing account with OAuth
-- [ ] OAuth user creation with default permissions // 👤 Roberto: YES !
+- [ ] OAuth user creation with:  // 👤 Roberto: YES !
+  - [ ] default permissions rwx------
+  - [ ] it will have its private group and then will be linked to the group "Guest" that has ID "-4" (use the type UserGroup)
 
 ---
 

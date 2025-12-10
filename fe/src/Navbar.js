@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Navbar, Nav, NavDropdown, Container, Button, Dropdown } from "react-bootstrap";
+import { Navbar, Nav, NavDropdown, Container, Button, Dropdown, NavItem } from "react-bootstrap";
 import { ThemeContext } from "./ThemeContext";
 import { useTranslation } from "react-i18next";
 import { app_cfg } from "./app.cfg";
@@ -18,6 +18,7 @@ function AppNavbar() {
   const [children, setChildren] = useState([]);
   const groups = localStorage.getItem("groups") ? JSON.parse(localStorage.getItem("groups")) : [];
   const isAdmin = groups.includes("-2");
+  const isWebmaster = groups.includes(app_cfg.webmaster_group_id);
 
   const changeLanguage = (lng) => {
     i18n.changeLanguage(lng);
@@ -81,8 +82,8 @@ function AppNavbar() {
 
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="ms-auto">
-            {/* iterate over children and create the link */}
-            {children.map(child => (
+            {/* Display non public folders when a user is logged in */}
+            {children.map(child => (!username || child.data.permissions.slice(-3)==='---') && (
               <Nav.Link as={Link} key={child.data.id} to={`/c/${child.data.id}`}>
                 {child.data.name}
               </Nav.Link>
@@ -123,10 +124,30 @@ function AppNavbar() {
               </Button>
             )}
 
+            {username && isWebmaster ? (
+              <NavDropdown title="Webmaster 🛠️" id="webmaster-nav-dropdown" align="end" {...(dark ? { menuVariant: 'dark' } : {})}>
+                <NavDropdown.Item as={Link} to="/">{t("common.home")}</NavDropdown.Item>
+                <NavDropdown.Item as={Link} to="/folders">{t("folder.folders")}</NavDropdown.Item>
+                <NavDropdown.Item as={Link} to="/pages">{t("page.pages")}</NavDropdown.Item>
+                <NavDropdown.Item as={Link} to="/news">{t("news.news")}</NavDropdown.Item>
+                <NavDropdown.Item as={Link} to="/files">{t("files.files")}</NavDropdown.Item>
+              </NavDropdown>
+            ) : null}
+            {username && (
+              <NavDropdown title={t("common.contacts")} id="webmaster-nav-dropdown" align="end" {...(dark ? { menuVariant: 'dark' } : {})}>
+                <NavDropdown.Item as={Link} to="/company">{t("company.companies")}</NavDropdown.Item>
+                <NavDropdown.Item as={Link} to="/person">{t("person.people")}</NavDropdown.Item>
+              </NavDropdown>
+            )}
             {username && isAdmin ? (
-              <NavDropdown title="Admin ⚙️" id="admin-nav-dropdown" align="end">
+              <NavDropdown title="Admin ⚙️" id="admin-nav-dropdown" align="end" {...(dark ? { menuVariant: 'dark' } : {})}>
+                <NavDropdown.Item as={Link} to="/dashboard" disabled>{t("common.dashboard")}</NavDropdown.Item>
+                <NavDropdown.Divider />
                 <NavDropdown.Item as={Link} to="/users">{t("users.users")}</NavDropdown.Item>
                 <NavDropdown.Item as={Link} to="/groups">{t("groups.groups")}</NavDropdown.Item>
+                <NavDropdown.Divider />
+                <NavDropdown.Item as={Link} to="/db" disabled>{t("common.db")}</NavDropdown.Item>
+                <NavDropdown.Item as={Link} to="/log" disabled>{t("common.log")}</NavDropdown.Item>
               </NavDropdown>
             ) : null}
 
@@ -138,9 +159,13 @@ function AppNavbar() {
             ) : null}
 
             {username ? (
-              <NavDropdown title={username} id="basic-nav-dropdown" align="end">
+              <NavDropdown title={username} id="basic-nav-dropdown" align="end" {...(dark ? { menuVariant: 'dark' } : {})}>
                 <NavDropdown.Item onClick={handleProfileClick}>
-                  <i className="bi bi-person-circle me-2"></i>Profile
+                  <i className="bi bi-person-circle me-2"></i>{t("users.user_profile")}
+                </NavDropdown.Item>
+                <NavDropdown.Divider />
+                <NavDropdown.Item as={Link} to="/settings" disabled>
+                  <i className="bi bi-gear me-2"></i>{t("common.settings")}
                 </NavDropdown.Item>
                 <NavDropdown.Divider />
                 <NavDropdown.Item onClick={handleLogout}>{t("common.logout")}</NavDropdown.Item>

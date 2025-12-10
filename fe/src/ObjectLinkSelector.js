@@ -15,7 +15,7 @@ import { classname2bootstrapIcon } from './sitenavigation_utils';
  * @param {string} label - Label to display above the selector
  * @param {boolean} required - Whether the field is required
  */
-function ObjectLinkSelector({ value, onChange, classname, fieldName, label, required = false }) {
+function ObjectLinkSelector({ value, onChange, classname, fieldName, label, required = false, _type="link" }) {
     const { t } = useTranslation();
     const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(false);
@@ -68,7 +68,7 @@ function ObjectLinkSelector({ value, onChange, classname, fieldName, label, requ
                     classname: classname,
                     name: term,
                     limit: 20,
-                    type: "link" // I want only objects that I can attach to (write permission)
+                    type: _type // "link" = I want only objects that I can attach to (write permission)
                 }
             });
 

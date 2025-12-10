@@ -1,5 +1,11 @@
 {
   "common": {
+    "home": "Accueil",
+    "contacts": "Contacts",
+    "settings": "Paramètres",
+    "dashboard": "Tableau de Bord",
+    "db": "Base de Données",
+    "log": "Journal",
     "login": "Connexion",
     "logout": "Déconnexion",
     "create": "Créer",

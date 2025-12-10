@@ -1,5 +1,11 @@
 {
     "common": {
+        "home": "Home",
+        "contacts": "Contatti",
+        "settings": "Impostazioni",
+        "dashboard": "Dashboard",
+        "db": "Database",
+        "log": "Log",
         "login": "Accedi",
         "logout": "Esci",
         "create": "Crea",

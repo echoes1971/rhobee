@@ -140,6 +140,23 @@ func (dbr *DBRepository) searchWithTx(dbe DBEntityInterface, useLike bool, caseS
 	args := make([]interface{}, 0) // slice of interface{} for values
 
 	for key, value := range dbe.getDictionary() {
+		if value == nil {
+			switch key {
+			case "father_id":
+				whereClauses = append(whereClauses, "("+key+" IS NULL OR "+key+" = '0')")
+			default:
+				whereClauses = append(whereClauses, key+" IS NULL")
+			}
+			continue
+		}
+		if key == "father_id" && value == "0" {
+			whereClauses = append(whereClauses, key+" = '0'")
+			// whereClauses = append(whereClauses, "("+key+" IS NULL OR "+key+" = '0')")
+			continue
+		}
+		if valueStr, ok := value.(string); ok && valueStr == "" {
+			continue // skip empty strings
+		}
 		if useLike {
 			// For strings: LIKE '%value%'
 			if strings.Contains(dbe.GetColumnType(key), "varchar") || dbe.GetColumnType(key) == "text" {

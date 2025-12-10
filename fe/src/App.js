@@ -11,6 +11,7 @@ import Users from "./Users";
 import UserProfile from "./UserProfile";
 import Groups from './Groups';
 import GroupProfile from './GroupProfile';
+import { Folders } from './Folders';
 import SiteNavigation from './SiteNavigation';
 import ContentEdit from './ContentEdit';
 import { FileDownload } from './DBFile';
@@ -59,7 +60,10 @@ function App() {
             />
 
             {/* **** Webmaster **** */}
-
+            <Route
+              path="/folders"
+              element={token && isWebmaster ? <Folders /> : <Navigate to="/" />}
+            />
 
             {/* **** Admin **** */}
 

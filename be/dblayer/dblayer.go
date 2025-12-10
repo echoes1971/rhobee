@@ -130,8 +130,9 @@ func InitDBData() {
 	dbContext := &DBContext{
 		UserID:   "-1",
 		GroupIDs: []string{"-2"},
-		Schema:   "rprj",
+		Schema:   DbSchema,
 	}
+	log.Print("InitDBData: dbContext=", dbContext)
 
 	repo := NewDBRepository(dbContext, Factory, DbConnection)
 	repo.Verbose = false
@@ -185,6 +186,31 @@ func InitDBData() {
 			return
 		}
 		log.Printf(" Created 'anonymous' user with ID %s\n", created.GetValue("id").(string))
+	}
+
+	// Check for default folder "Root"
+	rootFolder := repo.GetInstanceByTableName("folders")
+	rootFolder.SetValue("id", "0")
+	results, err = repo.Search(rootFolder, false, false, "")
+	if err != nil {
+		log.Printf(" Failed to find or create 'Root' folder: %v\n", err)
+		return
+	}
+	if len(results) == 1 {
+		log.Printf(" Found existing 'Root' folder with ID %s\n", results[0].GetValue("id").(string))
+	} else {
+		// Create the folder
+		newFolder := repo.GetInstanceByTableName("folders")
+		newFolder.SetValue("id", "0")
+		newFolder.SetValue("name", "root")
+		newFolder.SetValue("description", "Default root folder")
+		newFolder.SetValue("permissions", "rwxrw-r--") // Everyone can read
+		created, err := repo.Insert(newFolder)
+		if err != nil {
+			log.Printf(" Failed to create 'Root' folder: %v\n", err)
+			return
+		}
+		log.Printf(" Created 'Root' folder with ID %s\n", created.GetValue("id").(string))
 	}
 	log.Print("DB data initialization completed.")
 }

@@ -550,6 +550,20 @@ func SearchObjectsHandler(w http.ResponseWriter, r *http.Request) {
 
 	classname := r.URL.Query().Get("classname")
 	namePattern := r.URL.Query().Get("name")
+	searchJson := r.URL.Query().Get("searchJson")
+	log.Print("SearchObjectsHandler: searchJson=", searchJson)
+	orderByParam := r.URL.Query().Get("orderBy")
+	if orderByParam != "" {
+		orderByParam = strings.TrimSpace(orderByParam)
+	}
+	var searchParams map[string]any
+	if searchJson != "" {
+		err := json.Unmarshal([]byte(searchJson), &searchParams)
+		if err != nil {
+			log.Printf("SearchObjectsHandler: Failed to parse searchJson: %v", err)
+		}
+	}
+	log.Print("SearchObjectsHandler: searchParams=", searchParams)
 	limit := r.URL.Query().Get("limit")
 	searchType := r.URL.Query().Get("type") // optional, "link" to filter only linkable objects i.e. objects I can write
 
@@ -587,7 +601,16 @@ func SearchObjectsHandler(w http.ResponseWriter, r *http.Request) {
 			searchInstanceDescription.SetValue("description", namePattern)
 		}
 	}
+	if searchJson != "" {
+		for key, val := range searchParams {
+			searchInstance.SetValue(key, val)
+		}
+	}
+
 	orderBy := "name"
+	if orderByParam != "" {
+		orderBy = orderByParam
+	}
 	switch classname {
 	case "DBUser":
 		orderBy = "login"
@@ -598,13 +621,18 @@ func SearchObjectsHandler(w http.ResponseWriter, r *http.Request) {
 	var results []dblayer.DBEntityInterface
 	// Search with LIKE and case-insensitive
 	if classname == "DBUser" || classname == "DBCountry" || (classname != "DBObject" && searchInstance.IsDBObject()) {
+		repo.Verbose = true
 		results, err = repo.Search(searchInstance, true, false, orderBy)
+		repo.Verbose = false
 		if err != nil {
 			log.Printf("SearchObjectsHandler: Search failed: %v", err)
 			RespondSimpleError(w, ErrInternalServer, "Search failed: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
-		resultsDescription, err := repo.Search(searchInstanceDescription, true, false, orderBy)
+		var resultsDescription []dblayer.DBEntityInterface
+		if searchJson == "" {
+			resultsDescription, err = repo.Search(searchInstanceDescription, true, false, orderBy)
+		}
 		if err != nil {
 			log.Printf("SearchObjectsHandler: Search failed: %v", err)
 			RespondSimpleError(w, ErrInternalServer, "Search failed: "+err.Error(), http.StatusInternalServerError)
@@ -636,6 +664,7 @@ func SearchObjectsHandler(w http.ResponseWriter, r *http.Request) {
 			maxResults = limitInt
 		}
 	}
+	log.Print("SearchObjectsHandler: maxResults=", maxResults)
 
 	log.Print("SearchObjectsHandler: results=", len(results))
 	log.Print("SearchObjectsHandler: classname=", classname)
@@ -651,16 +680,19 @@ func SearchObjectsHandler(w http.ResponseWriter, r *http.Request) {
 		// IF searched classname is != DBObject, then filter other classnames
 		if classname != "DBUser" && classname != "DBCountry" {
 			if classname != "DBObject" && entity.GetMetadata("classname") != classname {
+				log.Printf("SearchObjectsHandler: Skipping object ID=%s with classname=%s", entity.GetValue("id").(string), entity.GetMetadata("classname"))
 				continue
 			}
 
 			// Check read permission
 			if !repo.CheckReadPermission(entity) {
+				log.Printf("SearchObjectsHandler: No read permission for object ID=%s", entity.GetValue("id").(string))
 				continue
 			}
 
 			// If type=link, check write permission (I want only objects that I can attach to)
 			if searchType == "link" && !repo.CheckWritePermission(entity) {
+				log.Printf("SearchObjectsHandler: No write permission for object ID=%s (type=link)", entity.GetValue("id").(string))
 				continue
 			}
 		}
@@ -681,6 +713,14 @@ func SearchObjectsHandler(w http.ResponseWriter, r *http.Request) {
 		if desc := entity.GetValue("fullname"); desc != nil {
 			resultMap["description"] = desc
 		}
+
+		if searchJson != "" {
+			// Include all fields in searchJson mode
+			for key, val := range entity.GetAllValues() {
+				resultMap[key] = val
+			}
+		}
+
 		resultMap["classname"] = entity.GetMetadata("classname")
 
 		// Include mime type for DBFile objects (useful for filtering images)

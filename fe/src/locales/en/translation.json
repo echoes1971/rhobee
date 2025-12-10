@@ -1,9 +1,16 @@
 {
   "common": {
+    "home": "Home",
+    "contacts": "Contacts",
+    "settings": "Settings",
+    "dashboard": "Dashboard",
+    "db": "Database",
+    "log": "Log",
     "login": "Login",
     "logout": "Logout",
     "create": "Create",
     "new": "New",
+    "view": "View",
     "edit": "Edit",
     "save": "Save",
     "saved": "Saved",
@@ -96,10 +103,14 @@
     "owner": "Owner",
     "group": "Group",
     "permissions": "Permissions",
+    "creator": "Creator",
     "created": "Created",
     "modified": "Modified",
     "deleted": "Deleted",
     "parent": "Parent",
+    "father_id": "Parent",
+    "name": "Name",
+    "description": "Description",
     "linked_to": "Linked to",
     "download_file": "Download File"
   },
@@ -113,7 +124,11 @@
     "current": "Current permissions",
     "hint": "Set read, write, and execute permissions for owner, group, and others"
   },
+  "company": {
+    "companies": "Companies"
+  },
   "files": {
+    "files": "Files",
     "upload": "Upload File",
     "drop_or_click": "Drop file here or click to browse",
     "current": "Current file",
@@ -138,6 +153,8 @@
     "upload_errors": "Upload errors"
   },
   "folder": {
+    "folders": "Folders",
+    "newFolder": "New Folder",
     "children_order": "Children Sort Order",
     "drag_to_reorder": "Drag to reorder",
     "no_children_selected": "No children selected for custom order",
@@ -145,6 +162,15 @@
     "index_page_editor": "Index Page Editor",
     "index_page_hint": "Edit the HTML content that will be displayed as the folder's landing page. Create one for each language.",
     "save_index": "Save Index Page"
+  },
+  "news": {
+    "news": "News"
+  },
+  "page": {
+    "pages": "Pages"
+  },
+  "person": {
+    "people": "People"
   },
   "editor": {
     "insert_emoji": "Insert Emoji"
