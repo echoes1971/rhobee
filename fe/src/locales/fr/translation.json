@@ -10,6 +10,7 @@
     "logout": "Déconnexion",
     "create": "Créer",
     "new": "Nouveau",
+    "view": "Voir",
     "edit": "Modifier",
     "save": "Enregistrer",
     "saved": "Enregistré",
@@ -106,6 +107,9 @@
     "modified": "Modifié",
     "deleted": "Supprimé",
     "parent": "Parent",
+    "father_id": "Parent",
+    "name": "Nom",
+    "description": "Description",
     "linked_to": "Lié à",
     "download_file": "Télécharger le Fichier"
   },
@@ -119,7 +123,10 @@
     "current": "Permissions actuelles",
     "hint": "Définir les permissions de lecture, écriture et exécution pour le propriétaire, le groupe et les autres"
   },
-    "files": {
+  "company": {
+    "companies": "Sociétés"
+  },
+  "files": {
         "upload": "Télécharger Fichier",
         "drop_or_click": "Déposez le fichier ici ou cliquez pour parcourir",
         "current": "Fichier actuel",
@@ -144,6 +151,8 @@
         "upload_errors": "Erreurs de téléchargement"
     },
     "folder": {
+      "folders": "Dossiers",
+      "newFolder": "Nouveau Dossier",
         "children_order": "Ordre des Enfants",
         "drag_to_reorder": "Glisser pour réorganiser",
         "no_children_selected": "Aucun enfant sélectionné pour l'ordre personnalisé",
@@ -151,6 +160,15 @@
         "index_page_editor": "Éditeur de Page d'Index",
         "index_page_hint": "Modifiez le contenu HTML qui sera affiché comme page d'accueil du dossier. Créez-en une pour chaque langue.",
         "save_index": "Enregistrer la Page d'Index"
+  },
+  "news": {
+    "news": "Actualités"
+  },
+  "page": {
+    "pages": "Pages"
+  },
+  "person": {
+    "people": "Personnes"
     },
     "editor": {
         "insert_emoji": "Insérer Emoji"

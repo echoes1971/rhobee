@@ -10,6 +10,7 @@
         "logout": "Esci",
         "create": "Crea",
         "new": "Nuovo",
+        "view": "Visualizza",
         "edit": "Modifica",
         "save": "Salva",
         "saved": "Salvato",
@@ -55,6 +56,7 @@
         "no_matches": "Nessuna corrispondenza"
     },
     "users": {
+        "user_profile": "Profilo Utente",
         "newUser": "Nuovo Utente",
         "user": "Utente",
         "users": "Utenti",
@@ -67,8 +69,7 @@
         "login_required": "Il login è obbligatorio",
         "password_required": "La password è obbligatoria per i nuovi utenti",
         "password_mismatch": "Le password non coincidono",
-        "delete_confirm": "Sei sicuro di voler eliminare questo utente?",
-        "user_profile": "Profilo Utente"
+        "delete_confirm": "Sei sicuro di voler eliminare questo utente?"
     },
     "groups": {
         "newGroup": "Nuovo Gruppo",
@@ -106,6 +107,9 @@
         "modified": "Modificato",
         "deleted": "Eliminato",
         "parent": "Genitore",
+        "father_id": "Genitore",
+        "name": "Nome",
+        "description": "Descrizione",
         "linked_to": "Collegato a",
         "download_file": "Scarica File"
     },
@@ -118,6 +122,9 @@
         "others": "Altri",
         "current": "Permessi attuali",
         "hint": "Imposta i permessi di lettura, scrittura ed esecuzione per proprietario, gruppo e altri"
+  },
+  "company": {
+    "companies": "Aziende"
     },
     "files": {
         "upload": "Carica File",
@@ -144,6 +151,8 @@
         "upload_errors": "Errori di caricamento"
     },
     "folder": {
+        "folders": "Cartelle",
+        "newFolder": "Nuova Cartella",
         "children_order": "Ordine Figli",
         "drag_to_reorder": "Trascina per riordinare",
         "no_children_selected": "Nessun figlio selezionato per l'ordinamento personalizzato",
@@ -151,6 +160,15 @@
         "index_page_editor": "Editor Pagina Indice",
         "index_page_hint": "Modifica il contenuto HTML che verrà mostrato come pagina principale della cartella. Creane una per ogni lingua.",
         "save_index": "Salva Pagina Indice"
+  },
+  "news": {
+    "news": "Notizie"
+  },
+  "page": {
+    "pages": "Pagine"
+  },
+  "person": {
+    "people": "Persone"
     },
     "editor": {
         "insert_emoji": "Inserisci Emoji"
