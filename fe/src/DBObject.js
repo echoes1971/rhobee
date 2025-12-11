@@ -8,9 +8,12 @@ import {
     classname2bootstrapIcon,
     CountryView,
     GroupLinkView,
+    ImageView,
     ObjectLinkView,
     UserLinkView,
 } from './sitenavigation_utils';
+import CountrySelector from './CountrySelector';
+import { LanguageSelector, LanguageView } from './Language';
 import ObjectLinkSelector from './ObjectLinkSelector'
 import PermissionsEditor from './PermissionsEditor';
 import { getErrorMessage } from "./errorHandler";
@@ -254,6 +257,25 @@ export function ObjectEdit({ data, metadata, onSave, onCancel, onDelete, saving,
     );
 }
 
+export function CheckWritePermission({objectData}) {
+    if (!objectData || !objectData.permissions) {
+        return false;
+    }
+    const permissions = objectData.permissions;
+    const user_id = localStorage.getItem("user_id");
+    // const user_group_id = localStorage.getItem("group_id");
+    const group_ids = localStorage.getItem("groups") ? JSON.parse(localStorage.getItem("groups")) : [];
+
+    // localStorage.setItem("username", login);
+    // localStorage.setItem("user_id", res.data.user_id);
+    // localStorage.setItem("groups", JSON.stringify(res.data.groups));
+    
+    return false
+         || (objectData.owner === user_id && permissions[1] === 'w') // Is user owner and has user write permission
+         || (group_ids.indexOf(objectData.group_id) !== -1 && permissions[4] === 'w') // Is user in group and has group write permission
+         || permissions[7] === 'w';
+}
+
 export function ObjectSearch({searchClassname, searchColumns, resultsColumns, dark, themeClass}) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -341,6 +363,36 @@ export function ObjectSearch({searchClassname, searchColumns, resultsColumns, da
                         _type="search"
                     />
                   </>
+                ) : col.type === "countrySelector" ? (
+                  <>
+                    <CountrySelector
+                        value={searchFormData[col.attribute] || ''}
+                        onChange={handleInputChange}
+                        fieldName={col.attribute}
+                        label={t('dbobjects.' + col.attribute)}
+                        _type="search"
+                    />
+                  </>
+                ) : col.type === "languageSelector" ? (
+                  <>
+                    <LanguageSelector
+                        value={searchFormData[col.attribute] || ''}
+                        onChange={handleInputChange}
+                        fieldName={col.attribute}
+                        label={t('dbobjects.' + col.attribute)}
+                    />
+                  </>
+                ) : col.type === "userSelector" ? (
+                  <>
+                    <ObjectLinkSelector
+                        value={searchFormData[col.attribute] || '0'}
+                        onChange={handleInputChange}
+                        classname="DBUser"
+                        fieldName={col.attribute}
+                        label={t('dbobjects.' + col.attribute)}
+                        _type="search"
+                    />
+                  </>
                 ) : (
                   <>
                   <Form.Label>{t('dbobjects.' + col.attribute)}</Form.Label>
@@ -388,28 +440,49 @@ export function ObjectSearch({searchClassname, searchColumns, resultsColumns, da
                 <td className="d-none d-md-table-cell">{index+1}</td>
                 {resultsColumns.map((col, cindex) => (
                   col.type === "objectLink" ? (
-                    <td className={col.hideOnSmall ? "d-none d-md-table-cell" : ""} key={cindex}>
-                      <ObjectLinkView obj_id={result[col.attribute]} dark={dark} />
-                    </td>
-                  ) : col.type === "userLink" ? (
-                    <td className={col.hideOnSmall ? "d-none d-md-table-cell" : ""} key={cindex}>
-                      <UserLinkView user_id={result[col.attribute]} dark={dark} />
-                    </td>
-                  ) : col.type === "groupLink" ? (
-                    <td className={col.hideOnSmall ? "d-none d-md-table-cell" : ""} key={cindex}>
-                      <GroupLinkView group_id={result[col.attribute]} dark={dark} />
-                    </td>
-                  ) : (
-                    <td className={col.hideOnSmall ? "d-none d-md-table-cell" : ""} key={cindex}>{result[col.attribute]}</td>
-                  )
+                        <td className={col.hideOnSmall ? "d-none d-md-table-cell" : ""} key={cindex}>
+                        <ObjectLinkView obj_id={result[col.attribute]} dark={dark} />
+                        </td>
+                    ) : col.type === "userLink" ? (
+                        <td className={col.hideOnSmall ? "d-none d-md-table-cell" : ""} key={cindex}>
+                        <UserLinkView user_id={result[col.attribute]} dark={dark} />
+                        </td>
+                    ) : col.type === "groupLink" ? (
+                        <td className={col.hideOnSmall ? "d-none d-md-table-cell" : ""} key={cindex}>
+                            <GroupLinkView group_id={result[col.attribute]} dark={dark} />
+                        </td>
+                    ) : col.type === "imageView" ? (
+                        <td className={col.hideOnSmall ? "d-none d-md-table-cell" : ""} key={cindex}>
+                            <ImageView id={result[col.attribute]} title={t("dbobjects.DBFile")} thumbnail={true}  style={{ fontSize: '2rem', minHeight: '2rem', maxWidth: '50px', maxHeight: '50px', borderRadius: '0.5rem' }} />
+                        </td>
+                    ) : col.type === "languageView" ? (
+                        <td className={col.hideOnSmall ? "d-none d-md-table-cell" : ""} key={cindex}>
+                            <LanguageView language={result[col.attribute]} short={true} />
+                        </td>
+                    ) : col.type === "countryView" ? (
+                        <td className={col.hideOnSmall ? "d-none d-md-table-cell" : ""} key={cindex}>
+                        <CountryView country_id={result[col.attribute]} dark={dark} />
+                        </td>
+                    ) : col.type === "dateTime" ? (
+                        <td className={col.hideOnSmall ? "d-none d-md-table-cell" : ""} key={cindex}>{formateDateTimeString(result[col.attribute])}</td>
+                    ) : col.type === "urlView" ? (
+                        <td className={col.hideOnSmall ? "d-none d-md-table-cell" : ""} key={cindex}>
+                          <a href={result[col.attribute]} target="_blank" rel="noopener noreferrer">
+                            {result[col.attribute]}
+                          </a>
+                        </td>
+                    ) : (
+                        <td className={col.hideOnSmall ? "d-none d-md-table-cell" : ""} key={cindex}>{result[col.attribute] ? result[col.attribute].slice(0, 30) + (result[col.attribute].length > 30 ? "..." : "") : ""}</td>
+                    )
                 ))}
                 <td>
-                  <button
+                  {CheckWritePermission({objectData: result}) && <button
                     className="btn btn-sm btn-warning"
                     onClick={() => navigate(`/e/${result.id}`)}
                   >
                     {t("common.edit")}
                   </button>
+                   }
                   <button
                     className="btn btn-sm btn-warning ms-2"
                     onClick={() => navigate(`/c/${result.id}`)}

@@ -108,6 +108,10 @@
     "deleted": "Deleted",
     "parent": "Parent",
     "father_id": "Parent",
+    "fk_companies_id": "Company",
+    "fk_users_id": "User",
+    "fk_countrylist_id": "Country",
+    "phone": "Phone",
     "name": "Name",
     "description": "Description",
     "linked_to": "Linked to",
@@ -149,7 +153,9 @@
     "max_files": "Maximum {{max}} files at once",
     "too_many_files": "Too many files! Maximum {{max}} files at once. You tried to upload {{count}} files.",
     "uploading": "Uploading",
-    "upload_errors": "Upload errors"
+    "upload_errors": "Upload errors",
+    "thumbnail": "Thumbnail",
+    "preview": "Preview"
   },
   "folder": {
     "folders": "Folders",

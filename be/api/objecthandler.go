@@ -551,6 +551,11 @@ func SearchObjectsHandler(w http.ResponseWriter, r *http.Request) {
 	classname := r.URL.Query().Get("classname")
 	namePattern := r.URL.Query().Get("name")
 	searchJson := r.URL.Query().Get("searchJson")
+	includeDeletedParam := r.URL.Query().Get("includeDeleted")
+	includeDeleted := includeDeletedParam != "" && includeDeletedParam != "0" && strings.ToLower(includeDeletedParam) != "false"
+	log.Print("SearchObjectsHandler: includeDeletedParam=", includeDeletedParam)
+	log.Print("SearchObjectsHandler: includeDeleted=", includeDeleted)
+
 	log.Print("SearchObjectsHandler: searchJson=", searchJson)
 	orderByParam := r.URL.Query().Get("orderBy")
 	if orderByParam != "" {
@@ -672,13 +677,20 @@ func SearchObjectsHandler(w http.ResponseWriter, r *http.Request) {
 	var resultList []map[string]interface{}
 	for i := 0; len(resultList) < maxResults && i < len(results); i++ {
 		// for i := 0; i < maxResults && i < len(results); i++ {
+		log.Printf("SearchObjectsHandler: results[%d]=%s\n", i, results[i].ToJSON())
 		entity := results[i]
 		if entity.HasMetadata("classname") && entity.GetMetadata("classname") == "DBFile" {
 			// read the full object to get file metadata, so we can display an image preview
-			entity = repo.FullObjectById(entity.GetValue("id").(string), true)
+			entity = repo.FullObjectById(entity.GetValue("id").(string), !includeDeleted)
+			if entity == nil {
+				// It has been soft deleted
+				log.Printf("SearchObjectsHandler: It has been soft deleted ID=%s", results[i].GetValue("id").(string))
+				continue
+			}
 		}
 		// IF searched classname is != DBObject, then filter other classnames
 		if classname != "DBUser" && classname != "DBCountry" {
+			log.Print("SearchObjectsHandler: entity=", entity)
 			if classname != "DBObject" && entity.GetMetadata("classname") != classname {
 				log.Printf("SearchObjectsHandler: Skipping object ID=%s with classname=%s", entity.GetValue("id").(string), entity.GetMetadata("classname"))
 				continue

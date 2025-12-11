@@ -16,6 +16,11 @@ function Login() {
     try {
       const res = await api.post("/login", { login, pwd });
       localStorage.setItem("token", res.data.access_token);
+      localStorage.setItem("expires_at", res.data.expires_at);
+      const expiryDate = new Date(Number(res.data.expires_at)*1000);
+      const now = new Date();
+      const timeDiff = new Date(145*1000); //new Date(expiryDate - now);
+      // alert("Expires at: " + expiryDate.toString()+"\nNow: " + now.toString()+"\nTime remaining (ms): " + timeDiff.getUTCHours()+":" + timeDiff.getUTCMinutes()+":" + timeDiff.getUTCSeconds() );
       // store username for Navbar display
       localStorage.setItem("username", login);
       localStorage.setItem("user_id", res.data.user_id);

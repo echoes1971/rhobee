@@ -14,7 +14,7 @@ export function Companies() {
 
   const searchColumns = [
     { name: t("dbobjects.name") || "Name", attribute: "name", type: "string" },
-    { name: t("dbobjects.description") || "Description", attribute: "description", type: "string" },
+    { name: t("dbobjects.fk_countrylist_id") || "Country", attribute: "fk_countrylist_id", type: "countrySelector" },
     { name: t("dbobjects.parent") || "Parent", attribute: "father_id", type: "objectLink" },
 
     // { name: t("dbobjects.name") || "Name", attribute: "name2", type: "string" },
@@ -23,11 +23,14 @@ export function Companies() {
   ];
 
   const resultsColumns = [
-    { name: t("dbobjects.created") || "Created", attribute: "creator", type: "userLink", hideOnSmall: true },
-    { name: t("dbobjects.group") || "Group", attribute: "group_id", type: "groupLink", hideOnSmall: true },
-    { name: t("dbobjects.parent") || "Parent", attribute: "father_id", type: "objectLink", hideOnSmall: true },
+    // { name: t("dbobjects.created") || "Created", attribute: "creator", type: "userLink", hideOnSmall: true },
+    // { name: t("dbobjects.group") || "Group", attribute: "group_id", type: "groupLink", hideOnSmall: true },
+    // { name: t("dbobjects.parent") || "Parent", attribute: "father_id", type: "objectLink", hideOnSmall: true },
     { name: t("dbobjects.name") || "Name", attribute: "name", type: "string", hideOnSmall: false },
-    { name: t("dbobjects.description") || "Description", attribute: "description", type: "string", hideOnSmall: true },
+    // { name: t("dbobjects.description") || "Description", attribute: "description", type: "string", hideOnSmall: true },
+    { name: t("dbobjects.phone") || "Phone", attribute: "phone", type: "string", hideOnSmall: false },
+    { name: t("dbobjects.url") || "URL", attribute: "url", type: "urlView", hideOnSmall: true },
+    { name: t("dbobjects.fk_countrylist_id") || "Country", attribute: "fk_countrylist_id", type: "countryView", hideOnSmall: true },
   ]
   return (
     <ObjectSearch searchClassname={searchClassname} searchColumns={searchColumns} resultsColumns={resultsColumns} dark={dark} themeClass={themeClass} />

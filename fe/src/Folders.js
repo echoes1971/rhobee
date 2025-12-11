@@ -7,8 +7,6 @@ import { ObjectSearch } from "./DBObject";
 export function Folders() {
   const { t } = useTranslation();
   const { dark, themeClass } = useContext(ThemeContext);
-  // const [query, setQuery] = useState("");
-  // const [editingFolder, setEditingFolder] = useState(null); // folder in editing
 
   const searchClassname = "DBFolder";
 
@@ -16,10 +14,6 @@ export function Folders() {
     { name: t("dbobjects.name") || "Name", attribute: "name", type: "string" },
     { name: t("dbobjects.description") || "Description", attribute: "description", type: "string" },
     { name: t("dbobjects.parent") || "Parent", attribute: "father_id", type: "objectLink" },
-
-    // { name: t("dbobjects.name") || "Name", attribute: "name2", type: "string" },
-    // { name: t("dbobjects.name") || "Name", attribute: "name3", type: "string" },
-    // { name: t("dbobjects.name") || "Name", attribute: "name4", type: "string" },
   ];
 
   const resultsColumns = [
