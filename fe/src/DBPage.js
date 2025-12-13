@@ -304,7 +304,7 @@ export function PageView({ data, metadata, dark }) {
 // Edit form for DBPage
 export function PageEdit({ data, onSave, onCancel, onDelete, saving, error, dark }) {
     const { t } = useTranslation();
-    const [htmlMode, setHtmlMode] = useState('wysiwyg'); // 'wysiwyg' or 'source'
+    const [htmlMode, setHtmlMode] = useState('source'); // 'wysiwyg' or 'source'
     const [formData, setFormData] = useState({
         name: data.name || '',
         description: data.description || '',

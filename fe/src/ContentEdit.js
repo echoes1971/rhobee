@@ -581,7 +581,7 @@ function CompanyEdit({ data, onSave, onCancel, onDelete, saving, error, dark }) 
 // Edit form for DBFolder
 function FolderEdit({ data, onSave, onCancel, onDelete, saving, error, dark }) {
     const { t } = useTranslation();
-    const [htmlMode, setHtmlMode] = useState('wysiwyg'); // 'wysiwyg' or 'source'
+    const [htmlMode, setHtmlMode] = useState('source'); // 'wysiwyg' or 'source'
     const [formData, setFormData] = useState({
         father_id: data.father_id || '0',
         name: data.name || '',
