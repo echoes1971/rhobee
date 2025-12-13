@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Row, Col } from 'react-bootstrap';
+import { Form, Row, Col, Accordion } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 
 /**
@@ -114,32 +114,35 @@ function PermissionsEditor({ value = 'rwxr-x---', onChange, name = 'permissions'
         <Form.Group className="mb-3">
             {label && <Form.Label>{label}</Form.Label>}
             
-            <div className={`border rounded p-3 ${dark ? 'border-secondary' : 'bg-light'}`}>
-                <div className="mb-3 pb-3 border-bottom">
-                    <small className="text-secondary">
-                        <strong>{t('permissions.current') || 'Current permissions'}:</strong>{' '}
-                        <code className={`px-2 py-1 rounded ${dark ? 'bg-secondary text-light' : 'bg-white'}`}>
-                            {permissionsToString(permissions)}
-                        </code>
-                    </small>
-                </div>
-
-                <Row>
-                    <Col md={4}>
-                        {renderPermissionCheckboxes('owner', t('permissions.owner') || 'Owner')}
-                    </Col>
-                    <Col md={4}>
-                        {renderPermissionCheckboxes('group', t('permissions.group') || 'Group')}
-                    </Col>
-                    <Col md={4}>
-                        {renderPermissionCheckboxes('others', t('permissions.others') || 'Others')}
-                    </Col>
-                </Row>
-            </div>
-            
-            <Form.Text className="text-secondary">
-                {t('permissions.hint') || 'Set read, write, and execute permissions for owner, group, and others'}
-            </Form.Text>
+            <Accordion>
+                <Accordion.Item eventKey="0" className={dark ? 'bg-dark text-light' : ''}>
+                    <Accordion.Header>
+                        <i className="bi bi-shield-lock me-2"></i>
+                        {/* <small className="text-dark"> */}
+                            {t('permissions.current') || 'Current permissions'}
+                        {/* </small> */}
+                        <code className={`ms-2 me-2 text-dark`}>{permissionsToString(permissions)}</code>
+                    </Accordion.Header>
+                    <Accordion.Body className={dark ? 'bg-dark text-light' : ''}>
+                        <Row>
+                            <Col md={4}>
+                                {renderPermissionCheckboxes('owner', t('permissions.owner') || 'Owner')}
+                            </Col>
+                            <Col md={4}>
+                                {renderPermissionCheckboxes('group', t('permissions.group') || 'Group')}
+                            </Col>
+                            <Col md={4}>
+                                {renderPermissionCheckboxes('others', t('permissions.others') || 'Others')}
+                            </Col>
+                        </Row>
+                        
+                        <div className="mt-3 text-secondary small">
+                            <i className="bi bi-info-circle me-1"></i>
+                            {t('permissions.hint') || 'Set read, write, and execute permissions for owner, group, and others'}
+                        </div>
+                    </Accordion.Body>
+                </Accordion.Item>
+            </Accordion>
         </Form.Group>
     );
 }

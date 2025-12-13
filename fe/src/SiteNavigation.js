@@ -98,13 +98,14 @@ function SiteNavigation() {
         );
     }
 
-    return (
-        <Container className={`mt-4 ${themeClass}`}>
+    return ( // mt-4
+        <Container className={`mt-1 ${themeClass}`}>
             <Row>
                 <Col>
                     {/* Breadcrumb with Edit and New buttons */}
                     {/* {breadcrumb.length > 0 && ( */}
-                        <div className="d-flex justify-content-between align-items-center mb-3">
+                    {/* mb-3 */}
+                        <div className="d-flex justify-content-between align-items-center mb-1">
                                 <Breadcrumb className="mb-0" data-bs-theme={dark ? 'dark' : 'light'}>
                                     {breadcrumb.length > 1 && breadcrumb.map((item, index) => (
                                         <Breadcrumb.Item
