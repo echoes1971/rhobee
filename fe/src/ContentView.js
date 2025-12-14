@@ -195,7 +195,7 @@ function FolderView({ data, metadata, dark, onFilesUploaded }) {
                         <h4 className={dark ? 'text-light mt-2' : 'text-dark mt-2'}>
                             {t('files.drop_files_here') || 'Drop files here to upload'}
                         </h4>
-                        <p className="text-muted">
+                        <p className="text-secondary">
                             {t('files.max_files', { max: MAX_FILES }) || `Maximum ${MAX_FILES} files at once`}
                         </p>
                     </div>
@@ -249,7 +249,7 @@ function FolderView({ data, metadata, dark, onFilesUploaded }) {
                 >
                     <i className="bi bi-cloud-upload me-2"></i>
                     {t('files.drag_drop_hint') || 'Drag & drop files here to upload them to this folder'}
-                    <small className="d-block mt-1 text-muted">
+                    <small className="d-block mt-1 text-secondary">
                         ({t('files.max_files', { max: MAX_FILES }) || `Maximum ${MAX_FILES} files at once`})
                     </small>
                 </div>

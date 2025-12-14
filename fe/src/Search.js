@@ -97,7 +97,7 @@ function Search() {
 
       {results.length > 0 && (
         <>
-          <p className="text-muted mb-3">
+          <p className="text-secondary mb-3">
             {results.length} {results.length === 1 ? 'result' : 'results'} for "{searchParams.get('q')}"
           </p>
           

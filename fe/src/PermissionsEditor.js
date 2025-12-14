@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { Form, Row, Col, Accordion } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
+import { ThemeContext } from "./ThemeContext";
+import './PermissionsEditor.css';
 
 /**
  * Permissions editor component for Unix-style permissions (rwxr-x---)
@@ -18,8 +20,9 @@ import { useTranslation } from 'react-i18next';
  * @param {boolean} disabled - Whether the editor is disabled
  * @param {boolean} dark - Whether to use dark theme
  */
-function PermissionsEditor({ value = 'rwxr-x---', onChange, name = 'permissions', label, disabled = false, dark = false }) {
+function PermissionsEditor({ value = 'rwxr-x---', onChange, name = 'permissions', label, disabled = false }) {
     const { t } = useTranslation();
+    const { dark, themeClass } = useContext(ThemeContext);
     const [permissions, setPermissions] = useState({
         owner: { r: true, w: true, x: true },
         group: { r: true, w: false, x: true },
@@ -111,19 +114,18 @@ function PermissionsEditor({ value = 'rwxr-x---', onChange, name = 'permissions'
     );
 
     return (
-        <Form.Group className="mb-3">
-            {label && <Form.Label>{label}</Form.Label>}
-            
-            <Accordion>
-                <Accordion.Item eventKey="0" className={dark ? 'bg-dark text-light' : ''}>
+        // <Form.Group className={`mb-3 ${themeClass}`}>
+            // {label && <Form.Label>{label}</Form.Label>}
+            <Accordion className="mb-3 permissions-editor">
+                <Accordion.Item eventKey="0">
                     <Accordion.Header>
                         <i className="bi bi-shield-lock me-2"></i>
-                        {/* <small className="text-dark"> */}
-                            {t('permissions.current') || 'Current permissions'}
-                        {/* </small> */}
-                        <code className={`ms-2 me-2 text-dark`}>{permissionsToString(permissions)}</code>
+                        { label ? label :
+                            t('permissions.current') || 'Current permissions'
+                        }: 
+                            <code className={`ms-2 me-2 text-dark`}>{permissionsToString(permissions)}</code>
                     </Accordion.Header>
-                    <Accordion.Body className={dark ? 'bg-dark text-light' : ''}>
+                    <Accordion.Body>
                         <Row>
                             <Col md={4}>
                                 {renderPermissionCheckboxes('owner', t('permissions.owner') || 'Owner')}
@@ -143,7 +145,7 @@ function PermissionsEditor({ value = 'rwxr-x---', onChange, name = 'permissions'
                     </Accordion.Body>
                 </Accordion.Item>
             </Accordion>
-        </Form.Group>
+        // </Form.Group>
     );
 }
 

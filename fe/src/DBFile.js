@@ -116,7 +116,7 @@ export function FileView({ data, metadata, objectData, dark }) {
                         style={{ maxWidth: '100%', maxHeight: '300px', marginBottom: '10px' }}
                     />
                     {/* <div>
-                        <small className={dark ? "text-white-50" : "text-muted"}>{data.name}</small>
+                        <small className={dark ? "text-white-50" : "text-secondary"}>{data.name}</small>
                     </div> */}
                     <div>
                         <a href={preview} download={data.filename}>
@@ -294,6 +294,14 @@ export function FileEdit({ data, onSave, onCancel, onDelete, saving, error, dark
                 />
             </Form.Group>
 
+            <PermissionsEditor
+                value={formData.permissions}
+                onChange={handleChange}
+                name="permissions"
+                label={t('permissions.current') || 'Permissions'}
+                dark={dark}
+            />
+
             <Form.Group className="mb-3">
                 <Form.Label>{t('common.name')}</Form.Label>
                 <Form.Control
@@ -315,14 +323,6 @@ export function FileEdit({ data, onSave, onCancel, onDelete, saving, error, dark
                     onChange={handleChange}
                 />
             </Form.Group>
-
-            <PermissionsEditor
-                value={formData.permissions}
-                onChange={handleChange}
-                name="permissions"
-                label={t('permissions.current') || 'Permissions'}
-                dark={dark}
-            />
 
             {/* File Upload */}
             <Form.Group className="mb-3">
@@ -350,7 +350,7 @@ export function FileEdit({ data, onSave, onCancel, onDelete, saving, error, dark
                                 style={{ maxWidth: '100%', maxHeight: '300px', marginBottom: '10px' }}
                             />
                             <div>
-                                <small className="text-muted">{formData.filename}</small>
+                                <small className="text-secondary">{formData.filename}</small>
                             </div>
                         </div>
                     ) : (
@@ -360,14 +360,14 @@ export function FileEdit({ data, onSave, onCancel, onDelete, saving, error, dark
                                 {selectedFile ? selectedFile.name : (t('files.drop_or_click') || 'Drop file here or click to browse')}
                             </p>
                             {formData.filename && !selectedFile && (
-                                <small className="text-muted d-block mt-2">
+                                <small className="text-secondary d-block mt-2">
                                     {t('files.current') || 'Current'}: {formData.filename}
                                 </small>
                             )}
                         </>
                     )}
                 </div>
-                <Form.Text className="text-muted">
+                <Form.Text className="text-secondary">
                     {t('files.hint') || 'Drag and drop a file or click to browse'}
                 </Form.Text>
             </Form.Group>
@@ -408,7 +408,7 @@ export function FileEdit({ data, onSave, onCancel, onDelete, saving, error, dark
                     value={formData.alt_link}
                     onChange={handleChange}
                 />
-                <Form.Text className="text-muted">
+                <Form.Text className="text-secondary">
                     {t('files.alt_link_hint') || 'External URL if file is hosted elsewhere'}
                 </Form.Text>
             </Form.Group>

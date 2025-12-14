@@ -177,6 +177,14 @@ export function ObjectEdit({ data, metadata, onSave, onCancel, onDelete, saving,
                 />
             </Form.Group>
 
+            <PermissionsEditor
+                value={formData.permissions}
+                onChange={handleChange}
+                name="permissions"
+                label={t('permissions.current') || 'Permissions'}
+                dark={dark}
+            />
+
             <Form.Group className="mb-3">
                 <Form.Label>{t('common.name')}</Form.Label>
                 <Form.Control
@@ -198,14 +206,6 @@ export function ObjectEdit({ data, metadata, onSave, onCancel, onDelete, saving,
                     onChange={handleChange}
                 />
             </Form.Group>
-
-            <PermissionsEditor
-                value={formData.permissions}
-                onChange={handleChange}
-                name="permissions"
-                label={t('permissions.current') || 'Permissions'}
-                dark={dark}
-            />
 
             {error && (
                 <Alert variant="danger" className="mb-3">

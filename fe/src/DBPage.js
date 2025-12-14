@@ -285,7 +285,7 @@ export function PageView({ data, metadata, dark }) {
     //                     dangerouslySetInnerHTML={{ __html: data.content }}
     //                 />
     //             )}
-    //             <div className="text-muted mt-3">
+    //             <div className="text-secondary mt-3">
     //                 <small>Owner: {data.owner} | Group: {data.group_id}</small>
     //                 <br />
     //                 <small>Permissions: {data.permissions}</small>
@@ -445,6 +445,14 @@ export function PageEdit({ data, onSave, onCancel, onDelete, saving, error, dark
                 label={t('dbobjects.parent')}
             />
 
+            <PermissionsEditor
+                value={formData.permissions}
+                onChange={handleChange}
+                name="permissions"
+                label={t('permissions.current') || 'Permissions'}
+                dark={dark}
+            />
+
             <Form.Group className="mb-3">
                 <Form.Label>{t('common.name')}</Form.Label>
                 <Form.Control
@@ -466,14 +474,6 @@ export function PageEdit({ data, onSave, onCancel, onDelete, saving, error, dark
                     onChange={handleChange}
                 />
             </Form.Group>
-
-            <PermissionsEditor
-                value={formData.permissions}
-                onChange={handleChange}
-                name="permissions"
-                label={t('permissions.current') || 'Permissions'}
-                dark={dark}
-            />
 
             <Form.Group className="mb-3">
                 <Form.Label>{t('common.language')}</Form.Label>
@@ -556,7 +556,7 @@ export function PageEdit({ data, onSave, onCancel, onDelete, saving, error, dark
                                 </Popover.Body>
                             </Popover>
                         </Overlay>
-                        {/* <Form.Text className="text-muted ms-2">
+                        {/* <Form.Text className="text-secondary ms-2">
                             Insert files/images you have permission to edit
                         </Form.Text> */}
                     </div>
@@ -596,7 +596,7 @@ export function PageEdit({ data, onSave, onCancel, onDelete, saving, error, dark
                         style={{ fontFamily: 'monospace', fontSize: '0.9em' }}
                     />
                 ) : null}
-                <Form.Text className="text-muted">
+                <Form.Text className="text-secondary">
                     HTML content for the page. Use data-dbfile-id attribute to embed files (e.g., &lt;img src="/api/files/ID/download" data-dbfile-id="ID" /&gt;)
                 </Form.Text>
             </Form.Group>

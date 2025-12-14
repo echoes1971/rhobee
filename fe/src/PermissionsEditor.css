@@ -1,0 +1,10 @@
+/* PermissionsEditor component styles */
+
+.permissions-editor .accordion-button {
+    padding: 0.5rem 1rem;
+    /* background-color: transparent; */
+}
+
+.permissions-editor .accordion-button:not(.collapsed) {
+    /* background-color: transparent; */
+}

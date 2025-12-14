@@ -71,6 +71,14 @@ export function NoteEdit({ data, onSave, onCancel, onDelete, saving, error, dark
                 label={t('dbobjects.parent')}
             />
 
+            <PermissionsEditor
+                value={formData.permissions}
+                onChange={handleChange}
+                name="permissions"
+                label={t('permissions.current') || 'Permissions'}
+                dark={dark}
+            />
+
             <Form.Group className="mb-3">
                 <Form.Label>{t('common.name')}</Form.Label>
                 <Form.Control
@@ -92,14 +100,6 @@ export function NoteEdit({ data, onSave, onCancel, onDelete, saving, error, dark
                     onChange={handleChange}
                 />
             </Form.Group>
-
-            <PermissionsEditor
-                value={formData.permissions}
-                onChange={handleChange}
-                name="permissions"
-                label={t('permissions.current') || 'Permissions'}
-                dark={dark}
-            />
 
             <ObjectLinkSelector
                 value={formData.fk_obj_id}

@@ -108,7 +108,7 @@ function AssociationManager({
                         {t("common.deselect_all") || "Deselect All"}
                     </button>
                     {isCompactMode && (
-                        <span className="ms-3 text-muted small">
+                        <span className="ms-3 text-secondary small">
                             {t("association.compact_mode") || "Compact mode"} - {t("association.search_to_add_more") || "Search to add more"}
                         </span>
                     )}
@@ -150,7 +150,7 @@ function AssociationManager({
                 {/* Lista items non selezionati */}
                 {!isCompactMode && displayUnselectedItems.length > 0 && (
                     <div>
-                        <h6 className="text-muted">{t("common.available") || "Available"}</h6>
+                        <h6 className="text-secondary">{t("common.available") || "Available"}</h6>
                         <div className="list-group">
                             {displayUnselectedItems.map(item => (
                                 <div 
@@ -188,7 +188,7 @@ function AssociationManager({
                         )}
                         {searchTerm && displayUnselectedItems.length > 0 && (
                             <div>
-                                <h6 className="text-muted">
+                                <h6 className="text-secondary">
                                     {t("common.search_results") || "Search Results"}
                                     {unselectedItems.length > 10 && (
                                         <span className="ms-2 small">
@@ -220,14 +220,14 @@ function AssociationManager({
                                     ))}
                                 </div>
                                 {unselectedItems.length > displayUnselectedItems.length && (
-                                    <p className="text-muted text-center mt-2 small">
+                                    <p className="text-secondary text-center mt-2 small">
                                         {t("association.refine_search") || "Refine your search to see more results"}
                                     </p>
                                 )}
                             </div>
                         )}
                         {searchTerm && displayUnselectedItems.length === 0 && selectedItems.length > 0 && (
-                            <p className="text-muted text-center mb-0">
+                            <p className="text-secondary text-center mb-0">
                                 {t("common.no_matches") || "No matches found"}
                             </p>
                         )}
@@ -236,7 +236,7 @@ function AssociationManager({
 
                 {/* Nessun risultato */}
                 {filteredAvailable.length === 0 && (
-                    <p className="text-muted text-center mb-0">
+                    <p className="text-secondary text-center mb-0">
                         {t("common.no_items_found") || "No items found"}
                     </p>
                 )}

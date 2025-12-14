@@ -214,7 +214,7 @@ function UserProfile() {
 
             <Form.Group className="mb-3">
               <Form.Label>
-                {t("users.password")} <small className="text-muted">({t("users.leave_blank")})</small>
+                {t("users.password")} <small className="text-secondary">({t("users.leave_blank")})</small>
               </Form.Label>
               <Form.Control
                 type="password"

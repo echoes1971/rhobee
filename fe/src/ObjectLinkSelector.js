@@ -168,7 +168,7 @@ function ObjectLinkSelector({ value, onChange, classname, fieldName, label, requ
                                             &nbsp;
                                             <strong>{obj.name}</strong>
                                             {obj.description && (
-                                                <div className="text-muted small">
+                                                <div className="text-secondary small">
                                                     {obj.description.substring(0, 100)}
                                                     {obj.description.length > 100 && '...'}
                                                 </div>
@@ -182,7 +182,7 @@ function ObjectLinkSelector({ value, onChange, classname, fieldName, label, requ
                     
                     {showResults && results.length === 0 && searchTerm.length >= 2 && !loading && (
                         <ListGroup className="position-absolute w-100" style={{ zIndex: 1000 }}>
-                            <ListGroup.Item className="text-muted">
+                            <ListGroup.Item className="text-secondary">
                                 {t('common.no_results') || 'No results found'}
                             </ListGroup.Item>
                         </ListGroup>
@@ -190,7 +190,7 @@ function ObjectLinkSelector({ value, onChange, classname, fieldName, label, requ
                 </div>
             )}
             
-            {!selectedObject && <Form.Text className="text-muted">
+            {!selectedObject && <Form.Text className="text-secondary">
                 {t('common.search_hint') || 'Type at least 2 characters to search'}
             </Form.Text>}
         </Form.Group>

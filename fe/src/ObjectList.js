@@ -142,7 +142,7 @@ function ObjectList({
                   </Card.Title>
                   
                   {item.description && (
-                    <Card.Text className="text-muted small">
+                    <Card.Text className="text-secondary small">
                       {item.description.length > 150
                         ? item.description.substring(0, 150) + '...'
                         : item.description}

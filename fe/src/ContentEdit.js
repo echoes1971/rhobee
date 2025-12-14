@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
-import { Card, Container, Form, Button, Spinner, Alert, ButtonGroup, Overlay, Popover } from 'react-bootstrap';
+import { Accordion, Card, Container, Form, Button, Spinner, Alert, ButtonGroup, Overlay, Popover } from 'react-bootstrap';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import EmojiPicker from 'emoji-picker-react';
@@ -28,6 +28,7 @@ import { ThemeContext } from './ThemeContext';
 // Edit form for DBPerson
 function PersonEdit({ data, onSave, onCancel, onDelete, saving, error, dark }) {
     const { t } = useTranslation();
+    const { themeClass } = useContext(ThemeContext);
     const [formData, setFormData] = useState({
         name: data.name || '',
         description: data.description || '',
@@ -74,6 +75,14 @@ function PersonEdit({ data, onSave, onCancel, onDelete, saving, error, dark }) {
                 label={t('dbobjects.parent')}
             />
 
+            <PermissionsEditor
+                value={formData.permissions}
+                onChange={handleChange}
+                name="permissions"
+                label={t('permissions.current') || 'Permissions'}
+                dark={dark}
+            />
+
             <Form.Group className="mb-3">
                 <Form.Label>{t('common.name')}</Form.Label>
                 <Form.Control
@@ -96,190 +105,193 @@ function PersonEdit({ data, onSave, onCancel, onDelete, saving, error, dark }) {
                 />
             </Form.Group>
 
-            <PermissionsEditor
-                value={formData.permissions}
-                onChange={handleChange}
-                name="permissions"
-                label={t('permissions.current') || 'Permissions'}
-                dark={dark}
-            />
+            <Accordion className='mb-3' alwaysOpen>
+                <Accordion.Item eventKey="0" className={themeClass}>
+                    <Accordion.Header>{t('common.address')}</Accordion.Header>
+                    <Accordion.Body>
+                        <Form.Group className="mb-3">
+                            <Form.Label>{t('common.street')}</Form.Label>
+                            <Form.Control
+                                type="text"
+                                name="street"
+                                value={formData.street}
+                                onChange={handleChange}
+                            />
+                        </Form.Group>
 
-            <h5 className="mt-4 mb-3">{t('common.address')}</h5>
+                        <div className="row">
+                            <div className="col-md-4">
+                                <Form.Group className="mb-3">
+                                    <Form.Label>{t('common.zip')}</Form.Label>
+                                    <Form.Control
+                                        type="text"
+                                        name="zip"
+                                        value={formData.zip}
+                                        onChange={handleChange}
+                                    />
+                                </Form.Group>
+                            </div>
+                            <div className="col-md-8">
+                                <Form.Group className="mb-3">
+                                    <Form.Label>{t('common.city')}</Form.Label>
+                                    <Form.Control
+                                        type="text"
+                                        name="city"
+                                        value={formData.city}
+                                        onChange={handleChange}
+                                    />
+                                </Form.Group>
+                            </div>
+                        </div>
 
-            <Form.Group className="mb-3">
-                <Form.Label>{t('common.street')}</Form.Label>
-                <Form.Control
-                    type="text"
-                    name="street"
-                    value={formData.street}
-                    onChange={handleChange}
-                />
-            </Form.Group>
+                        <div className="row">
+                            <div className="col-md-6">
+                                <Form.Group className="mb-3">
+                                    <Form.Label>{t('common.state')}</Form.Label>
+                                    <Form.Control
+                                        type="text"
+                                        name="state"
+                                        value={formData.state}
+                                        onChange={handleChange}
+                                    />
+                                </Form.Group>
+                            </div>
+                            <div className="col-md-6">
+                                <CountrySelector
+                                    value={formData.fk_countrylist_id}
+                                    onChange={handleChange}
+                                    name="fk_countrylist_id"
+                                />
+                            </div>
+                        </div>
+                    </Accordion.Body>
+                </Accordion.Item>
+                <Accordion.Item eventKey="1" className={themeClass}>
+                    <Accordion.Header>{t('common.contact_info')}</Accordion.Header>
+                    <Accordion.Body>
+                        <div className="row">
+                            <div className="col-md-6">
+                                <Form.Group className="mb-3">
+                                    <Form.Label>{t('common.phone')}</Form.Label>
+                                    <Form.Control
+                                        type="tel"
+                                        name="phone"
+                                        value={formData.phone}
+                                        onChange={handleChange}
+                                    />
+                                </Form.Group>
+                            </div>
+                            <div className="col-md-6">
+                                <Form.Group className="mb-3">
+                                    <Form.Label>{t('common.mobile')}</Form.Label>
+                                    <Form.Control
+                                        type="tel"
+                                        name="mobile"
+                                        value={formData.mobile}
+                                        onChange={handleChange}
+                                    />
+                                </Form.Group>
+                            </div>
+                        </div>
 
-            <div className="row">
-                <div className="col-md-4">
-                    <Form.Group className="mb-3">
-                        <Form.Label>{t('common.zip')}</Form.Label>
-                        <Form.Control
-                            type="text"
-                            name="zip"
-                            value={formData.zip}
+                        <div className="row">
+                            <div className="col-md-6">
+                                <Form.Group className="mb-3">
+                                    <Form.Label>{t('common.office_phone')}</Form.Label>
+                                    <Form.Control
+                                        type="tel"
+                                        name="office_phone"
+                                        value={formData.office_phone}
+                                        onChange={handleChange}
+                                    />
+                                </Form.Group>
+                            </div>
+                            <div className="col-md-6">
+                                <Form.Group className="mb-3">
+                                    <Form.Label>{t('common.fax')}</Form.Label>
+                                    <Form.Control
+                                        type="tel"
+                                        name="fax"
+                                        value={formData.fax}
+                                        onChange={handleChange}
+                                    />
+                                </Form.Group>
+                            </div>
+                        </div>
+
+                        <Form.Group className="mb-3">
+                            <Form.Label>{t('common.email')}</Form.Label>
+                            <Form.Control
+                                type="email"
+                                name="email"
+                                value={formData.email}
+                                onChange={handleChange}
+                            />
+                        </Form.Group>
+
+                        <Form.Group className="mb-3">
+                            <Form.Label>{t('common.website')}</Form.Label>
+                            <Form.Control
+                                type="url"
+                                name="url"
+                                value={formData.url}
+                                onChange={handleChange}
+                            />
+                        </Form.Group>
+                    </Accordion.Body>
+                </Accordion.Item>
+                <Accordion.Item eventKey="2" className={themeClass}>
+                    <Accordion.Header>{t('common.tax_info')}</Accordion.Header>
+                    <Accordion.Body>
+                        <div className="row">
+                            <div className="col-md-6">
+                                <Form.Group className="mb-3">
+                                    <Form.Label>{t('common.codice_fiscale')}</Form.Label>
+                                    <Form.Control
+                                        type="text"
+                                        name="codice_fiscale"
+                                        value={formData.codice_fiscale}
+                                        onChange={handleChange}
+                                    />
+                                </Form.Group>
+                            </div>
+                            <div className="col-md-6">
+                                <Form.Group className="mb-3">
+                                    <Form.Label>{t('common.p_iva')}</Form.Label>
+                                    <Form.Control
+                                        type="text"
+                                        name="p_iva"
+                                        value={formData.p_iva}
+                                        onChange={handleChange}
+                                    />
+                                </Form.Group>
+                            </div>
+                        </div>
+                    </Accordion.Body>
+                </Accordion.Item>
+                <Accordion.Item eventKey="3" className={themeClass}>
+                    <Accordion.Header>{t('common.links')}</Accordion.Header>
+                    <Accordion.Body>
+                        <ObjectLinkSelector
+                            value={formData.fk_users_id}
                             onChange={handleChange}
+                            classname="DBUser"
+                            fieldName="fk_users_id"
+                            label={t('common.user_id')}
+                            required={false}
                         />
-                    </Form.Group>
-                </div>
-                <div className="col-md-8">
-                    <Form.Group className="mb-3">
-                        <Form.Label>{t('common.city')}</Form.Label>
-                        <Form.Control
-                            type="text"
-                            name="city"
-                            value={formData.city}
+
+                        <ObjectLinkSelector
+                            value={formData.fk_companies_id}
                             onChange={handleChange}
+                            classname="DBCompany"
+                            fieldName="fk_companies_id"
+                            label={t('common.company_id')}
+                            required={false}
                         />
-                    </Form.Group>
-                </div>
-            </div>
-
-            <div className="row">
-                <div className="col-md-6">
-                    <Form.Group className="mb-3">
-                        <Form.Label>{t('common.state')}</Form.Label>
-                        <Form.Control
-                            type="text"
-                            name="state"
-                            value={formData.state}
-                            onChange={handleChange}
-                        />
-                    </Form.Group>
-                </div>
-                <div className="col-md-6">
-                    <CountrySelector
-                        value={formData.fk_countrylist_id}
-                        onChange={handleChange}
-                        name="fk_countrylist_id"
-                    />
-                </div>
-            </div>
-
-            <h5 className="mt-4 mb-3">{t('common.contact_info')}</h5>
-
-            <div className="row">
-                <div className="col-md-6">
-                    <Form.Group className="mb-3">
-                        <Form.Label>{t('common.phone')}</Form.Label>
-                        <Form.Control
-                            type="tel"
-                            name="phone"
-                            value={formData.phone}
-                            onChange={handleChange}
-                        />
-                    </Form.Group>
-                </div>
-                <div className="col-md-6">
-                    <Form.Group className="mb-3">
-                        <Form.Label>{t('common.mobile')}</Form.Label>
-                        <Form.Control
-                            type="tel"
-                            name="mobile"
-                            value={formData.mobile}
-                            onChange={handleChange}
-                        />
-                    </Form.Group>
-                </div>
-            </div>
-
-            <div className="row">
-                <div className="col-md-6">
-                    <Form.Group className="mb-3">
-                        <Form.Label>{t('common.office_phone')}</Form.Label>
-                        <Form.Control
-                            type="tel"
-                            name="office_phone"
-                            value={formData.office_phone}
-                            onChange={handleChange}
-                        />
-                    </Form.Group>
-                </div>
-                <div className="col-md-6">
-                    <Form.Group className="mb-3">
-                        <Form.Label>{t('common.fax')}</Form.Label>
-                        <Form.Control
-                            type="tel"
-                            name="fax"
-                            value={formData.fax}
-                            onChange={handleChange}
-                        />
-                    </Form.Group>
-                </div>
-            </div>
-
-            <Form.Group className="mb-3">
-                <Form.Label>{t('common.email')}</Form.Label>
-                <Form.Control
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                />
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-                <Form.Label>{t('common.website')}</Form.Label>
-                <Form.Control
-                    type="url"
-                    name="url"
-                    value={formData.url}
-                    onChange={handleChange}
-                />
-            </Form.Group>
-
-            <h5 className="mt-4 mb-3">{t('common.tax_info')}</h5>
-
-            <div className="row">
-                <div className="col-md-6">
-                    <Form.Group className="mb-3">
-                        <Form.Label>{t('common.codice_fiscale')}</Form.Label>
-                        <Form.Control
-                            type="text"
-                            name="codice_fiscale"
-                            value={formData.codice_fiscale}
-                            onChange={handleChange}
-                        />
-                    </Form.Group>
-                </div>
-                <div className="col-md-6">
-                    <Form.Group className="mb-3">
-                        <Form.Label>{t('common.p_iva')}</Form.Label>
-                        <Form.Control
-                            type="text"
-                            name="p_iva"
-                            value={formData.p_iva}
-                            onChange={handleChange}
-                        />
-                    </Form.Group>
-                </div>
-            </div>
-
-            <h5 className="mt-4 mb-3">{t('common.links')}</h5>
-
-            <ObjectLinkSelector
-                value={formData.fk_users_id}
-                onChange={handleChange}
-                classname="DBUser"
-                fieldName="fk_users_id"
-                label={t('common.user_id')}
-                required={false}
-            />
-
-            <ObjectLinkSelector
-                value={formData.fk_companies_id}
-                onChange={handleChange}
-                classname="DBCompany"
-                fieldName="fk_companies_id"
-                label={t('common.company_id')}
-                required={false}
-            />
+                    </Accordion.Body>
+                </Accordion.Item>
+            </Accordion>
 
             {error && (
                 <Alert variant="danger" className="mb-3">
@@ -337,6 +349,7 @@ function PersonEdit({ data, onSave, onCancel, onDelete, saving, error, dark }) {
 // Edit form for DBCompany
 function CompanyEdit({ data, onSave, onCancel, onDelete, saving, error, dark }) {
     const { t } = useTranslation();
+    const { themeClass } = useContext(ThemeContext);
     const [formData, setFormData] = useState({
         name: data.name || '',
         description: data.description || '',
@@ -378,6 +391,14 @@ function CompanyEdit({ data, onSave, onCancel, onDelete, saving, error, dark }) 
                 label={t('dbobjects.parent')}
             />
 
+            <PermissionsEditor
+                value={formData.permissions}
+                onChange={handleChange}
+                name="permissions"
+                label={t('permissions.current') || 'Permissions'}
+                dark={dark}
+            />
+
             <Form.Group className="mb-3">
                 <Form.Label>{t('common.name')}</Form.Label>
                 <Form.Control
@@ -400,130 +421,132 @@ function CompanyEdit({ data, onSave, onCancel, onDelete, saving, error, dark }) 
                 />
             </Form.Group>
 
-            <PermissionsEditor
-                value={formData.permissions}
-                onChange={handleChange}
-                name="permissions"
-                label={t('permissions.current') || 'Permissions'}
-                dark={dark}
-            />
+            <Accordion className='mb-3' alwaysOpen>
+                <Accordion.Item eventKey="0" className={themeClass}>
+                    <Accordion.Header>{t('common.address')}</Accordion.Header>
+                    <Accordion.Body>
+                        <Form.Group className="mb-3">
+                            <Form.Label>{t('common.street')}</Form.Label>
+                            <Form.Control
+                                type="text"
+                                name="street"
+                                value={formData.street}
+                                onChange={handleChange}
+                            />
+                        </Form.Group>
 
-            <h5 className="mt-4 mb-3">{t('common.address')}</h5>
+                        <div className="row">
+                            <div className="col-md-4">
+                                <Form.Group className="mb-3">
+                                    <Form.Label>{t('common.zip')}</Form.Label>
+                                    <Form.Control
+                                        type="text"
+                                        name="zip"
+                                        value={formData.zip}
+                                        onChange={handleChange}
+                                    />
+                                </Form.Group>
+                            </div>
+                            <div className="col-md-8">
+                                <Form.Group className="mb-3">
+                                    <Form.Label>{t('common.city')}</Form.Label>
+                                    <Form.Control
+                                        type="text"
+                                        name="city"
+                                        value={formData.city}
+                                        onChange={handleChange}
+                                    />
+                                </Form.Group>
+                            </div>
+                        </div>
 
-            <Form.Group className="mb-3">
-                <Form.Label>{t('common.street')}</Form.Label>
-                <Form.Control
-                    type="text"
-                    name="street"
-                    value={formData.street}
-                    onChange={handleChange}
-                />
-            </Form.Group>
+                        <div className="row">
+                            <div className="col-md-6">
+                                <Form.Group className="mb-3">
+                                    <Form.Label>{t('common.state')}</Form.Label>
+                                    <Form.Control
+                                        type="text"
+                                        name="state"
+                                        value={formData.state}
+                                        onChange={handleChange}
+                                    />
+                                </Form.Group>
+                            </div>
+                            <div className="col-md-6">
+                                <CountrySelector
+                                    value={formData.fk_countrylist_id}
+                                    onChange={handleChange}
+                                    name="fk_countrylist_id"
+                                />
+                            </div>
+                        </div>
 
-            <div className="row">
-                <div className="col-md-4">
-                    <Form.Group className="mb-3">
-                        <Form.Label>{t('common.zip')}</Form.Label>
-                        <Form.Control
-                            type="text"
-                            name="zip"
-                            value={formData.zip}
-                            onChange={handleChange}
-                        />
-                    </Form.Group>
-                </div>
-                <div className="col-md-8">
-                    <Form.Group className="mb-3">
-                        <Form.Label>{t('common.city')}</Form.Label>
-                        <Form.Control
-                            type="text"
-                            name="city"
-                            value={formData.city}
-                            onChange={handleChange}
-                        />
-                    </Form.Group>
-                </div>
-            </div>
+                    </Accordion.Body>
+                </Accordion.Item>
+                <Accordion.Item eventKey="1" className={themeClass}>
+                    <Accordion.Header>{t('common.contact_info')}</Accordion.Header>
+                    <Accordion.Body>
+                        <div className="row">
+                            <div className="col-md-6">
+                                <Form.Group className="mb-3">
+                                    <Form.Label>{t('common.phone')}</Form.Label>
+                                    <Form.Control
+                                        type="tel"
+                                        name="phone"
+                                        value={formData.phone}
+                                        onChange={handleChange}
+                                    />
+                                </Form.Group>
+                            </div>
+                            <div className="col-md-6">
+                                <Form.Group className="mb-3">
+                                    <Form.Label>{t('common.fax')}</Form.Label>
+                                    <Form.Control
+                                        type="tel"
+                                        name="fax"
+                                        value={formData.fax}
+                                        onChange={handleChange}
+                                    />
+                                </Form.Group>
+                            </div>
+                        </div>
 
-            <div className="row">
-                <div className="col-md-6">
-                    <Form.Group className="mb-3">
-                        <Form.Label>{t('common.state')}</Form.Label>
-                        <Form.Control
-                            type="text"
-                            name="state"
-                            value={formData.state}
-                            onChange={handleChange}
-                        />
-                    </Form.Group>
-                </div>
-                <div className="col-md-6">
-                    <CountrySelector
-                        value={formData.fk_countrylist_id}
-                        onChange={handleChange}
-                        name="fk_countrylist_id"
-                    />
-                </div>
-            </div>
+                        <Form.Group className="mb-3">
+                            <Form.Label>{t('common.email')}</Form.Label>
+                            <Form.Control
+                                type="email"
+                                name="email"
+                                value={formData.email}
+                                onChange={handleChange}
+                            />
+                        </Form.Group>
 
-            <h5 className="mt-4 mb-3">{t('common.contact_info')}</h5>
-
-            <div className="row">
-                <div className="col-md-6">
-                    <Form.Group className="mb-3">
-                        <Form.Label>{t('common.phone')}</Form.Label>
-                        <Form.Control
-                            type="tel"
-                            name="phone"
-                            value={formData.phone}
-                            onChange={handleChange}
-                        />
-                    </Form.Group>
-                </div>
-                <div className="col-md-6">
-                    <Form.Group className="mb-3">
-                        <Form.Label>{t('common.fax')}</Form.Label>
-                        <Form.Control
-                            type="tel"
-                            name="fax"
-                            value={formData.fax}
-                            onChange={handleChange}
-                        />
-                    </Form.Group>
-                </div>
-            </div>
-
-            <Form.Group className="mb-3">
-                <Form.Label>{t('common.email')}</Form.Label>
-                <Form.Control
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                />
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-                <Form.Label>{t('common.website')}</Form.Label>
-                <Form.Control
-                    type="url"
-                    name="url"
-                    value={formData.url}
-                    onChange={handleChange}
-                />
-            </Form.Group>
-
-            <h5 className="mt-4 mb-3">{t('common.tax_info')}</h5>
-
-            <Form.Group className="mb-3">
-                <Form.Label>{t('common.p_iva')}</Form.Label>
-                <Form.Control
-                    type="text"
-                    name="p_iva"
-                    value={formData.p_iva}
-                    onChange={handleChange}
-                />
-            </Form.Group>
+                        <Form.Group className="mb-3">
+                            <Form.Label>{t('common.website')}</Form.Label>
+                            <Form.Control
+                                type="url"
+                                name="url"
+                                value={formData.url}
+                                onChange={handleChange}
+                            />
+                        </Form.Group>
+                    </Accordion.Body>
+                </Accordion.Item>
+                <Accordion.Item eventKey="2" className={themeClass}>
+                    <Accordion.Header>{t('common.tax_info')}</Accordion.Header>
+                    <Accordion.Body>
+                        <Form.Group className="mb-3">
+                            <Form.Label>{t('common.p_iva')}</Form.Label>
+                            <Form.Control
+                                type="text"
+                                name="p_iva"
+                                value={formData.p_iva}
+                                onChange={handleChange}
+                            />
+                        </Form.Group>
+                    </Accordion.Body>
+                </Accordion.Item>
+            </Accordion>
 
             {error && (
                 <Alert variant="danger" className="mb-3">
@@ -876,6 +899,14 @@ function FolderEdit({ data, onSave, onCancel, onDelete, saving, error, dark }) {
                 />
             </Form.Group>
 
+            <PermissionsEditor
+                value={formData.permissions}
+                onChange={handleChange}
+                name="permissions"
+                label={t('permissions.current') || 'Permissions'}
+                dark={dark}
+            />
+
             <Form.Group className="mb-3">
                 <Form.Label>{t('common.name')}</Form.Label>
                 <Form.Control
@@ -900,18 +931,10 @@ function FolderEdit({ data, onSave, onCancel, onDelete, saving, error, dark }) {
                 />
             </Form.Group>
 
-            <PermissionsEditor
-                value={formData.permissions}
-                onChange={handleChange}
-                name="permissions"
-                label={t('permissions.current') || 'Permissions'}
-                dark={dark}
-            />
-
             {/* Index Page Editor */}
             <div className="mb-4 p-3 border rounded">
                 <h5>{t('folder.index_page_editor')}</h5>
-                <p className="text-muted small">{t('folder.index_page_hint')}</p>
+                <p className="text-secondary small">{t('folder.index_page_hint')}</p>
                 
                 <Form.Group className="mb-3">
                     <Form.Label>{t('common.language')}</Form.Label>
@@ -1071,7 +1094,7 @@ function FolderEdit({ data, onSave, onCancel, onDelete, saving, error, dark }) {
                 <Form.Group className="mb-3">
                     <Form.Label>
                         {t('folder.children_order')}
-                        <small className="ms-2 text-muted">
+                        <small className="ms-2 text-secondary">
                             ({t('folder.drag_to_reorder')})
                         </small>
                     </Form.Label>
@@ -1085,7 +1108,7 @@ function FolderEdit({ data, onSave, onCancel, onDelete, saving, error, dark }) {
                             {/* List of sorted children (draggable) */}
                             <div className={`border rounded p-2 mb-2 ${dark ? 'border-secondary' : ''}`}>
                                 {sortedChildrenIds.length === 0 ? (
-                                    <div className="text-muted text-center p-2">
+                                    <div className="text-secondary text-center p-2">
                                         {t('folder.no_children_selected')}
                                     </div>
                                 ) : (

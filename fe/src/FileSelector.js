@@ -107,7 +107,7 @@ function FileSelector({ show, onHide, onSelect, fileType = 'file' }) {
                             </InputGroup.Text>
                         )}
                     </InputGroup>
-                    <Form.Text className="text-muted">
+                    <Form.Text className="text-secondary">
                         {fileType === 'image' 
                             ? (t('files.search_images_hint') || 'Search for images (only files you can edit)')
                             : (t('files.search_files_hint') || 'Search for files (only files you can edit)')
@@ -128,7 +128,7 @@ function FileSelector({ show, onHide, onSelect, fileType = 'file' }) {
                                     <i className="bi bi-file-earmark me-2"></i>
                                     <strong>{file.name}</strong>
                                     {file.description && (
-                                        <small className="text-muted d-block ms-4">
+                                        <small className="text-secondary d-block ms-4">
                                             {file.description}
                                         </small>
                                     )}
@@ -140,14 +140,14 @@ function FileSelector({ show, onHide, onSelect, fileType = 'file' }) {
                 )}
 
                 {searchTerm.length >= 2 && !loading && results.length === 0 && (
-                    <div className="text-center text-muted py-4">
+                    <div className="text-center text-secondary py-4">
                         <i className="bi bi-search fs-1 d-block mb-2"></i>
                         {t('common.no_results') || 'No results found'}
                     </div>
                 )}
 
                 {searchTerm.length < 2 && (
-                    <div className="text-center text-muted py-4">
+                    <div className="text-center text-secondary py-4">
                         <i className="bi bi-info-circle fs-1 d-block mb-2"></i>
                         {t('files.type_to_search') || 'Type at least 2 characters to search'}
                     </div>
