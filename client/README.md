@@ -428,13 +428,13 @@ GOOS=windows GOARCH=amd64 go build -o rhobee-windows-amd64.exe
 - [x] Custom permissions and metadata
 
 ### Phase 3 (Advanced) 🚧 PLANNED
-- [ ] Export folder (recursive with files)
-- [ ] Import folder (with --preserve-ids)
-- [ ] Search command (by name, type, folder)
-- [ ] List command (children, recursive)
+- [x] Export folder (recursive with files)
+- [x] Import folder (with --preserve-ids)
+- [x] Search command (by name, type, folder)
+- [x] List command (children, recursive)
 
 ### Phase 4 (Future) 📋 BACKLOG
-- [ ] Update/Delete commands
+- [x] Update/Delete commands
 - [ ] Colored output (success/error/warning)
 - [ ] Table formatting (ascii tables)
 - [ ] Batch operations (JSON manifest)

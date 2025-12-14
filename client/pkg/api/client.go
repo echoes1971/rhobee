@@ -159,15 +159,15 @@ func (c *Client) Update(objectID string, obj *models.DBObject) error {
 	if err != nil {
 		return fmt.Errorf("failed to marshal object: %w", err)
 	}
-	
+
 	var objMap map[string]interface{}
 	if err := json.Unmarshal(data, &objMap); err != nil {
 		return fmt.Errorf("failed to unmarshal to map: %w", err)
 	}
-	
+
 	// Remove classname field (it belongs in metadata, not data)
 	delete(objMap, "classname")
-	
+
 	body, err := json.Marshal(objMap)
 	if err != nil {
 		return fmt.Errorf("failed to marshal map: %w", err)
