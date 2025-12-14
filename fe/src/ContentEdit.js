@@ -1278,7 +1278,9 @@ function ContentEdit() {
     };
 
     const handleCancel = () => {
-        navigate(`/c/${id}`);
+        // navigate(`/c/${id}`);
+        // Navigate back to previous page
+        navigate(-1);
     };
 
     const handleDelete = async () => {

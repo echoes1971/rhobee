@@ -343,6 +343,31 @@ export function ObjectSearch({searchClassname, searchColumns, resultsColumns, da
     fetchObjects(searchFormData);
   };
 
+  const handleCreateObject = async (classname) => {
+      try {
+          // Create minimal object
+          const payload = {
+              classname: classname,
+              // father_id: fatherId || "0",
+              name: `New ${classname.replace('DB', '')}`,
+              description: ""
+          };
+
+          const response = await axios.post('/objects', payload);
+          const newObjectId = response.data.data.id;
+
+          // Notify parent (for refreshing children list)
+          // if (onObjectCreated) {
+          //     onObjectCreated(newObjectId);
+          // }
+
+          // Navigate to edit page
+          navigate(`/e/${newObjectId}`);
+      } catch (err) {
+          console.error('Error creating object:', err);
+          alert('Failed to create object: ' + (err.response?.data?.error || err.message));
+      }
+  };
 
   return (
     <div className={`container mt-3 ${themeClass}`}>
@@ -416,7 +441,9 @@ export function ObjectSearch({searchClassname, searchColumns, resultsColumns, da
       </Form>
       <div className="row">
         <div className="col-md-6 text-center text-md-start">
-          <button className="btn btn-success mb-3" onClick={() => { navigate('/folders/new'); }} >{t("common.new")}</button>
+          
+          <button className="btn btn-success mb-3" onClick={() => { handleCreateObject(searchClassname); }} >{t("common.new")}</button>
+          {/* <button className="btn btn-success mb-3" onClick={() => { navigate('/folders/new'); }} >{t("common.new")}</button> */}
         </div>
         <div className="col-md-6 text-center text-md-end">
           <button type="submit" form="searchForm" className="btn btn-primary">{t("common.search")}</button>
