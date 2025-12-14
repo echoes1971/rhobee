@@ -240,8 +240,9 @@ function FolderView({ data, metadata, dark, onFilesUploaded }) {
             )}
             
             {metadata.can_edit && !uploading && (
+                // Invisible on small screens
                 <div 
-                    className="alert alert-info mt-3" 
+                    className="alert alert-info mt-3 d-none d-md-block" 
                     style={{ 
                         borderStyle: 'dashed',
                         cursor: 'default'
