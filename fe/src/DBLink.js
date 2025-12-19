@@ -1,9 +1,37 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { Form, Button, Spinner } from 'react-bootstrap';
+import { ThemeContext } from "./ThemeContext";
 import { useTranslation } from 'react-i18next';
 import ObjectLinkSelector from './ObjectLinkSelector';
 import PermissionsEditor from './PermissionsEditor';
 import { formatDescription } from './sitenavigation_utils';
+import { ObjectSearch } from "./DBObject";
+
+
+export function Links() {
+  const { t } = useTranslation();
+  const { dark, themeClass } = useContext(ThemeContext);
+
+  const searchClassname = "DBLink";
+
+  const searchColumns = [
+    { name: t("dbobjects.name") || "Name", attribute: "name", type: "string" },
+    { name: t("dbobjects.description") || "Description", attribute: "description", type: "string" },
+    { name: t("dbobjects.parent") || "Parent", attribute: "father_id", type: "objectLink" },
+  ];
+
+  const resultsColumns = [
+    // { name: t("dbobjects.created") || "Created", attribute: "creator", type: "userLink", hideOnSmall: true },
+    // { name: t("dbobjects.group") || "Group", attribute: "group_id", type: "groupLink", hideOnSmall: true },
+    { name: t("dbobjects.parent") || "Parent", attribute: "father_id", type: "objectLink", hideOnSmall: true },
+    // { name: t("files.preview") || "File", attribute: "id", type: "imageView", hideOnSmall: true },
+    { name: t("dbobjects.name") || "Name", attribute: "name", type: "string", hideOnSmall: false },
+    { name: t("dbobjects.description") || "Description", attribute: "description", type: "string", hideOnSmall: true },
+  ]
+  return (
+    <ObjectSearch searchClassname={searchClassname} searchColumns={searchColumns} resultsColumns={resultsColumns} dark={dark} themeClass={themeClass} />
+    );
+}
 
 
 /**
@@ -141,7 +169,10 @@ export function LinkEdit({ data, onSave, onCancel, onDelete, saving, error, dark
                     {t('link.url') || 'URL'}
                 </Form.Label>
                 <Form.Control
-                    type="url"
+                    // Can be https:// or relative URL
+                    type="text"
+
+                    // type="url"
                     name="href"
                     value={formData.href}
                     onChange={handleChange}

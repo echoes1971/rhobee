@@ -107,6 +107,8 @@ function AppNavbar() {
                 <NavDropdown.Item as={Link} to="/pages">{t("page.pages")}</NavDropdown.Item>
                 <NavDropdown.Item as={Link} to="/news">{t("news.news")}</NavDropdown.Item>
                 <NavDropdown.Item as={Link} to="/files">{t("files.files")}</NavDropdown.Item>
+                <NavDropdown.Item as={Link} to="/links">{t("link.links")}</NavDropdown.Item>
+                <NavDropdown.Item as={Link} to="/events">{t("event.events")}</NavDropdown.Item>
               </NavDropdown>
             ) : null}
             {username && (

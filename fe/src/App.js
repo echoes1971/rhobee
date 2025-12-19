@@ -14,6 +14,7 @@ import GroupProfile from './GroupProfile';
 import { Companies } from './Companies';
 import { Files } from './Files';
 import { Folders } from './Folders';
+import { Links } from './DBLink';
 import { News } from './News';
 import { Pages } from './Pages';
 import { People } from './People';
@@ -69,6 +70,7 @@ function App() {
             <Route path="/pages"   element={token && isWebmaster ?   <Pages /> : <Navigate to="/" />} />
             <Route path="/news"    element={token && isWebmaster ?    <News /> : <Navigate to="/" />} />
             <Route path="/files"   element={token && isWebmaster ?   <Files /> : <Navigate to="/" />} />
+            <Route path="/links"   element={token && isWebmaster ?   <Links /> : <Navigate to="/" />} />
 
             {/* **** Contacts **** */}
             <Route path="/companies" element={token ? <Companies /> : <Navigate to="/" />} />
