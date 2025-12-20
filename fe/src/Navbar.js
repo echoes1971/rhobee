@@ -80,6 +80,15 @@ function AppNavbar() {
         <Navbar.Brand as={Link} to="/">{site_title}</Navbar.Brand>
         
         <div className="d-flex d-lg-none ms-auto">
+            {/* Button toggle theme  */}
+            <Button
+              variant={dark ? "secondary" : "outline-secondary"}
+              className="me-2"
+              onClick={toggleTheme}
+            >
+              {dark ? <i className="bi bi-sun"></i> : <i className="bi bi-moon"></i>}
+            </Button>
+
           <Button
             variant={dark ? "secondary" : "outline-secondary"}
             size="sm"
@@ -206,10 +215,10 @@ function AppNavbar() {
               </Dropdown.Menu>
             </Dropdown>
 
-            {/* Bottone toggle tema */}
+            {/* Button toggle theme  */}
             <Button
               variant={dark ? "secondary" : "outline-secondary"}
-              className="ms-2"
+              className="ms-2 d-none d-lg-inline"
               onClick={toggleTheme}
             >
               {dark ? <i className="bi bi-sun"></i> : <i className="bi bi-moon"></i>}
