@@ -691,7 +691,7 @@ func SearchObjectsHandler(w http.ResponseWriter, r *http.Request) {
 	var resultList []map[string]interface{}
 	for i := 0; len(resultList) < maxResults && i < len(results); i++ {
 		// for i := 0; i < maxResults && i < len(results); i++ {
-		log.Printf("SearchObjectsHandler: results[%d]=%s\n", i, results[i].ToJSON())
+		// log.Printf("SearchObjectsHandler: results[%d]=%s\n", i, results[i].ToJSON())
 		entity := results[i]
 		if entity.HasMetadata("classname") && entity.GetMetadata("classname") == "DBFile" {
 			// read the full object to get file metadata, so we can display an image preview
@@ -704,7 +704,7 @@ func SearchObjectsHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		// IF searched classname is != DBObject, then filter other classnames
 		if classname != "DBUser" && classname != "DBCountry" {
-			log.Print("SearchObjectsHandler: entity=", entity)
+			// log.Print("SearchObjectsHandler: entity=", entity)
 			if classname != "DBObject" && entity.GetMetadata("classname") != classname {
 				log.Printf("SearchObjectsHandler: Skipping object ID=%s with classname=%s", entity.GetValue("id").(string), entity.GetMetadata("classname"))
 				continue
