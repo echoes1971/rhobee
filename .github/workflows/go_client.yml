@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
-      max-parallel: 1
+      #max-parallel: 1
       matrix:
         include:
           - goos: linux
@@ -37,8 +37,11 @@ jobs:
           cd client
           OUTDIR="../build/${{ matrix.goos }}/${{ matrix.goarch }}"
           mkdir -p "$OUTDIR"
-          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o "$OUTDIR/rhobee" .
-
+          EXT=""
+          if [ "${{ matrix.goos }}" = "windows" ]; then EXT=".exe"; fi
+          FILENAME="rhobee-$$ {{ matrix.goos }}- $${{ matrix.goarch }}$EXT"
+          GOOS=$$ {{ matrix.goos }} GOARCH= $${{ matrix.goarch }} go build -o "$OUTDIR/$FILENAME" .
+    
       - name: Upload to dev release
         uses: softprops/action-gh-release@v2
         with:
@@ -46,4 +49,4 @@ jobs:
           name: "Development Build"
           prerelease: true
           overwrite_files: true
-          files: build/${{ matrix.goos }}/${{ matrix.goarch }}/rhobee
+          files: build/${{ matrix.goos }}/${{ matrix.goarch }}/rhobee-*
