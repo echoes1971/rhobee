@@ -39,7 +39,7 @@ jobs:
           mkdir -p "$OUTDIR"
           EXT=""
           if [ "${{ matrix.goos }}" = "windows" ]; then EXT=".exe"; fi
-          FILENAME="rhobee-$$ {{ matrix.goos }}- $${{ matrix.goarch }}$EXT"
+          FILENAME="rhobee-$${{ matrix.goos }}-$${{ matrix.goarch }}$EXT"
           GOOS=$$ {{ matrix.goos }} GOARCH= $${{ matrix.goarch }} go build -o "$OUTDIR/$FILENAME" .
     
       - name: Upload to dev release
