@@ -467,7 +467,14 @@ export function ObjectSearch({searchClassname, searchColumns, resultsColumns, or
                     const desc = searchOrderBy === col.attribute ? ' desc' : '';
                     setSearchOrderBy(col.attribute + desc);
                     console.log("Setting order by:", searchOrderBy);
-                    fetchObjects(searchFormData, col.attribute + desc);
+                    // sort results
+                    results.sort((a, b) => {
+                      if (a[col.attribute] < b[col.attribute]) return desc ? 1 : -1;
+                      if (a[col.attribute] > b[col.attribute]) return desc ? -1 : 1;
+                      return 0;
+                    });
+                    setResults([...results]);
+                    //fetchObjects(searchFormData, col.attribute + desc);
                   }}
                 >{col.name}{searchOrderBy === col.attribute+' desc' ? " ▼" : searchOrderBy === col.attribute ? " ▲" : ""}</th>
               ))}
@@ -507,9 +514,14 @@ export function ObjectSearch({searchClassname, searchColumns, resultsColumns, or
                         <td className={col.hideOnSmall ? "d-none d-md-table-cell" : ""} key={cindex}>{formateDateTimeString(result[col.attribute])}</td>
                     ) : col.type === "urlView" ? (
                         <td className={col.hideOnSmall ? "d-none d-md-table-cell" : ""} key={cindex}>
-                          <a href={result[col.attribute]} target="_blank" rel="noopener noreferrer">
-                            {result[col.attribute]}
-                          </a>
+                          {(() => {
+                            const url = result[col.attribute].startsWith('http://') || result[col.attribute].startsWith('https://') ? result[col.attribute] : 'http://' + result[col.attribute];
+                            return (
+                              <a href={url} target="_blank" rel="noopener noreferrer">
+                                {result[col.attribute]}
+                              </a>
+                            );
+                          })()}
                         </td>
                     ) : (
                         <td className={col.hideOnSmall ? "d-none d-md-table-cell" : ""} key={cindex}>{result[col.attribute] ? result[col.attribute].slice(0, 30) + (result[col.attribute].length > 30 ? "..." : "") : ""}</td>
