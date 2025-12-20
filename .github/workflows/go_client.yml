@@ -1,0 +1,47 @@
+name: Go Multi-Arch Build
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - "client/**"
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - "client/**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - goos: linux
+            goarch: amd64
+          - goos: linux
+            goarch: arm64
+          - goos: windows
+            goarch: amd64
+          - goos: darwin
+            goarch: arm64
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.25'
+
+      - name: Build
+        run: |
+          cd client
+          OUTDIR="../build/${{ matrix.goos }}/${{ matrix.goarch }}"
+          mkdir -p "$OUTDIR"
+          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o "$OUTDIR/myapp" .
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.goos }}-${{ matrix.goarch }}
+          path: build/${{ matrix.goos }}/${{ matrix.goarch }}/
