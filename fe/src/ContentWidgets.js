@@ -341,19 +341,19 @@ export function ImageView({id, title, thumbnail, style}) {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        console.log('ImageView useEffect:', { id });
+        // console.log('ImageView useEffect:', { id });
         const loadPreview = async () => {
             try {
-                console.log('Loading image preview for:', id);
+                // console.log('Loading image preview for:', id);
                 const url = thumbnail ? `/files/${id}/download?preview=yes` : `/files/${id}/download`;
                 const response = await axiosInstance.get(url, {
                     responseType: 'blob'
                 });
-                console.log('Image loaded, blob size:', response.data.size, 'type:', response.data.type);
+                // console.log('Image loaded, blob size:', response.data.size, 'type:', response.data.type);
                 // IF an image, create blob URL
                 if (response.data.type.startsWith('image/')) {
                     const blobUrl = URL.createObjectURL(response.data);
-                    console.log('Blob URL created:', blobUrl);
+                    // console.log('Blob URL created:', blobUrl);
                     setPreview(blobUrl);
                 } else {
                     setPreview(null);
