@@ -1,16 +1,13 @@
-import React, { useContext, useEffect, useRef, useState } from "react";
-import { Container, Form, Button, Spinner, Alert, ButtonGroup, Overlay, Popover } from 'react-bootstrap';
+import React, { useContext, useEffect, useState } from "react";
+import { Alert, Container, Form, Button, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import EmojiPicker from 'emoji-picker-react';
-import ReactQuill, { Quill } from 'react-quill';
 import { ThemeContext } from "./ThemeContext";
 import { useTranslation } from "react-i18next";
 import axiosInstance from './axios';
-import FileSelector from './FileSelector';
 import ObjectLinkSelector from './ObjectLinkSelector';
 import ObjectList from "./ObjectList";
 import { ObjectSearch } from "./DBObject";
-import { cleanTokensBeforeSave, extractFileIDs, HtmlView } from "./ContentHtml";
+import { cleanTokensBeforeSave, HtmlEdit, HtmlView } from "./ContentHtml";
 import PermissionsEditor from './PermissionsEditor';
 
 
@@ -118,7 +115,7 @@ export function FolderView({ data, metadata, dark, onFilesUploaded }) {
                 formData.append('file', file);
                 formData.append('name', file.name);
                 formData.append('father_id', data.id);
-                formData.append('permissions', 'rw-r-----'); // Default permissions
+                formData.append('permissions', 'rwxr-----'); // Default permissions
 
                 await axiosInstance.post('/objects', formData, {
                     headers: {
@@ -257,7 +254,6 @@ export function FolderView({ data, metadata, dark, onFilesUploaded }) {
 // Edit form for DBFolder
 export function FolderEdit({ data, onSave, onCancel, onDelete, saving, error, dark }) {
     const { t } = useTranslation();
-    const [htmlMode, setHtmlMode] = useState('source'); // 'wysiwyg' or 'source'
     const [formData, setFormData] = useState({
         father_id: data.father_id || '0',
         name: data.name || '',
@@ -265,7 +261,6 @@ export function FolderEdit({ data, onSave, onCancel, onDelete, saving, error, da
         fk_obj_id: data.fk_obj_id || '0',
         permissions: data.permissions || 'rwxr-x---',
         childs_sort_order: data.childs_sort_order || '',
-        father_id: data.father_id || '0',
     });
     const [children, setChildren] = useState([]);
     const [loadingChildren, setLoadingChildren] = useState(false);
@@ -276,16 +271,7 @@ export function FolderEdit({ data, onSave, onCancel, onDelete, saving, error, da
     const [indexPages, setIndexPages] = useState([]);
     const [selectedIndexLanguage, setSelectedIndexLanguage] = useState('en');
     const [indexHtml, setIndexHtml] = useState('');
-    const [indexHtmlWithTokens, setIndexHtmlWithTokens] = useState('');
-    const [loadingIndexTokens, setLoadingIndexTokens] = useState(false);
     const [savingIndex, setSavingIndex] = useState(false);
-    const [quillRefIndex, setQuillRefIndex] = useState(null);
-    const [showEmojiPickerIndex, setShowEmojiPickerIndex] = useState(false);
-    // const [emojiButtonTarget, setEmojiButtonTarget] = useState(null);
-    const emojiButtonRef = useRef(null);
-    
-    const [showFileSelectorIndex, setShowFileSelectorIndex] = useState(false);
-    const [fileSelectorTypeIndex, setFileSelectorTypeIndex] = useState('file');
 
     // Load children and index pages on mount
     useEffect(() => {
@@ -301,7 +287,6 @@ export function FolderEdit({ data, onSave, onCancel, onDelete, saving, error, da
             const response = await axiosInstance.get(`/nav/children/${data.id}`);
             const childrenData = response.data.children || [];
             setChildren(childrenData);
-            // console.log('Children data:', childrenData);
             
             // Initialize sorted order from childs_sort_order or use current order
             if (formData.childs_sort_order) {
@@ -310,7 +295,9 @@ export function FolderEdit({ data, onSave, onCancel, onDelete, saving, error, da
             // } else {
             //     setSortedChildrenIds(childrenData.map(child => child.data.id));
             }
-            console.log('Initial sortedChildrenIds:', sortedChildrenIds);
+            if(sortedChildrenIds.length !== 0) {
+                console.log('Initial sortedChildrenIds:', sortedChildrenIds);
+            }
         } catch (error) {
             console.error('Failed to load children:', error);
         } finally {
@@ -323,41 +310,17 @@ export function FolderEdit({ data, onSave, onCancel, onDelete, saving, error, da
             const response = await axiosInstance.get(`/nav/${data.id}/indexes`);
             const pages = response.data.indexes || [];
             setIndexPages(pages);
+
             // Load HTML for current language if exists
             const currentPage = pages.find(p => p.data.language && p.data.language.indexOf(selectedIndexLanguage) >= 0);
             if (currentPage) {
                 setIndexHtml(currentPage.data.html || '');
-                await loadIndexTokens(currentPage.data.html || '');
             } else {
                 setIndexHtml('');
-                setIndexHtmlWithTokens('');
             }
         } catch (error) {
             console.error('Failed to load index pages:', error);
             setIndexPages([]);
-        }
-    };
-
-    const loadIndexTokens = async (html) => {
-        if (!html) {
-            setIndexHtmlWithTokens('');
-            return;
-        }
-        setLoadingIndexTokens(true);
-        try {
-            const fileIDs = extractFileIDs(html);
-            if (fileIDs.length > 0) {
-                const tokens = await requestFileTokens(fileIDs);
-                const htmlWithTokens = injectTokensForEditing(html, tokens);
-                setIndexHtmlWithTokens(htmlWithTokens);
-            } else {
-                setIndexHtmlWithTokens(html);
-            }
-        } catch (error) {
-            console.error('Failed to load tokens for index:', error);
-            setIndexHtmlWithTokens(html);
-        } finally {
-            setLoadingIndexTokens(false);
         }
     };
 
@@ -366,10 +329,8 @@ export function FolderEdit({ data, onSave, onCancel, onDelete, saving, error, da
         const currentPage = indexPages.find(p => p.data.language && p.data.language.indexOf(selectedIndexLanguage) >= 0);
         if (currentPage) {
             setIndexHtml(currentPage.data.html || '');
-            loadIndexTokens(currentPage.data.html || '');
         } else {
             setIndexHtml('');
-            setIndexHtmlWithTokens('');
         }
     }, [selectedIndexLanguage, indexPages]);
 
@@ -379,75 +340,6 @@ export function FolderEdit({ data, onSave, onCancel, onDelete, saving, error, da
             ...prev,
             [name]: value
         }));
-    };
-
-    // const handleIndexHtmlChange = (content) => {
-    const handleIndexHtmlChange = async (content) => {
-        // RRA: start.
-        setIndexHtml(content);
-
-        // Extract file IDs and reload tokens for immediate preview
-        const fileIDs = extractFileIDs(content);
-        if (fileIDs.length === 0) {
-            setIndexHtmlWithTokens(content);
-            return;
-        }
-
-        try {
-            const tokens = await requestFileTokens(fileIDs);
-            const htmlWithTokens = injectTokensForEditing(content, tokens);
-            setIndexHtmlWithTokens(htmlWithTokens);
-        } catch (error) {
-            console.error('Failed to reload tokens after HTML change:', error);
-            setIndexHtmlWithTokens(content);
-        }
-
-        // setIndexHtml(content);
-        // setIndexHtmlWithTokens(content);
-        // RRA: end.
-    };
-
-    const handleFileSelectIndex = (file) => {
-        if (!quillRefIndex) return;
-        
-        const quill = quillRefIndex.getEditor();
-        const range = quill.getSelection(true);
-        
-        if (fileSelectorTypeIndex === 'image') {
-            const imgHtml = `<img src="/api/files/${file.id}/download" data-dbfile-id="${file.id}" alt="${file.name}" style="max-width: 100%;" />`;
-            quill.clipboard.dangerouslyPasteHTML(range.index, imgHtml);
-        } else {
-            // const linkHtml = `<a href="/api/files/${file.id}/download" data-dbfile-id="${file.id}">${file.name}</a>`;
-            const linkHtml = `<a href="/f/${file.id}/download" data-dbfile-id="${file.id}">${file.name}</a>`;
-            quill.clipboard.dangerouslyPasteHTML(range.index, linkHtml);
-        }
-        
-        // Update state
-        handleIndexHtmlChange(quill.root.innerHTML);
-    };
-
-    const handleInsertFileIndex = () => {
-        setFileSelectorTypeIndex('file');
-        setShowFileSelectorIndex(true);
-    };
-
-    const handleInsertImageIndex = () => {
-        setFileSelectorTypeIndex('image');
-        setShowFileSelectorIndex(true);
-    };
-
-    const handleEmojiClickIndex = (emojiObject) => {
-        if (!quillRefIndex) return;
-
-        const quill = quillRefIndex.getEditor();
-        const range = quill.getSelection(true);
-        if (!range) return;
-
-        quill.insertText(range.index, emojiObject.emoji);
-        quill.setSelection(range.index + emojiObject.emoji.length);
-
-        // Update state but keep picker open for multiple selections
-        handleIndexHtmlChange(quill.root.innerHTML);
     };
 
     const handleSaveIndex = async () => {
@@ -467,7 +359,6 @@ export function FolderEdit({ data, onSave, onCancel, onDelete, saving, error, da
                 await axiosInstance.post('/objects', {
                     classname: 'DBPage',
                     name: 'index',
-                    // description: `Index page for ${selectedIndexLanguage}`,
                     description: '',
                     language: selectedIndexLanguage,
                     html: cleanedHtml,
@@ -541,7 +432,6 @@ export function FolderEdit({ data, onSave, onCancel, onDelete, saving, error, da
         <Form onSubmit={handleSubmit}>
 
             <Form.Group className="mb-3">
-                {/* <Form.Label>{t('dbobjects.parent')}</Form.Label> */}
                 <ObjectLinkSelector
                     value={formData.father_id || '0'}
                     onChange={handleChange}
@@ -594,7 +484,7 @@ export function FolderEdit({ data, onSave, onCancel, onDelete, saving, error, da
                     <Form.Select
                         value={selectedIndexLanguage}
                         onChange={(e) => setSelectedIndexLanguage(e.target.value)}
-                        disabled={savingIndex || loadingIndexTokens}
+                        disabled={savingIndex}
                     >
                         <option value="en">English</option>
                         <option value="it">Italiano</option>
@@ -603,142 +493,41 @@ export function FolderEdit({ data, onSave, onCancel, onDelete, saving, error, da
                     </Form.Select>
                 </Form.Group>
 
-                <div className="d-flex justify-content-between align-items-center mb-2">
-                    <Form.Label className="mb-0">HTML Content</Form.Label>
-                    <ButtonGroup size="sm">
-                        <Button 
-                            variant={htmlMode === 'wysiwyg' ? 'primary' : 'outline-primary'}
-                            onClick={() => setHtmlMode('wysiwyg')}
-                        >
-                            <i className="bi bi-eye me-1"></i>WYSIWYG
-                        </Button>
-                        <Button 
-                            variant={htmlMode === 'source' ? 'primary' : 'outline-primary'}
-                            onClick={() => setHtmlMode('source')}
-                        >
-                            <i className="bi bi-code-slash me-1"></i>HTML Source
-                        </Button>
-                    </ButtonGroup>
+                <HtmlEdit
+                    htmlContent={indexHtml}
+                    onHtmlContentChange={setIndexHtml}
+                    dark={dark}
+                    disabled={savingIndex}
+                />
+
+                <div className="mt-2">
+                    <Button
+                        variant="primary"
+                        onClick={handleSaveIndex}
+                        disabled={savingIndex}
+                    >
+                        {savingIndex ? (
+                            <>
+                                <Spinner animation="border" size="sm" className="me-2" />
+                                {t('common.saving')}
+                            </>
+                        ) : (
+                            <>
+                                <i className="bi bi-save"></i> {t('folder.save_index')}
+                            </>
+                        )}
+                    </Button>
                 </div>
-
-                {htmlMode === 'wysiwyg' && !loadingIndexTokens && (
-                    <div className="mb-2">
-                        <ButtonGroup size="sm">
-                            <Button
-                                variant="outline-secondary"
-                                size="sm"
-                                onClick={handleInsertImageIndex}
-                                disabled={savingIndex}
-                            >
-                                <i className="bi bi-image"></i> {t('files.insert_image')}
-                            </Button>
-                            <Button
-                                variant="outline-secondary"
-                                size="sm"
-                                onClick={handleInsertFileIndex}
-                                disabled={savingIndex}
-                            >
-                                <i className="bi bi-file-earmark"></i> {t('files.insert_file')}
-                            </Button>
-                            <Button
-                                ref={emojiButtonRef}
-                                variant="outline-secondary"
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    setShowEmojiPickerIndex(!showEmojiPickerIndex);
-                                }}
-                                title={t('editor.insert_emoji') || 'Insert Emoji'}
-                            >
-                                <i className="bi bi-emoji-smile me-1"></i> {t('editor.insert_emoji')}
-                            </Button>
-                        </ButtonGroup>
-                        <Overlay
-                            show={showEmojiPickerIndex}
-                            target={emojiButtonRef.current}
-                            // placement="bottom-start"
-                            rootClose
-                            onHide={() => setShowEmojiPickerIndex(false)}
-                        >
-                            <Popover id="emoji-picker-popover">
-                                <Popover.Body height="400" width="400">
-                                    <EmojiPicker
-                                        onEmojiClick={handleEmojiClickIndex}
-                                        height={350}
-                                        width={350}
-                                        autoFocusSearch={false}
-                                        />
-                                </Popover.Body>
-                            </Popover>
-                        </Overlay>
-                    </div>
-                )}
-
-                {loadingIndexTokens && (
-                    <div className="text-center p-3">
-                        <Spinner animation="border" />
-                    </div>
-                )}
-                {!loadingIndexTokens && htmlMode === 'wysiwyg' ? (
-                    <ReactQuill
-                        ref={setQuillRefIndex}
-                        theme="snow"
-                        value={indexHtmlWithTokens}
-                        onChange={handleIndexHtmlChange}
-                        modules={{
-                            toolbar: [
-                                [{ 'header': [1, 2, 3, false] }],
-                                ['bold', 'italic', 'underline', 'strike'],
-                                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                                [{ 'indent': '-1'}, { 'indent': '+1' }],
-                                [{ 'color': [] }, { 'background': [] }],
-                                ['link', 'blockquote', 'code-block'],
-                                ['clean']
-                            ]
-                        }}
-                    />
-                ) : !loadingIndexTokens ? (
-                    <Form.Control
-                        as="textarea"
-                        name="html"
-                        value={indexHtmlWithTokens}
-                        onChange={(e) => handleIndexHtmlChange(e.target.value)}
-                        rows={15}
-                        style={{ fontFamily: 'monospace', fontSize: '0.9em' }}
-                    />
-                ) : null}
-                {!loadingIndexTokens && (
-                    <div className="mt-2">
-                        <Button
-                            variant="primary"
-                            onClick={handleSaveIndex}
-                            disabled={savingIndex}
-                        >
-                            {savingIndex ? (
-                                <>
-                                    <Spinner animation="border" size="sm" className="me-2" />
-                                    {t('common.saving')}
-                                </>
-                            ) : (
-                                <>
-                                    <i className="bi bi-save"></i> {t('folder.save_index')}
-                                </>
-                            )}
-                        </Button>
-                    </div>
-                )}
             </div>
 
             <Form.Group className="mb-3">
                 <Form.Label>{t('files.linked_object')}</Form.Label>
                 <ObjectLinkSelector
                     value={formData.fk_obj_id || '0'}
-                    // onChange={(value) => setFormData(prev => ({ ...prev, fk_obj_id: value }))}
                     onChange={handleChange}
                     name="fk_obj_id"
                     fieldName="fk_obj_id"
-                    // disabled={saving}
                     classname="DBObject"
-                    // allowedTypes={['DBPage', 'DBNews']}
                 />
             </Form.Group>
 
@@ -860,12 +649,6 @@ export function FolderEdit({ data, onSave, onCancel, onDelete, saving, error, da
                 </Button>
             </div>
             
-            <FileSelector
-                show={showFileSelectorIndex}
-                onHide={() => setShowFileSelectorIndex(false)}
-                onSelect={handleFileSelectIndex}
-                fileType={fileSelectorTypeIndex}
-            />
         </Form>
     );
 }
