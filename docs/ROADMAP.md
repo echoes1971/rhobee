@@ -35,10 +35,9 @@ References:
 - [ ] License: gpl? lgpl? apache 2.0?
 
 ### Rich Text Editor Improvements (HIGH PRIORITY)
+- [x] Text and elements alignment
 - [ ] Image resize (simply put width="...")
-- [ ] Pre condition: make it a separate reusable component
 - [ ] Tables support in ReactQuill
-- [ ] Text and elements alignment
 - [ ] Markdown alternative editor // ❓ where do we store the markdown, in the html field or another? if it's the same field, how do we distinguish the 2 in View and Edit?
   - [ ] Toggle between WYSIWYG and Markdown // 👤 Roberto: I love Markdown, I don't know why :)
   - [ ] Markdown preview
@@ -70,6 +69,9 @@ References:
 - [x] File embedding system with JWT tokens
 - [x] FileSelector with write permission filtering
 - [x] Multi-language support (EN, IT, DE, FR)
+
+### Rich Text Editor Improvements
+- [x] Pre condition: make it a separate reusable component
 
 ### Site Navigation
 - [x] Tree view sidebar with expandable nodes

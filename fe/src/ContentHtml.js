@@ -14,12 +14,20 @@ import axiosInstance from './axios';
 
 // **** RRA - Start: is this still needed?
 
-// Configure Quill to preserve data-dbfile-id attribute
+// Configure Quill to preserve data-dbfile-id attribute and support width/height
 const Image = Quill.import('formats/image');
 class CustomImage extends Image {
     static formats(domNode) {
         const formats = super.formats(domNode);
         formats['data-dbfile-id'] = domNode.getAttribute('data-dbfile-id');
+        
+        // Preserve width and height from style attribute
+        const style = domNode.getAttribute('style') || '';
+        const widthMatch = style.match(/width:\s*([^;]+)/);
+        const heightMatch = style.match(/height:\s*([^;]+)/);
+        if (widthMatch) formats['width'] = widthMatch[1].trim();
+        if (heightMatch) formats['height'] = heightMatch[1].trim();
+        
         return formats;
     }
     
@@ -29,6 +37,12 @@ class CustomImage extends Image {
                 this.domNode.setAttribute('data-dbfile-id', value);
             } else {
                 this.domNode.removeAttribute('data-dbfile-id');
+            }
+        } else if (name === 'width' || name === 'height') {
+            if (value) {
+                this.domNode.style[name] = value;
+            } else {
+                this.domNode.style[name] = '';
             }
         } else {
             super.format(name, value);
@@ -95,12 +109,14 @@ export async function requestFileTokens(fileIDs) {
 /**
  * Inject tokens into HTML for viewing
  * Adds ?token=... to src/href attributes of elements with data-dbfile-id
+ * Converts Quill classes to inline styles for proper display outside editor
  */
 export function injectTokensForViewing(html, tokens) {
     if (!html) return html;
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
     
+    // Inject file tokens
     doc.querySelectorAll('[data-dbfile-id]').forEach(el => {
         const fileId = el.getAttribute('data-dbfile-id');
         const token = tokens[fileId];
@@ -117,19 +133,73 @@ export function injectTokensForViewing(html, tokens) {
             }
         }
     });
-    
+        
+    return doc.body.innerHTML;
+}
+
+export function convertQuillClassesToStyles(html) {
+    if (!html) return html;
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+
+    // Convert Quill classes to inline styles for display
+    doc.querySelectorAll('[class*="ql-"]').forEach(el => {
+        const classList = el.classList;
+        const styles = [];
+        const classesToRemove = [];
+        
+        // Alignment: ql-align-center, ql-align-right, ql-align-justify
+        if (classList.contains('ql-align-center')) {
+            styles.push('text-align: center');
+            classesToRemove.push('ql-align-center');
+        } else if (classList.contains('ql-align-right')) {
+            styles.push('text-align: right');
+            classesToRemove.push('ql-align-right');
+        } else if (classList.contains('ql-align-justify')) {
+            styles.push('text-align: justify');
+            classesToRemove.push('ql-align-justify');
+        }
+        
+        // Indentation: ql-indent-1 to ql-indent-8
+        for (let i = 1; i <= 8; i++) {
+            if (classList.contains(`ql-indent-${i}`)) {
+                styles.push(`margin-left: ${i * 3}em`);
+                classesToRemove.push(`ql-indent-${i}`);
+                break;
+            }
+        }
+        
+        // Direction: ql-direction-rtl
+        if (classList.contains('ql-direction-rtl')) {
+            styles.push('direction: rtl');
+            styles.push('text-align: right');
+            classesToRemove.push('ql-direction-rtl');
+        }
+        
+        // Apply styles if any
+        if (styles.length > 0) {
+            const existingStyle = el.getAttribute('style') || '';
+            const newStyle = existingStyle + (existingStyle ? '; ' : '') + styles.join('; ');
+            el.setAttribute('style', newStyle);
+            
+            // Remove Quill classes
+            classesToRemove.forEach(cls => el.classList.remove(cls));
+        }
+    });
     return doc.body.innerHTML;
 }
 
 /**
  * Clean tokens from HTML before saving
  * Removes ?token=... from src/href but keeps data-dbfile-id
+ * IMPORTANT: Keeps Quill classes (ql-align-*, ql-indent-*, etc.) so they work when re-opened in editor
  */
 export function cleanTokensBeforeSave(html) {
     if (!html) return html;
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
     
+    // Clean file tokens
     doc.querySelectorAll('[data-dbfile-id]').forEach(el => {
         const fileId = el.getAttribute('data-dbfile-id');
         
@@ -182,14 +252,15 @@ export function HtmlView({ html, dark }) {
         const loadTokens = async () => {
             const fileIDs = extractFileIDs(htmlWithTokens);
             if (fileIDs.length === 0) {
-                setHtmlWithTokens(html);
+                const htmlWithTokens = convertQuillClassesToStyles(html);
+                setHtmlWithTokens(htmlWithTokens);
                 return;
             }
 
             setLoadingTokens(true);
             try {
                 const tokens = await requestFileTokens(fileIDs);
-                const htmlWithTokens = injectTokensForViewing(html, tokens);
+                const htmlWithTokens = convertQuillClassesToStyles(injectTokensForViewing(html, tokens));
                 setHtmlWithTokens(htmlWithTokens);
             } catch (error) {
                 console.error('Failed to load tokens for embedded files:', error);
@@ -217,6 +288,11 @@ export function HtmlView({ html, dark }) {
     );
 }
 
+/**
+ * HTML Editor Component with WYSIWYG and Source modes
+ * 
+ * Reference: https://quilljs.com/docs/configuration
+ */
 export function HtmlEdit({objID, htmlContent, onHtmlContentChange, dark}) {
     const { t } = useTranslation();
 
@@ -428,7 +504,6 @@ export function HtmlEdit({objID, htmlContent, onHtmlContentChange, dark}) {
                 </div>
             )}
             {!loadingTokens && htmlMode === 'wysiwyg' ? (
-                // https://quilljs.com/docs/configuration
                 <ReactQuill 
                     ref={setQuillRef}
                     value={htmlWithTokens}
@@ -440,6 +515,7 @@ export function HtmlEdit({objID, htmlContent, onHtmlContentChange, dark}) {
                         toolbar: [
                             [{ 'header': [1, 2, 3, false] }],
                             ['bold', 'italic', 'underline', 'strike'],
+                            [{ 'align': [] }],
                             [{ 'list': 'ordered'}, { 'list': 'bullet' }],
                             [{ 'indent': '-1'}, { 'indent': '+1' }],
                             [{ 'color': [] }, { 'background': [] }],
