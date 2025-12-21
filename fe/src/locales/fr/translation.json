@@ -181,6 +181,7 @@
     "url_help": "L'URL doit commencer par http:// ou https://"
   },
   "event": {
+    "events": "Événements",
     "start": "Début",
     "end": "Fin",
     "all_day": "Toute la journée",

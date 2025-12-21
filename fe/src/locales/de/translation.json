@@ -182,6 +182,7 @@
     "url_help": "Die URL muss mit http:// oder https:// beginnen"
   },
   "event": {
+    "events": "Ereignisse",
     "start": "Start",
     "end": "Ende",
     "all_day": "Ganztägig",
