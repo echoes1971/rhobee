@@ -24,7 +24,7 @@ References:
   - [x] Language filter
 - [ ] Search results highlighting
 - [ ] Search in name, description, and HTML content // ⚠️ all objects have name and description, only page and news have html
-- [ ] Pagination for search results
+- [x] Pagination for search results
 
 ### Documentation
 - [x] Easy steps to get the CMS up and running on your machine
