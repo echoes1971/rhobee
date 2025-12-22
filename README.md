@@ -6,7 +6,7 @@
 [![React](https://img.shields.io/badge/React-19+-blue)](https://reactjs.org/)
 [![License](https://img.shields.io/github/license/your-repo/r-prj-ng)](LICENSE)
 
-ρBee is a lightweight, flexible Headless Content Management System (CMS) built with a modular DBObject architecture. It supports multi-language content, user permissions, file management, and more – ideal for small to medium websites or as a foundation for custom web applications.
+**ρBee** is a lightweight, flexible Headless Content Management System (CMS) built with a modular DBObject architecture. It supports multi-language content, user permissions, file management, and more – ideal for small to medium websites or as a foundation for custom web applications.
 
 ## Features
 - **Multi-Language Support**: EN, IT, DE, FR with language-based content filtering.
