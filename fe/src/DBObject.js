@@ -293,7 +293,7 @@ export function ObjectSearch({searchClassname, searchColumns, resultsColumns, or
   const [errorMessage, setErrorMessage] = useState("");
 
   const [includeDeleted, setIncludeDeleted] = useState(false);
-  const [limit, setLimit] = useState(5); // Change to 20 for production
+  const [limit, setLimit] = useState(20); // Change to 20 for production
   const [offset, setOffset] = useState(0);
 
   // Load folders on start
