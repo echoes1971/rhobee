@@ -1,7 +1,12 @@
 
-# ρBee (rhobee) - Lightweight CMS Framework
+# ρBee (rhobee) - Lightweight Headless CMS Framework
 
-ρBee is a lightweight, flexible Content Management System (CMS) built with a modular DBObject architecture. It supports multi-language content, user permissions, file management, and more – ideal for small to medium websites or as a foundation for custom web applications.
+[![Headless CMS](https://img.shields.io/badge/Type-Headless%20CMS-blue)](https://github.com/your-repo/r-prj-ng)
+[![Go](https://img.shields.io/badge/Go-1.21+-blue)](https://golang.org/)
+[![React](https://img.shields.io/badge/React-19+-blue)](https://reactjs.org/)
+[![License](https://img.shields.io/github/license/your-repo/r-prj-ng)](LICENSE)
+
+ρBee is a lightweight, flexible Headless Content Management System (CMS) built with a modular DBObject architecture. It supports multi-language content, user permissions, file management, and more – ideal for small to medium websites or as a foundation for custom web applications.
 
 ## Features
 - **Multi-Language Support**: EN, IT, DE, FR with language-based content filtering.
@@ -60,7 +65,7 @@ For hot-reload during development:
 - `proxy/`: Nginx configuration
 
 ## History
-Evolved from the original PHP-based r-prj project (see [old repo](https://github.com/echoes1971/r-prj)). NextGen rewrite in Go and React for better performance, scalability, and maintainability.
+Evolved from the original PHP-based r-prj project (see [old repo](https://github.com/echoes1971/r-prj)). As early as 2005, the project explored API-driven decoupling with XML-RPC and JSON/REST to separate content engine from presentation, including multi-platform clients in C++/Qt and Python/Qt. Attempts with Bootstrap and AJAX for modern frontends led to the NextGen rewrite in Go and React for enhanced performance, scalability, and maintainability.
 
 ## Contributing
 See [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) for guidelines.

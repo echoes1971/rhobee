@@ -27,9 +27,9 @@ References:
 - [ ] Pagination for search results
 
 ### Documentation
-- [ ] Easy steps to get the CMS up and running on your machine
-- [ ] Project description: brief description of the project, some how-to, feature list, history?
-- [x] License: gpl? lgpl? apache 2.0?
+- [x] Easy steps to get the CMS up and running on your machine
+- [x] Project description: brief description of the project, some how-to, feature list, history?
+- [x] License: gpl? lgpl? apache 2.0
 
 
 ### OAuth Integration (HIGH PRIORITY - if not complicated)
