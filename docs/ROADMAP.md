@@ -18,6 +18,7 @@ References:
 
 ### Search & Discovery (NEXT - MVP BLOCKER)
 - [ ] Advanced filters
+  - [ ] deleted objects: only for admins and webmasters
   - [ ] Date range filter // Roberto: a generic range can be implemented, passing [_from_<name attribute>, _to_<name attribute>] in the metadata. These will be handled by SearchObjectsHandler that passes them to DBRepository.Search in the metadata of the search object
   - [ ] File type filter
   - [x] Author filter
