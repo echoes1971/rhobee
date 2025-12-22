@@ -1397,6 +1397,7 @@ CREATE TABLE `rprj_users` (
   `pwd` varchar(255) NOT NULL,
   `pwd_salt` varchar(4) DEFAULT '',
   `fullname` text DEFAULT NULL,
+  `email` text DISTINCT DEFAULT NULL,
   `group_id` varchar(16) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `rprj_users_0` (`id`),
