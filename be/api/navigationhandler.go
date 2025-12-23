@@ -12,10 +12,16 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// GET /content/:objectId
+// GetNavigationHandler godoc
 //
-//	curl -X GET http://localhost:8080/api/content/xxxx-xxxxxxxx-xxxx \
-//	  -H "Authorization: Bearer <access_token>"
+//	@Summary returns a navigation object by its ID
+//	@Description Returns the navigation object specified by its ID
+//	@Tags navigation
+//	@Produce json
+//	@Param objectId path string true "Object ID"
+//	@Success 200 {object} map[string]interface{} "Navigation object data"
+//	@Failure 404 {object} ErrorResponse "Object not found"
+//	@Router /nav/{objectId} [get]
 func GetNavigationHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	objectID := vars["objectId"]
@@ -90,10 +96,16 @@ func GetNavigationHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-// GET /nav/children/:folderId
+// GetChildrenHandler godoc
 //
-//	curl -X GET http://localhost:8080/api/nav/children/xxxx-xxxxxxxx-xxxx \
-//	  -H "Authorization: Bearer <access_token>"
+//	@Summary returns children of a given folder
+//	@Description Returns the list of child objects under the specified folder ID
+//	@Tags navigation
+//	@Produce json
+//	@Param folderId path string true "Folder ID"
+//	@Success 200 {object} map[string]interface{} "List of child objects"
+//	@Failure 404 {object} ErrorResponse "Folder not found"
+//	@Router /nav/children/{folderId} [get]
 func GetChildrenHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	folderId := vars["folderId"]
@@ -149,10 +161,16 @@ func GetChildrenHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-// GET /nav/breadcrumb/:objectId
+// GetBreadcrumbHandler godoc
 //
-//	curl -X GET http://localhost:8080/api/nav/breadcrumb/xxxx-xxxxxxxx-xxxx \
-//	  -H "Authorization: Bearer <access_token>"
+//	@Summary returns breadcrumb for a given object
+//	@Description Returns the breadcrumb trail for the specified object ID
+//	@Tags navigation
+//	@Produce json
+//	@Param objectId path string true "Object ID"
+//	@Success 200 {object} map[string]interface{} "Breadcrumb data"
+//	@Failure 404 {object} ErrorResponse "Object not found"
+//	@Router /nav/breadcrumb/{objectId} [get]
 func GetBreadcrumbHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	objectID := vars["objectId"]
@@ -204,9 +222,16 @@ func GetBreadcrumbHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-// GET /nav/:objectId/indexes
+// GetIndexesHandler godoc
 //
-//	curl -X GET http://localhost:8080/api/nav/xxxx-xxxxxxxx-xxxx/indexes \
+//	@Summary returns index pages under a given object
+//	@Description Returns index pages located directly under the specified object ID
+//	@Tags navigation
+//	@Produce json
+//	@Param objectId path string true "Object ID"
+//	@Success 200 {object} map[string]interface{} "List of index pages"
+//	@Failure 404 {object} ErrorResponse "Object not found"
+//	@Router /nav/{objectId}/indexes [get]
 func GetIndexesHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	objectID := vars["objectId"]
@@ -270,10 +295,16 @@ func GetIndexesHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-// GET /content/country/:countryId
+// GetCountryHandler godoc
 //
-//	curl -X GET http://localhost:8080/api/content/country/xxxx-xxxxxxxx-xxxx \
-//	  -H "Authorization: Bearer <access_token>"
+//	@Summary returns a country from countrylist table
+//	@Description Returns a country from the countrylist table by its ID
+//	@Tags navigation
+//	@Produce json
+//	@Param countryId path string true "Country ID"
+//	@Success 200 {object} map[string]interface{} "Country data"
+//	@Failure 404 {object} ErrorResponse "Country not found"
+//	@Router /countries/{countryId} [get]
 func GetCountryHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	countryID := vars["countryId"]
@@ -301,8 +332,15 @@ func GetCountryHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(country.GetAllValues())
 }
 
-// GetCountriesHandler returns all countries from countrylist table
-// GET /api/countries
+// GetCountriesHandler godoc
+//
+//	@Summary returns all countries from countrylist table
+//	@Description Returns a list of all countries from the countrylist table
+//	@Tags navigation
+//	@Produce json
+//	@Success 200 {object} map[string]interface{} "List of countries"
+//	@Failure 500 {object} ErrorResponse "Internal server error"
+//	@Router /countries [get]
 func GetCountriesHandler(w http.ResponseWriter, r *http.Request) {
 	dbContext := dblayer.DBContext{
 		UserID:   "-7",           // Anonymous user - countries are public

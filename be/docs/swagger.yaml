@@ -1,0 +1,1018 @@
+basePath: /
+definitions:
+  api.Credentials:
+    properties:
+      login:
+        example: admin
+        type: string
+      pwd:
+        example: password123
+        type: string
+    type: object
+  api.ErrorResponse:
+    properties:
+      code:
+        description: Error code for frontend i18n
+        type: string
+      message:
+        description: Fallback message in English
+        type: string
+      params:
+        additionalProperties:
+          type: string
+        description: Dynamic parameters for interpolation
+        type: object
+    type: object
+  api.PingResponse:
+    properties:
+      ping:
+        type: string
+    type: object
+host: localhost:1971
+info:
+  contact:
+    email: support@example.com
+    name: API Support
+  description: API documentation for R-PRJ-NG backend
+  license:
+    name: Apache 2.0
+    url: https://opensource.org/licenses/Apache-2.0
+  termsOfService: http://swagger.io/terms/
+  title: ρBee (rhobee) API
+  version: "1.0"
+paths:
+  /countries:
+    get:
+      description: Returns a list of all countries from the countrylist table
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of countries
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: returns all countries from countrylist table
+      tags:
+      - navigation
+  /countries/{countryId}:
+    get:
+      description: Returns a country from the countrylist table by its ID
+      parameters:
+      - description: Country ID
+        in: path
+        name: countryId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Country data
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Country not found
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: returns a country from countrylist table
+      tags:
+      - navigation
+  /files/{id}/download:
+    get:
+      description: Downloads the file content for a given DBFile object ID
+      parameters:
+      - description: File ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Temporary JWT token for access
+        in: query
+        name: token
+        type: string
+      - description: Set to 'yes' or 'true' to get thumbnail preview if available
+        in: query
+        name: preview
+        type: string
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: File content
+          schema:
+            type: file
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "404":
+          description: File not found
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Download file
+      tags:
+      - files
+  /files/preview-tokens:
+    post:
+      consumes:
+      - application/json
+      description: Generates temporary JWT tokens for multiple files specified by
+        their IDs
+      parameters:
+      - description: List of file IDs
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties:
+            items:
+              type: string
+            type: array
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 'Generated tokens" {"success": true, "tokens": {"abc123": "JWT_TOKEN",
+            "def456": "JWT_TOKEN"}}'
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: generates temporary JWT tokens for multiple files
+      tags:
+      - files
+  /groups:
+    get:
+      description: Retrieve a list of all groups
+      parameters:
+      - description: Search term to filter groups by name
+        in: query
+        name: search
+        type: string
+      - description: Field to order the results by
+        in: query
+        name: order_by
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              additionalProperties: true
+              type: object
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Get all groups
+      tags:
+      - groups
+    post:
+      consumes:
+      - application/json
+      description: Create a new group with the provided details
+      parameters:
+      - description: Group details
+        in: body
+        name: group
+        required: true
+        schema:
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "409":
+          description: Group Already Exists
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Create a new group
+      tags:
+      - groups
+  /groups/{id}:
+    delete:
+      description: Delete a group by its ID
+      parameters:
+      - description: Group ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Delete group by ID
+      tags:
+      - groups
+    get:
+      description: Retrieve a group by its ID
+      parameters:
+      - description: Group ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "404":
+          description: Group Not Found
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Get group by ID
+      tags:
+      - groups
+    put:
+      consumes:
+      - application/json
+      description: Update a group's details by its ID
+      parameters:
+      - description: Group ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Group details
+        in: body
+        name: group
+        required: true
+        schema:
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "404":
+          description: Group Not Found
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Update group by ID
+      tags:
+      - groups
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user and receive JWT token
+      parameters:
+      - description: Login credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/api.Credentials'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: token and user info
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "401":
+          description: Invalid credentials
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: User login
+      tags:
+      - auth
+  /nav/{objectId}:
+    get:
+      description: Returns the navigation object specified by its ID
+      parameters:
+      - description: Object ID
+        in: path
+        name: objectId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Navigation object data
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Object not found
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: returns a navigation object by its ID
+      tags:
+      - navigation
+  /nav/{objectId}/indexes:
+    get:
+      description: Returns index pages located directly under the specified object
+        ID
+      parameters:
+      - description: Object ID
+        in: path
+        name: objectId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of index pages
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Object not found
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: returns index pages under a given object
+      tags:
+      - navigation
+  /nav/breadcrumb/{objectId}:
+    get:
+      description: Returns the breadcrumb trail for the specified object ID
+      parameters:
+      - description: Object ID
+        in: path
+        name: objectId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Breadcrumb data
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Object not found
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: returns breadcrumb for a given object
+      tags:
+      - navigation
+  /nav/children/{folderId}:
+    get:
+      description: Returns the list of child objects under the specified folder ID
+      parameters:
+      - description: Folder ID
+        in: path
+        name: folderId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of child objects
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Folder not found
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: returns children of a given folder
+      tags:
+      - navigation
+  /objects:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new DBObject based on the provided classname and fields
+      parameters:
+      - description: Object data
+        in: body
+        name: object
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created object data
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Create a new DBObject
+      tags:
+      - objects
+  /objects/{id}:
+    delete:
+      description: Soft-deletes a DBObject by its ID
+      parameters:
+      - description: Object ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Deletion success message
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "404":
+          description: Object not found
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Delete a DBObject
+      tags:
+      - objects
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing DBObject by its ID
+      parameters:
+      - description: Object ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Object fields to update
+        in: body
+        name: object
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated object data
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "404":
+          description: Object not found
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Update an existing DBObject
+      tags:
+      - objects
+  /objects/creatable-types:
+    get:
+      description: Returns the list of DBObject types that can be created as children
+        of a given parent object, returns all DBObject types if no father_id
+      parameters:
+      - description: Father object ID
+        in: query
+        name: father_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of creatable types
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Get creatable object types
+      tags:
+      - objects
+  /objects/search:
+    get:
+      description: Search for objects by classname, name pattern and other filters
+      parameters:
+      - description: Class name (e.g., DBCompany, DBNote)
+        in: query
+        name: classname
+        required: true
+        type: string
+      - description: Name pattern for search
+        in: query
+        name: name
+        type: string
+      - description: JSON object with additional search parameters
+        in: query
+        name: searchJson
+        type: string
+      - description: Field to order by (e.g., name, creation_date)
+        in: query
+        name: orderBy
+        type: string
+      - description: Maximum number of results
+        in: query
+        name: limit
+        type: integer
+      - description: Offset for pagination
+        in: query
+        name: offset
+        type: integer
+      - description: Filter type (e.g., 'link' for linkable objects)
+        in: query
+        name: type
+        type: string
+      - description: Include deleted objects
+        in: query
+        name: includeDeleted
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of matching objects
+          schema:
+            items:
+              additionalProperties: true
+              type: object
+            type: array
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Search objects
+      tags:
+      - objects
+  /ollama:
+    post:
+      consumes:
+      - application/json
+      description: Sends a prompt to the Ollama API and returns the generated response
+      parameters:
+      - description: Request body containing the prompt
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties:
+            type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Ollama response
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "503":
+          description: Ollama service not configured
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: sends a prompt to Ollama and returns the response
+      tags:
+      - ollama
+  /ollama/default-page:
+    get:
+      description: Returns the default page response generated by Ollama in the requested
+        language
+      parameters:
+      - default: en
+        description: Language tag (e.g., en, it, fr, de)
+        in: query
+        name: lang
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Default page response
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "503":
+          description: Ollama service not configured
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: returns default page response generated by Ollama
+      tags:
+      - ollama
+  /ping:
+    get:
+      description: Returns pong if server is alive
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.PingResponse'
+      summary: Health check
+      tags:
+      - health
+  /users:
+    get:
+      description: Retrieves a list of all users, with optional search and ordering
+      parameters:
+      - description: Search term to filter users by login or fullname
+        in: query
+        name: search
+        type: string
+      - description: Field to order the results by
+        in: query
+        name: order_by
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of users
+          schema:
+            items:
+              additionalProperties: true
+              type: object
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: gets all users
+      tags:
+      - users
+    post:
+      consumes:
+      - application/json
+      description: Creates a new user with the provided details
+      parameters:
+      - description: Request body containing user details
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created user data
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "409":
+          description: User already exists
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: creates a new user
+      tags:
+      - users
+  /users/{id}:
+    delete:
+      description: Deletes the user specified by the given ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: deletes a user by ID
+      tags:
+      - users
+    get:
+      description: Retrieves the user specified by the given ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User data
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: gets a user by ID
+      tags:
+      - users
+    put:
+      description: Updates the user specified by the given ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Request body containing user fields to update
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated user data
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: updates a user by ID
+      tags:
+      - users
+  /users/{userId}/person:
+    get:
+      description: Retrieves the Person record associated with the specified user
+        ID, or creates one if it doesn't exist
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Person data
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: gets or creates a Person record linked to the user
+      tags:
+      - users
+schemes:
+- http
+- https
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
+tags:
+- description: Authentication endpoints for login and token management
+  name: auth
+- description: Health check and server status endpoints
+  name: health
+- description: CRUD operations for DBObjects (notes, pages, companies, etc.)
+  name: objects
+- description: File upload, download and preview token generation
+  name: files
+- description: User management endpoints
+  name: users
+- description: Group management endpoints
+  name: groups
+- description: Navigation and content retrieval endpoints
+  name: navigation
+- description: Endpoints for Ollama AI integration
+  name: ollama

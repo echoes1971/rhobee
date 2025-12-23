@@ -12,6 +12,9 @@ type APIError struct {
 	Params  map[string]string `json:"params,omitempty"` // Dynamic parameters for interpolation
 }
 
+// ErrorResponse represents a standard error response (alias for Swagger)
+type ErrorResponse APIError
+
 // Error codes - keep in sync with fe/src/locales/*/errors.json
 const (
 	ErrUserAlreadyExists    = "USER_ALREADY_EXISTS"

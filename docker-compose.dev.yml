@@ -57,6 +57,9 @@ services:
       dockerfile: Dockerfile.dev
     expose:
       - "1971"
+    ports:
+      # This allows to access Swagger UI and API directly from host machine: http://localhost:1971/swagger/index.html
+      - "1971:1971"
     # Allow access to host and local subnet IPs
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -66,6 +69,8 @@ services:
       # Ollama is optional - comment out or leave empty to disable
       - OLLAMA_URL=http://external.llama:11434/api/chat
       - OLLAMA_MODEL="llama3.2:latest"
+      # Enable Swagger in development
+      - ENABLE_SWAGGER=true
     volumes:
       - be_files:/app/files
       - ./be:/app

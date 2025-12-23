@@ -18,9 +18,18 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// CreateObjectHandler creates a new DBObject
-// POST /api/objects
-// Body: {"classname": "DBNote", "father_id": "123", "name": "My Note", "description": "...", ...}
+// CreateObjectHandler godoc
+// @Summary Create a new DBObject
+// @Description Creates a new DBObject based on the provided classname and fields
+// @Tags objects
+// @Accept json
+// @Produce json
+// @Param object body map[string]interface{} true "Object data"
+// @Success 201 {object} map[string]interface{} "Created object data"
+// @Failure 400 {object} ErrorResponse "Invalid request"
+// @Failure 401 {object} ErrorResponse "Unauthorized"
+// @Failure 500 {object} ErrorResponse "Internal server error"
+// @Router /objects [post]
 func CreateObjectHandler(w http.ResponseWriter, r *http.Request) {
 	claims, err := GetClaimsFromRequest(r)
 	if err != nil {
@@ -192,9 +201,22 @@ func CreateObjectHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// UpdateObjectHandler updates an existing DBObject
-// PUT /api/objects/{id}
 // Body: {"name": "Updated Name", "description": "Updated description", ...}
+// UpdateObjectHandler godoc
+// @Summary Update an existing DBObject
+// @Description Updates an existing DBObject by its ID
+// @Tags objects
+// @Accept json
+// @Produce json
+// @Param id path string true "Object ID"
+// @Param object body map[string]interface{} true "Object fields to update"
+// @Success 200 {object} map[string]interface{} "Updated object data"
+// @Failure 400 {object} ErrorResponse "Invalid request"
+// @Failure 401 {object} ErrorResponse "Unauthorized"
+// @Failure 403 {object} ErrorResponse "Forbidden"
+// @Failure 404 {object} ErrorResponse "Object not found"
+// @Failure 500 {object} ErrorResponse "Internal server error"
+// @Router /objects/{id} [put]
 func UpdateObjectHandler(w http.ResponseWriter, r *http.Request) {
 	claims, err := GetClaimsFromRequest(r)
 	if err != nil {
@@ -364,8 +386,19 @@ func UpdateObjectHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// DeleteObjectHandler soft-deletes a DBObject
-// DELETE /api/objects/{id}
+// DeleteObjectHandler godoc
+// @Summary Delete a DBObject
+// @Description Soft-deletes a DBObject by its ID
+// @Tags objects
+// @Produce json
+// @Param id path string true "Object ID"
+// @Success 200 {object} map[string]interface{} "Deletion success message"
+// @Failure 400 {object} ErrorResponse "Invalid request"
+// @Failure 401 {object} ErrorResponse "Unauthorized"
+// @Failure 403 {object} ErrorResponse "Forbidden"
+// @Failure 404 {object} ErrorResponse "Object not found"
+// @Failure 500 {object} ErrorResponse "Internal server error"
+// @Router /objects/{id} [delete]
 func DeleteObjectHandler(w http.ResponseWriter, r *http.Request) {
 	claims, err := GetClaimsFromRequest(r)
 	if err != nil {
@@ -443,9 +476,16 @@ func DeleteObjectHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// GetCreatableTypesHandler returns the list of DBObject types that can be created as children of a given parent
-// GET /api/objects/creatable-types?father_id=123
-// GET /api/objects/creatable-types (returns all DBObject types if no father_id)
+// GetCreatableTypesHandler godoc
+// @Summary Get creatable object types
+// @Description Returns the list of DBObject types that can be created as children of a given parent object, returns all DBObject types if no father_id
+// @Tags objects
+// @Produce json
+// @Param father_id query string false "Father object ID"
+// @Success 200 {object} map[string]interface{} "List of creatable types"
+// @Failure 400 {object} ErrorResponse "Invalid request"
+// @Failure 500 {object} ErrorResponse "Internal server error"
+// @Router /objects/creatable-types [get]
 func GetCreatableTypesHandler(w http.ResponseWriter, r *http.Request) {
 	claims, err := GetClaimsFromRequest(r)
 	if err != nil {
@@ -541,8 +581,23 @@ func GetCreatableTypesHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// SearchObjectsHandler searches for objects by classname and name pattern
-// GET /api/objects/search?classname=DBCompany&name=acme&limit=10
+// SearchObjectsHandler godoc
+// @Summary Search objects
+// @Description Search for objects by classname, name pattern and other filters
+// @Tags objects
+// @Produce json
+// @Param classname query string true "Class name (e.g., DBCompany, DBNote)"
+// @Param name query string false "Name pattern for search"
+// @Param searchJson query string false "JSON object with additional search parameters"
+// @Param orderBy query string false "Field to order by (e.g., name, creation_date)"
+// @Param limit query int false "Maximum number of results"
+// @Param offset query int false "Offset for pagination"
+// @Param type query string false "Filter type (e.g., 'link' for linkable objects)"
+// @Param includeDeleted query string false "Include deleted objects"
+// @Success 200 {array} map[string]interface{} "List of matching objects"
+// @Failure 400 {object} ErrorResponse "Invalid request"
+// @Failure 500 {object} ErrorResponse "Internal error"
+// @Router /objects/search [get]
 func SearchObjectsHandler(w http.ResponseWriter, r *http.Request) {
 	claims, err := GetClaimsFromRequest(r)
 
@@ -800,8 +855,19 @@ func SearchObjectsHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// DownloadFileHandler serves file content for DBFile objects
-// GET /api/files/{id}/download
+// DownloadFileHandler godoc
+// @Summary Download file
+// @Description Downloads the file content for a given DBFile object ID
+// @Tags files
+// @Produce octet-stream
+// @Param id path string true "File ID"
+// @Param token query string false "Temporary JWT token for access"
+// @Param preview query string false "Set to 'yes' or 'true' to get thumbnail preview if available"
+// @Success 200 {file} file "File content"
+// @Failure 401 {object} ErrorResponse "Unauthorized"
+// @Failure 404 {object} ErrorResponse "File not found"
+// @Failure 500 {object} ErrorResponse "Internal error"
+// @Router /files/{id}/download [get]
 func DownloadFileHandler(w http.ResponseWriter, r *http.Request) {
 	claims, err := GetClaimsFromRequest(r)
 
@@ -931,10 +997,18 @@ func DownloadFileHandler(w http.ResponseWriter, r *http.Request) {
 	// log.Printf("DownloadFileHandler: Served file %s (%s)", filename, mime)
 }
 
-// GenerateFileTokensHandler generates temporary JWT tokens for multiple files
-// POST /api/files/preview-tokens
-// Body: {"file_ids": ["abc123", "def456", ...]}
-// Response: {"success": true, "tokens": {"abc123": "JWT_TOKEN", "def456": "JWT_TOKEN"}}
+// GenerateFileTokensHandler godoc
+//
+//	@Summary generates temporary JWT tokens for multiple files
+//	@Description Generates temporary JWT tokens for multiple files specified by their IDs
+//	@Tags files
+//	@Accept json
+//	@Produce json
+//	@Param request body map[string][]string true "List of file IDs" `{"file_ids": ["abc123", "def456"]}`
+//	@Success 200 {object} map[string]interface{} "Generated tokens" {"success": true, "tokens": {"abc123": "JWT_TOKEN", "def456": "JWT_TOKEN"}}
+//	@Failure 400 {object} ErrorResponse "Invalid request"
+//	@Failure 401 {object} ErrorResponse "Unauthorized"
+//	@Router /files/preview-tokens [post]
 func GenerateFileTokensHandler(w http.ResponseWriter, r *http.Request) {
 	claims, err := GetClaimsFromRequest(r)
 	if err != nil {

@@ -1,5 +1,49 @@
 package main
 
+// @title ρBee (rhobee) API
+// @version 1.0
+// @description API documentation for R-PRJ-NG backend
+// @termsOfService http://swagger.io/terms/
+
+// @contact.name API Support
+// @contact.email support@example.com
+
+// @license.name Apache 2.0
+// @license.url https://opensource.org/licenses/Apache-2.0
+
+// @host localhost:1971
+// @BasePath /
+// @schemes http https
+
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Type "Bearer" followed by a space and JWT token.
+
+// @tag.name auth
+// @tag.description Authentication endpoints for login and token management
+
+// @tag.name health
+// @tag.description Health check and server status endpoints
+
+// @tag.name objects
+// @tag.description CRUD operations for DBObjects (notes, pages, companies, etc.)
+
+// @tag.name files
+// @tag.description File upload, download and preview token generation
+
+// @tag.name users
+// @tag.description User management endpoints
+
+// @tag.name groups
+// @tag.description Group management endpoints
+
+// @tag.name navigation
+// @tag.description Navigation and content retrieval endpoints
+
+// @tag.name ollama
+// @tag.description Endpoints for Ollama AI integration
+
 /*
 
 Test:
@@ -63,7 +107,10 @@ import (
 	"rprj/be/dblayer"
 	"rprj/be/models"
 
+	_ "rprj/be/docs" // Import generated docs
+
 	"github.com/gorilla/mux"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 var AppConfig models.Config
@@ -181,6 +228,15 @@ func main() {
 	// File download without auth middleware (uses token or permission check)
 	r.HandleFunc("/files/{id}/download", api.DownloadFileHandler).Methods("GET")
 	r.HandleFunc("/objects/search", api.SearchObjectsHandler).Methods("GET")
+
+	// Swagger documentation - only in development
+	enableSwagger := os.Getenv("ENABLE_SWAGGER")
+	if enableSwagger == "true" || enableSwagger == "1" {
+		r.PathPrefix("/swagger/").Handler(httpSwagger.WrapHandler)
+		log.Println("Swagger UI disponibile su: http://localhost:" + fmt.Sprintf("%d", AppConfig.ServerPort) + "/swagger/index.html")
+	} else {
+		log.Println("Swagger UI disabilitato (set ENABLE_SWAGGER=true per abilitare)")
+	}
 
 	log.Println("Server in ascolto su :", AppConfig.ServerPort)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", AppConfig.ServerPort), r))

@@ -10,7 +10,17 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// GET /groups
+// GetAllGroupsHandler godoc
+// @Summary Get all groups
+// @Description Retrieve a list of all groups
+// @Tags groups
+// @Produce json
+// @Param search query string false "Search term to filter groups by name"
+// @Param order_by query string false "Field to order the results by"
+// @Success 200 {array} map[string]interface{}
+// @Failure 401 {object} ErrorResponse "Unauthorized"
+// @Failure 500 {object} ErrorResponse "Internal Server Error"
+// @Router /groups [get]
 func GetAllGroupsHandler(w http.ResponseWriter, r *http.Request) {
 	searchBy := r.URL.Query().Get("search")
 	orderBy := r.URL.Query().Get("order_by")
@@ -58,7 +68,18 @@ func GetAllGroupsHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-// GET /groups/{id}
+// GetGroupHandler godoc
+// @Summary Get group by ID
+// @Description Retrieve a group by its ID
+// @Tags groups
+// @Produce json
+// @Param id path string true "Group ID"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} ErrorResponse "Bad Request"
+// @Failure 401 {object} ErrorResponse "Unauthorized"
+// @Failure 404 {object} ErrorResponse "Group Not Found"
+// @Failure 500 {object} ErrorResponse "Internal Server Error"
+// @Router /groups/{id} [get]
 func GetGroupHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
@@ -128,7 +149,19 @@ func GetGroupHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-// POST /groups
+// CreateGroupHandler godoc
+// @Summary Create a new group
+// @Description Create a new group with the provided details
+// @Tags groups
+// @Accept json
+// @Produce json
+// @Param group body object true "Group details"
+// @Success 201 {object} map[string]interface{}
+// @Failure 400 {object} ErrorResponse "Bad Request"
+// @Failure 401 {object} ErrorResponse "Unauthorized"
+// @Failure 409 {object} ErrorResponse "Group Already Exists"
+// @Failure 500 {object} ErrorResponse "Internal Server Error"
+// @Router /groups [post]
 func CreateGroupHandler(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		Name        string `json:"name"`
@@ -192,7 +225,20 @@ func CreateGroupHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-// PUT /groups/{id}
+// UpdateGroupHandler godoc
+// @Summary Update group by ID
+// @Description Update a group's details by its ID
+// @Tags groups
+// @Accept json
+// @Produce json
+// @Param id path string true "Group ID"
+// @Param group body object true "Group details"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} ErrorResponse "Bad Request"
+// @Failure 401 {object} ErrorResponse "Unauthorized"
+// @Failure 404 {object} ErrorResponse "Group Not Found"
+// @Failure 500 {object} ErrorResponse "Internal Server Error"
+// @Router /groups/{id} [put]
 func UpdateGroupHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
@@ -256,7 +302,17 @@ func UpdateGroupHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// DELETE /groups/{id}
+// DeleteGroupHandler godoc
+// @Summary Delete group by ID
+// @Description Delete a group by its ID
+// @Tags groups
+// @Param id path string true "Group ID"
+// @Success 204 "No Content"
+// @Failure 400 {object} ErrorResponse "Bad Request"
+// @Failure 401 {object} ErrorResponse "Unauthorized"
+// @Failure 403 {object} ErrorResponse "Forbidden"
+// @Failure 500 {object} ErrorResponse "Internal Server Error"
+// @Router /groups/{id} [delete]
 func DeleteGroupHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]

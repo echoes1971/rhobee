@@ -21,14 +21,21 @@ type PingResponse struct {
 	Ping string `json:"ping"`
 }
 
+// PingHandler godoc
+// @Summary Health check
+// @Description Returns pong if server is alive
+// @Tags health
+// @Produce json
+// @Success 200 {object} PingResponse
+// @Router /ping [get]
 func PingHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(PingResponse{Ping: "Pong"})
 }
 
 type Credentials struct {
-	Login string `json:"login"`
-	Pwd   string `json:"pwd"`
+	Login string `json:"login" example:"admin"`
+	Pwd   string `json:"pwd" example:"password123"`
 }
 
 type TokenResponse struct {
@@ -49,6 +56,17 @@ func InitAPI(config models.Config) {
 	log.Print("API initialized with JWT key from config")
 }
 
+// LoginHandler godoc
+// @Summary User login
+// @Description Authenticate user and receive JWT token
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param credentials body Credentials true "Login credentials"
+// @Success 200 {object} map[string]interface{} "token and user info"
+// @Failure 400 {object} ErrorResponse "Invalid request"
+// @Failure 401 {object} ErrorResponse "Invalid credentials"
+// @Router /login [post]
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	var creds Credentials
 	if err := json.NewDecoder(r.Body).Decode(&creds); err != nil {

@@ -11,7 +11,19 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// GET /users
+// GetAllUsersHandler godoc
+//
+//	@Summary gets all users
+//	@Description Retrieves a list of all users, with optional search and ordering
+//	@Tags users
+//	@Produce json
+//	@Param search query string false "Search term to filter users by login or fullname"
+//	@Param order_by query string false "Field to order the results by"
+//	@Success 200 {array} map[string]interface{} "List of users"
+//	@Failure 401 {object} ErrorResponse "Unauthorized"
+//	@Failure 403 {object} ErrorResponse "Forbidden"
+//	@Failure 500 {object} ErrorResponse "Internal server error"
+//	@Router /users [get]
 func GetAllUsersHandler(w http.ResponseWriter, r *http.Request) {
 	searchBy := r.URL.Query().Get("search")
 	orderBy := r.URL.Query().Get("order_by")
@@ -60,7 +72,20 @@ func GetAllUsersHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-// GET /users/{id}
+// GetUserHandler godoc
+//
+//	@Summary gets a user by ID
+//	@Description Retrieves the user specified by the given ID
+//	@Tags users
+//	@Param id path string true "User ID"
+//	@Produce json
+//	@Success 200 {object} map[string]interface{} "User data"
+//	@Failure 400 {object} ErrorResponse "Invalid request"
+//	@Failure 401 {object} ErrorResponse "Unauthorized"
+//	@Failure 403 {object} ErrorResponse "Forbidden"
+//	@Failure 404 {object} ErrorResponse "User not found"
+//	@Failure 500 {object} ErrorResponse "Internal server error"
+//	@Router /users/{id} [get]
 func GetUserHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
@@ -131,7 +156,21 @@ func GetUserHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-// POST /users
+// CreateUserHandler godoc
+//
+//	@Summary creates a new user
+//	@Description Creates a new user with the provided details
+//	@Tags users
+//	@Accept json
+//	@Produce json
+//	@Param request body map[string]interface{} true "Request body containing user details"
+//	@Success 201 {object} map[string]interface{} "Created user data"
+//	@Failure 400 {object} ErrorResponse "Invalid request"
+//	@Failure 401 {object} ErrorResponse "Unauthorized"
+//	@Failure 403 {object} ErrorResponse "Forbidden"
+//	@Failure 409 {object} ErrorResponse "User already exists"
+//	@Failure 500 {object} ErrorResponse "Internal server error"
+//	@Router /users [post]
 func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		Login    string   `json:"login"`
@@ -205,7 +244,21 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-// PUT /users/{id}
+// UpdateUserHandler godoc
+//
+//	@Summary updates a user by ID
+//	@Description Updates the user specified by the given ID
+//	@Tags users
+//	@Param id path string true "User ID"
+//	@Param request body map[string]interface{} true "Request body containing user fields to update"
+//	@Produce json
+//	@Success 200 {object} map[string]interface{} "Updated user data"
+//	@Failure 400 {object} ErrorResponse "Invalid request"
+//	@Failure 401 {object} ErrorResponse "Unauthorized"
+//	@Failure 403 {object} ErrorResponse "Forbidden"
+//	@Failure 404 {object} ErrorResponse "User not found"
+//	@Failure 500 {object} ErrorResponse "Internal server error"
+//	@Router /users/{id} [put]
 func UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
@@ -279,7 +332,18 @@ func UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(u)
 }
 
-// DELETE /users/{id}
+// DeleteUserHandler godoc
+//
+//	@Summary deletes a user by ID
+//	@Description Deletes the user specified by the given ID
+//	@Tags users
+//	@Param id path string true "User ID"
+//	@Success 204 "No Content"
+//	@Failure 400 {object} ErrorResponse "Invalid request"
+//	@Failure 401 {object} ErrorResponse "Unauthorized"
+//	@Failure 403 {object} ErrorResponse "Forbidden"
+//	@Failure 500 {object} ErrorResponse "Internal server error"
+//	@Router /users/{id} [delete]
 func DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
@@ -319,8 +383,19 @@ func DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// GET /users/:userId/person
-// Get or create a Person record linked to this user
+// GetUserPersonHandler godoc
+//
+//	@Summary gets or creates a Person record linked to the user
+//	@Description Retrieves the Person record associated with the specified user ID, or creates one if it doesn't exist
+//	@Tags users
+//	@Produce json
+//	@Param userId path string true "User ID"
+//	@Success 200 {object} map[string]interface{} "Person data"
+//	@Failure 401 {object} ErrorResponse "Unauthorized"
+//	@Failure 403 {object} ErrorResponse "Forbidden"
+//	@Failure 404 {object} ErrorResponse "User not found"
+//	@Failure 500 {object} ErrorResponse "Internal server error"
+//	@Router /users/{userId}/person [get]
 func GetUserPersonHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	userId := vars["userId"]
