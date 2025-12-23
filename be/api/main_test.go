@@ -11,6 +11,8 @@ import (
 	"rprj/be/dblayer"
 	"rprj/be/models"
 	"testing"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
 var AppConfig models.Config
@@ -144,4 +146,17 @@ func ApiTestDoLogin(t *testing.T, login, pwd string) string {
 	tokens[login+pwd] = resp.AccessToken
 
 	return resp.AccessToken
+}
+
+func ApiTestDecodeAccessToken(t *testing.T, tokenString string) jwt.MapClaims {
+	claims := jwt.MapClaims{}
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (interface{}, error) {
+		return JWTKey, nil
+	})
+	if err != nil || !token.Valid {
+		t.Fatalf("DecodeAccessToken: invalid token: %v", err)
+	}
+	// log.Printf("Decoded claims: %+v\n", claims)
+
+	return claims
 }

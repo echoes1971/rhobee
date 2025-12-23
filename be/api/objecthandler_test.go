@@ -291,3 +291,68 @@ rwxrw-r--
 	log.Printf("TestObjectHandlerUploadFile passed, uploaded file to object ID: %v", createdObjectID)
 
 }
+
+// go test -v ./api -run TestGetCreatableTypesHandler
+func TestGetCreatableTypesHandler(t *testing.T) {
+	token := ApiTestDoLogin(t, testAdminLogin, testAdminPwd)
+
+	claims := ApiTestDecodeAccessToken(t, token)
+	log.Printf("Decoded token claims: %+v", claims)
+
+	// Create a folder
+	repo := SetupTestRepo(t,
+		testUser.GetValue("id").(string),
+		[]string{testUser.GetValue("group_id").(string)},
+		AppConfig.TablePrefix)
+
+	folder, err := repo.CreateObject("folders", map[string]any{"name": "testfolder"}, map[string]any{})
+	if err != nil {
+		t.Fatalf("Failed to create folder: %v", err)
+	}
+	// log.Printf("Created folder: %+v", folder.ToJSON())
+
+	// Test the GetCreatableTypesHandler
+	// req := httptest.NewRequest(http.MethodGet, "/object/creatable_types?father_id=515", nil)
+	req := httptest.NewRequest(http.MethodGet, "/object/creatable_types?father_id="+folder.GetValue("id").(string), nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+	rr := httptest.NewRecorder()
+
+	handler := http.HandlerFunc(GetCreatableTypesHandler)
+	handler.ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Fatalf("Expected status OK, got %v", rr.Code)
+	}
+
+	var response map[string]any
+	log.Print("Response body:", rr.Body.String())
+	err = json.Unmarshal(rr.Body.Bytes(), &response)
+	log.Print("Response:", response)
+	if err != nil {
+		t.Fatalf("Failed to parse response JSON: %v", err)
+	}
+
+	if response["success"] != true {
+		t.Fatalf("Expected success status, got %v", response["success"])
+	}
+
+	types, ok := response["types"].([]any)
+	if !ok {
+		t.Fatalf("Expected types to be a list, got %T", response["types"])
+	}
+
+	if len(types) == 0 {
+		t.Fatalf("Expected at least one creatable type, got 0")
+	}
+
+	// Delete the created folder
+	folder, err = repo.Delete(folder)
+	if err != nil {
+		t.Fatalf("Failed to soft delete folder: %v", err)
+	}
+	folder, err = repo.Delete(folder)
+	if err != nil {
+		t.Fatalf("Failed to hard delete folder: %v", err)
+	}
+	log.Printf("TestGetCreatableTypesHandler passed, found %d creatable types", len(types))
+}

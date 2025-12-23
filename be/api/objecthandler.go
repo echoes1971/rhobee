@@ -514,6 +514,8 @@ func GetCreatableTypesHandler(w http.ResponseWriter, r *http.Request) {
 				childInstance := dblayer.Factory.GetInstanceByTableName(childTable)
 				if childInstance != nil {
 					creatableTypes = append(creatableTypes, childInstance.GetTypeName())
+				} else {
+					log.Printf("GetCreatableTypesHandler: Unknown child table: %s", childTable)
 				}
 			}
 		} else {
@@ -564,17 +566,17 @@ func SearchObjectsHandler(w http.ResponseWriter, r *http.Request) {
 
 	classname := r.URL.Query().Get("classname")
 	namePattern := r.URL.Query().Get("name")
-	searchJson := r.URL.Query().Get("searchJson")
 	includeDeletedParam := r.URL.Query().Get("includeDeleted")
 	includeDeleted := includeDeletedParam != "" && includeDeletedParam != "0" && strings.ToLower(includeDeletedParam) != "false"
-	log.Print("SearchObjectsHandler: includeDeletedParam=", includeDeletedParam)
-	log.Print("SearchObjectsHandler: includeDeleted=", includeDeleted)
-
-	log.Print("SearchObjectsHandler: searchJson=", searchJson)
+	log.Print("SearchObjectsHandler: includeDeletedParam=", includeDeletedParam, " includeDeleted=", includeDeleted)
+	// orderBy
 	orderByParam := r.URL.Query().Get("orderBy")
 	if orderByParam != "" {
 		orderByParam = strings.TrimSpace(orderByParam)
 	}
+	// searchJson
+	searchJson := r.URL.Query().Get("searchJson")
+	log.Print("SearchObjectsHandler: searchJson=", searchJson)
 	var searchParams map[string]any
 	if searchJson != "" {
 		err := json.Unmarshal([]byte(searchJson), &searchParams)
@@ -583,12 +585,13 @@ func SearchObjectsHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	log.Print("SearchObjectsHandler: searchParams=", searchParams)
+	// limit and offset
 	limit := r.URL.Query().Get("limit")
 	offset := 0
 	if r.URL.Query().Get("offset") != "" {
 		fmt.Sscanf(r.URL.Query().Get("offset"), "%d", &offset)
 	}
-
+	// type
 	searchType := r.URL.Query().Get("type") // optional, "link" to filter only linkable objects i.e. objects I can write
 
 	if classname == "" {

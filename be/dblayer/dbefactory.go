@@ -39,48 +39,81 @@ func (dbef *DBEFactory) ProcessForeignKeys() {
 	if dbef.verbose {
 		log.Print("DBEFactory::ProcessForeignKeys: Processing foreign keys for all registered DBEntities")
 	}
-	for _, dbe := range dbef.classname2type {
+	for classname, dbe := range dbef.classname2type {
 		if !dbe.IsDBObject() {
+			continue
+		}
+		if dbef.verbose {
+			log.Printf("DBEFactory::ProcessForeignKeys: Processing DBEntity: %s (%s)", classname, dbe.GetTableName())
+		}
+		childTableName := dbe.GetTableName()
+		if childTableName == "objects" {
+			// Skip objects table
 			continue
 		}
 		for _, fk := range dbe.GetForeignKeys() {
 			if dbef.verbose {
-				log.Printf("DBEFactory::ProcessForeignKeys: Processing foreign key: %+v", fk)
+				log.Printf("DBEFactory::ProcessForeignKeys:  Processing foreign key: %+v", fk)
 			}
 			parentTable := fk.RefTable
 			if dbef.verbose {
-				log.Printf("DBEFactory::ProcessForeignKeys: Parent table: %s", parentTable)
+				log.Printf("DBEFactory::ProcessForeignKeys:   Parent table: %s", parentTable)
 			}
+			if parentTable == "objects" {
+				// Add all objects as parents
+				parentTables := dbef.GetAllTableNames()
+				for _, parentTable := range parentTables {
+					_ = dbef.addChildTableToParentTable(childTableName, parentTable)
+				}
+				if dbef.verbose {
+					log.Print("DBEFactory::ProcessForeignKeys:   parentTables=", parentTables)
+				}
+				continue
+			}
+
 			// Check if parent is a DBObject (if already registered), otherwise assume it is
-			parentInstance := dbef.GetInstanceByTableName(parentTable)
-			if parentInstance != nil && !parentInstance.IsDBObject() {
-				// Parent exists but is NOT a DBObject, skip
+			ctrl := dbef.addChildTableToParentTable(childTableName, parentTable)
+			switch ctrl {
+			case 1:
+				continue
+			case 2:
 				continue
 			}
-			// If parentInstance is nil, we proceed with "faith" - the parent will be registered later
-			// if dbef.verbose {
-			// 	log.Printf("DBEFactory::ProcessForeignKeys: Parent table children: %v", dbef.TableChildren[parentTable])
-			// }
-			if _, exists := dbef.TableChildren[parentTable]; !exists {
-				dbef.TableChildren[parentTable] = make([]string, 0)
-			}
-			childTableName := dbe.GetTableName()
-			// Use slices.Contains to check if childTableName exists
-			if slices.Contains(dbef.TableChildren[parentTable], childTableName) {
-				continue
-			}
-			if dbef.verbose {
-				log.Printf("DBEFactory::ProcessForeignKeys: Adding child table '%s' to parent table '%s'", childTableName, parentTable)
-			}
-			dbef.TableChildren[parentTable] = append(dbef.TableChildren[parentTable], childTableName)
 		}
 	}
+}
+
+func (dbef *DBEFactory) addChildTableToParentTable(childTableName string, parentTable string) int {
+	parentInstance := dbef.GetInstanceByTableName(parentTable)
+	if parentInstance != nil && !parentInstance.IsDBObject() {
+		// Parent exists but is NOT a DBObject, skip
+		return 1
+	}
+	if _, exists := dbef.TableChildren[parentTable]; !exists {
+		dbef.TableChildren[parentTable] = make([]string, 0)
+	}
+	// Use slices.Contains to check if childTableName exists
+	if slices.Contains(dbef.TableChildren[parentTable], childTableName) {
+		return 2
+	}
+	if dbef.verbose {
+		log.Printf("DBEFactory::ProcessForeignKeys:   Adding child table '%s' to parent table '%s'", childTableName, parentTable)
+	}
+	dbef.TableChildren[parentTable] = append(dbef.TableChildren[parentTable], childTableName)
+	return 0
 }
 
 func (dbef *DBEFactory) GetAllClassNames() []string {
 	ret := make([]string, 0, len(dbef.classname2type))
 	for className := range dbef.classname2type {
 		ret = append(ret, className)
+	}
+	return ret
+}
+func (dbef *DBEFactory) GetAllTableNames() []string {
+	ret := make([]string, 0, len(dbef.tablename2type))
+	for tableName := range dbef.tablename2type {
+		ret = append(ret, tableName)
 	}
 	return ret
 }
