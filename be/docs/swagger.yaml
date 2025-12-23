@@ -33,7 +33,9 @@ info:
   contact:
     email: support@example.com
     name: API Support
-  description: API documentation for R-PRJ-NG backend
+  description: This is the API documentation for the ρBee (rhobee) backend server.
+    It provides endpoints for user authentication, navigation, file management, and
+    integration with Ollama AI services.
   license:
     name: Apache 2.0
     url: https://opensource.org/licenses/Apache-2.0
@@ -465,6 +467,35 @@ paths:
           schema:
             $ref: '#/definitions/api.ErrorResponse'
       summary: returns children of a given folder
+      tags:
+      - navigation
+  /nav/search:
+    get:
+      description: Searches navigation objects whose name or description matches the
+        given pattern
+      parameters:
+      - description: Name pattern to search for (at least 2 characters)
+        in: query
+        name: name
+        required: true
+        type: string
+      - description: 'Field to order results by (default: name)'
+        in: query
+        name: orderBy
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of matching objects
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: searches navigation objects by name pattern
       tags:
       - navigation
   /objects:

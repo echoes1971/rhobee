@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -378,4 +379,95 @@ func GetCountriesHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// Convert to response format
+// NavigationSearchHandler godoc
+//
+//	@Summary searches navigation objects by name pattern
+//	@Description Searches navigation objects whose name or description matches the given pattern
+//	@Tags navigation
+//	@Produce json
+//	@Param name query string true "Name pattern to search for (at least 2 characters)"
+//	@Param orderBy query string false "Field to order results by (default: name)"
+//	@Success 200 {object} map[string]interface{} "List of matching objects"
+//	@Failure 400 {object} ErrorResponse "Invalid request"
+//	@Router /nav/search [get]
+func NavigationSearchHandler(w http.ResponseWriter, r *http.Request) {
+	claims, err := GetClaimsFromRequest(r)
+
+	var dbContext dblayer.DBContext
+	if err == nil {
+		dbContext = dblayer.DBContext{
+			UserID:   claims["user_id"],
+			GroupIDs: strings.Split(claims["groups"], ","),
+			Schema:   dblayer.DbSchema,
+		}
+	} else {
+		dbContext = dblayer.DBContext{
+			UserID:   "-7",           // Anonymous user
+			GroupIDs: []string{"-4"}, // Guests group
+			Schema:   dblayer.DbSchema,
+		}
+	}
+
+	repo := dblayer.NewDBRepository(&dbContext, dblayer.Factory, dblayer.DbConnection)
+	repo.Verbose = false
+
+	// classname := "DBObject"
+	namePattern := strings.TrimSpace(r.URL.Query().Get("name"))
+	if namePattern == "" || len(namePattern) < 2 {
+		RespondSimpleError(w, ErrInvalidRequest, "Name pattern must be at least 2 characters", http.StatusBadRequest)
+		return
+	}
+
+	orderBy := r.URL.Query().Get("orderBy")
+	if orderBy != "" {
+		orderBy = strings.TrimSpace(orderBy)
+	} else {
+		orderBy = "name"
+	}
+
+	results := repo.SearchByNameAndDescription(namePattern, orderBy, true)
+
+	var resultList []map[string]interface{}
+	for i := 0; i < len(results); i++ {
+		entity := results[i]
+		if entity.HasMetadata("classname") && entity.GetMetadata("classname") == "DBFile" {
+			// read the full object to get file metadata, so we can display an image preview
+			entity = repo.FullObjectById(entity.GetValue("id").(string), true)
+			if entity == nil {
+				// It has been soft deleted
+				log.Printf("NavigationSearchHandler: It has been soft deleted ID=%s", results[i].GetValue("id").(string))
+				continue
+			}
+		}
+
+		// Check read permission
+		if !repo.CheckReadPermission(entity) {
+			log.Printf("NavigationSearchHandler: No read permission for object ID=%s", entity.GetValue("id").(string))
+			continue
+		}
+
+		resultMap := make(map[string]interface{})
+		resultMap["id"] = entity.GetValue("id")
+		resultMap["name"] = entity.GetValue("name")
+		if desc := entity.GetValue("description"); desc != nil {
+			resultMap["description"] = desc
+		}
+
+		resultMap["classname"] = entity.GetMetadata("classname")
+
+		// Include mime type for DBFile objects (useful for filtering images)
+		if mime := entity.GetValue("mime"); mime != nil {
+			resultMap["mime"] = mime
+		}
+		// log.Print("SearchObjectsHandler: resultMap=", resultMap)
+
+		resultList = append(resultList, resultMap)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success": true,
+		"objects": resultList,
+	})
+}

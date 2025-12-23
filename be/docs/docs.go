@@ -587,6 +587,48 @@ const docTemplate = `{
                 }
             }
         },
+        "/nav/search": {
+            "get": {
+                "description": "Searches navigation objects whose name or description matches the given pattern",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "navigation"
+                ],
+                "summary": "searches navigation objects by name pattern",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name pattern to search for (at least 2 characters)",
+                        "name": "name",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Field to order results by (default: name)",
+                        "name": "orderBy",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of matching objects",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/api.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/nav/{objectId}": {
             "get": {
                 "description": "Returns the navigation object specified by its ID",
@@ -1533,7 +1575,7 @@ var SwaggerInfo = &swag.Spec{
 	BasePath:         "/",
 	Schemes:          []string{"http", "https"},
 	Title:            "ρBee (rhobee) API",
-	Description:      "API documentation for R-PRJ-NG backend",
+	Description:      "This is the API documentation for the ρBee (rhobee) backend server. It provides endpoints for user authentication, navigation, file management, and integration with Ollama AI services.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

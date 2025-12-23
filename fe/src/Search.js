@@ -35,10 +35,10 @@ function Search() {
     setError(null);
 
     try {
-      const response = await axios.get('/objects/search', {
+      const response = await axios.get('/nav/search', {
         params: {
-          classname: 'DBObject',
           name: query.trim(),
+          orderBy: 'name',
         },
       });
       console.log('Search response:', response.data);

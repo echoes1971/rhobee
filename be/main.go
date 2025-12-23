@@ -2,7 +2,7 @@ package main
 
 // @title ρBee (rhobee) API
 // @version 1.0
-// @description API documentation for R-PRJ-NG backend
+// @description This is the API documentation for the ρBee (rhobee) backend server. It provides endpoints for user authentication, navigation, file management, and integration with Ollama AI services.
 // @termsOfService http://swagger.io/terms/
 
 // @contact.name API Support
@@ -172,6 +172,7 @@ func main() {
 	r.HandleFunc("/nav/children/{folderId}", api.GetChildrenHandler).Methods("GET")
 	r.HandleFunc("/nav/breadcrumb/{objectId}", api.GetBreadcrumbHandler).Methods("GET")
 	r.HandleFunc("/nav/{objectId}/indexes", api.GetIndexesHandler).Methods("GET")
+	r.HandleFunc("/nav/search", api.NavigationSearchHandler).Methods("GET")
 
 	// Public Endpoint: login
 	r.HandleFunc("/login", api.LoginHandler).Methods("POST")
