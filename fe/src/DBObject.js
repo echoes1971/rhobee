@@ -221,9 +221,7 @@ export function ObjectEdit({ data, metadata, onSave, onCancel, onDelete, saving,
                 Editing {metadata.classname} - Basic fields only
             </Alert>
 
-            {/* <Form.Group className="mb-3"> */}
             <div className="row">
-                {/* <Form.Label>{t('dbobjects.parent')}</Form.Label> */}
                 <div className="col-md-4 mb-3">
                 <ObjectLinkSelector
                     value={formData.father_id || '0'}
@@ -254,7 +252,6 @@ export function ObjectEdit({ data, metadata, onSave, onCancel, onDelete, saving,
                 />
                 </div>
             </div>
-            {/* </Form.Group> */}
 
             <PermissionsEditor
                 value={formData.permissions}

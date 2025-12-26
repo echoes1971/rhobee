@@ -15,6 +15,7 @@ import { PageEdit } from './DBPage';
 import { PersonEdit } from './DBPeople';
 import { ThemeContext } from './ThemeContext';
 import { classname2bootstrapIcon } from './sitenavigation_utils';
+import { UserLinkView } from './ContentWidgets';
 
 // Main ContentEdit component
 function ContentEdit() {
@@ -195,11 +196,31 @@ function ContentEdit() {
                         {t('common.edit')}: {data.name}
                     </h2>
                     <div className="row">
-                        <div className="col-md-2 col-4 text-end">
+                        <div className="col-md-1 col-4 text-end">
                             <small style={{ opacity: 0.7 }}><i className={`bi bi-${classname2bootstrapIcon(metadata.classname)}`} title={metadata.classname}></i> {t('dbobjects.' + metadata.classname)}</small>
                         </div>
                         <div className="col-md-3 col-8">
-                            <small style={{ opacity: 0.7 }}>{t('dbobjects.id')}: {data.id}</small>
+                            <small style={{ opacity: 0.7 }}>{data.id}</small>
+                        </div>
+                        <div className="col-md-1 col-4 text-end">
+                            <small style={{ opacity: 0.7 }}>{t('dbobjects.modified')}:</small>
+                        </div>
+                        <div className="col-md-3 col-8">
+                            <small style={{ opacity: 0.7 }}>
+                                {new Date(data.last_modify_date).toLocaleDateString()} {new Date(data.last_modify_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}
+                            </small>
+                            <small style={{ opacity: 0.7 }}> - </small>
+                            <small style={{ opacity: 0.7 }}>
+                                <UserLinkView user_id={data.last_modify} dark={dark} />
+                            </small>
+                        </div>
+                        <div className="col-md-1 col-4 text-end">
+                            <small style={{ opacity: 0.7 }}>{t('dbobjects.created')}:</small>
+                        </div>
+                        <div className="col-md-3 col-8">
+                            <small style={{ opacity: 0.7 }}>{new Date(data.creation_date).toLocaleDateString()} {new Date(data.creation_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}</small>
+                            <small style={{ opacity: 0.7 }}> - </small>
+                            <small style={{ opacity: 0.7 }}><UserLinkView user_id={data.creator} dark={dark} /></small>
                         </div>
                     </div>
                 </Card.Header>
@@ -216,7 +237,7 @@ function ContentEdit() {
                     />
                 </Card.Body>
                 <Card.Footer className={dark ? 'bg-secondary bg-opacity-10' : ''} style={dark ? { borderTop: '1px solid rgba(255,255,255,0.1)' } : {}}>
-                    <ObjectFooterView data={data} metadata={metadata} objectData={null} dark={dark} />
+                    &nbsp;
                 </Card.Footer>
             </Card>
         </Container>

@@ -157,6 +157,8 @@ export function FileEdit({ data, onSave, onCancel, onDelete, saving, error, dark
         fk_obj_id: data.fk_obj_id || '0',
         permissions: data.permissions || 'rwxr-x---',
         father_id: data.father_id || '0',
+        owner: data.owner || null,
+        group_id: data.group_id || null,
     });
     const [selectedFile, setSelectedFile] = useState(null);
     const [dragActive, setDragActive] = useState(false);
@@ -289,8 +291,8 @@ export function FileEdit({ data, onSave, onCancel, onDelete, saving, error, dark
 
     return (
         <Form onSubmit={handleSubmit}>
-            <Form.Group className="mb-3">
-                {/* <Form.Label>{t('dbobjects.parent')}</Form.Label> */}
+            <div className="row">
+                <div className="col-md-4 mb-3">
                 <ObjectLinkSelector
                     value={formData.father_id || '0'}
                     onChange={handleChange}
@@ -298,7 +300,28 @@ export function FileEdit({ data, onSave, onCancel, onDelete, saving, error, dark
                     fieldName="father_id"
                     label={t('dbobjects.parent')}
                 />
-            </Form.Group>
+                </div>
+                <div className="col-md-4 mb-3">
+                <ObjectLinkSelector
+                    value={formData.owner}
+                    onChange={handleChange}
+                    classname="DBUser"
+                    fieldName="owner"
+                    label={t('permissions.owner')}
+                    required={false}
+                />
+                </div>
+                <div className="col-md-4 mb-3">
+                <ObjectLinkSelector
+                    value={formData.group_id}
+                    onChange={handleChange}
+                    classname="DBGroup"
+                    fieldName="group_id"
+                    label={t('permissions.group')}
+                    required={false}
+                />
+                </div>
+            </div>
 
             <PermissionsEditor
                 value={formData.permissions}
