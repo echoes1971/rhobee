@@ -136,21 +136,41 @@ func (dbr *DBRepository) searchWithTx(dbe DBEntityInterface, useLike bool, caseS
 	}
 
 	// 1. Build WHERE clauses
-	whereClauses := make([]string, 0)
+	clauses := make([]string, 0)
 	args := make([]interface{}, 0) // slice of interface{} for values
 
+	clausesOr := make([]string, 0)
+	argsOr := make([]interface{}, 0)
+	if conditions, hasOr := dbe.GetMetadata("or").([]interface{}); hasOr {
+		for _, condition := range conditions {
+			log.Print("DBRepository::searchWithTx: OR condition =", condition)
+			if condMap, ok := condition.(map[string]interface{}); ok {
+				// log.Print("DBRepository::searchWithTx: OR condMap =", condMap)
+				for column, expr := range condMap {
+					for operator, value := range expr.(map[string]interface{}) {
+						clauseString := column + " " + operator[1:] + " ?"
+						log.Print("DBRepository::searchWithTx: OR clauseString =", clauseString, " value=", value)
+						clausesOr = append(clausesOr, "("+clauseString+")")
+						argsOr = append(argsOr, value)
+					}
+				}
+			}
+		}
+	}
+
+	// Default search: AND all populated fields
 	for key, value := range dbe.getDictionary() {
 		if value == nil {
 			switch key {
 			case "father_id":
-				whereClauses = append(whereClauses, "("+key+" IS NULL OR "+key+" = '0')")
+				clauses = append(clauses, "("+key+" IS NULL OR "+key+" = '0')")
 			default:
-				whereClauses = append(whereClauses, key+" IS NULL")
+				clauses = append(clauses, key+" IS NULL")
 			}
 			continue
 		}
 		if key == "father_id" && value == "0" {
-			whereClauses = append(whereClauses, key+" = '0'")
+			clauses = append(clauses, key+" = '0'")
 			// whereClauses = append(whereClauses, "("+key+" IS NULL OR "+key+" = '0')")
 			continue
 		}
@@ -161,28 +181,38 @@ func (dbr *DBRepository) searchWithTx(dbe DBEntityInterface, useLike bool, caseS
 			// For strings: LIKE '%value%'
 			if strings.Contains(dbe.GetColumnType(key), "varchar") || dbe.GetColumnType(key) == "text" {
 				if caseSensitive {
-					whereClauses = append(whereClauses, key+" LIKE ?")
+					clauses = append(clauses, key+" LIKE ?")
 					args = append(args, "%"+fmt.Sprint(value)+"%")
 				} else {
-					whereClauses = append(whereClauses, "LOWER("+key+") LIKE LOWER(?)")
+					clauses = append(clauses, "LOWER("+key+") LIKE LOWER(?)")
 					args = append(args, "%"+fmt.Sprint(value)+"%")
 				}
 			} else {
 				// Per numeri/date: exact match
-				whereClauses = append(whereClauses, key+" = ?")
+				clauses = append(clauses, key+" = ?")
 				args = append(args, value)
 			}
 		} else {
 			// Exact match
-			whereClauses = append(whereClauses, key+" = ?")
+			clauses = append(clauses, key+" = ?")
 			args = append(args, value)
 		}
 	}
 
 	// 2. Build the final query
 	query := "SELECT * FROM " + dbr.buildTableName(dbe)
-	if len(whereClauses) > 0 {
-		query += " WHERE " + strings.Join(whereClauses, " AND ")
+	if len(clauses) > 0 || len(clausesOr) > 0 {
+		query += " WHERE "
+		if len(clauses) > 0 {
+			query += strings.Join(clauses, " AND ")
+		}
+		if len(clausesOr) > 0 {
+			if len(clauses) > 0 {
+				query += " AND "
+			}
+			query += "(" + strings.Join(clausesOr, " OR ") + ")"
+			args = append(args, argsOr...)
+		}
 	}
 	if orderBy != "" {
 		query += " ORDER BY " + orderBy

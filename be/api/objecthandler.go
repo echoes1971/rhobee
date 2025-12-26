@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"slices"
 	"sort"
 	"strings"
 	"time"
@@ -356,7 +357,16 @@ func UpdateObjectHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Remove protected fields that shouldn't be updated via API
 	delete(updateValues, "id")
-	delete(updateValues, "owner")
+	// You cannot change group_id unless you are in that group
+	if fullObj.GetValue("group_id") != nil && fullObj.GetValue("group_id") != "" && !slices.Contains(dbContext.GroupIDs, fmt.Sprintf("%v", fullObj.GetValue("group_id"))) {
+		log.Printf("UpdateObjectHandler: Removing group_id from updateValues, current=%v, user groups=%v", fullObj.GetValue("group_id"), dbContext.GroupIDs)
+		delete(updateValues, "group_id")
+	}
+	// You cannot change owner unless you are that owner
+	if fullObj.GetValue("owner") != nil && fullObj.GetValue("owner") != "" && fmt.Sprintf("%v", fullObj.GetValue("owner")) != dbContext.UserID {
+		log.Printf("UpdateObjectHandler: Removing owner from updateValues, current=%v, user=%v", fullObj.GetValue("owner"), dbContext.UserID)
+		delete(updateValues, "owner")
+	}
 	delete(updateValues, "creator")
 	delete(updateValues, "creation_date")
 	delete(updateValues, "deleted_by")
@@ -520,7 +530,7 @@ func GetCreatableTypesHandler(w http.ResponseWriter, r *http.Request) {
 		// Father specified - get parent object and check TableChildren
 		parentObj := repo.FullObjectById(fatherID, true)
 		// parentObj := repo.ObjectByID(fatherID, true)
-		log.Print("GetCreatableTypesHandler: fatherID=", fatherID, " parentObj=", parentObj.ToString())
+		// log.Print("GetCreatableTypesHandler: fatherID=", fatherID, " parentObj=", parentObj.ToString())
 		if parentObj == nil {
 			RespondSimpleError(w, ErrInternalServer, "Parent object not found", http.StatusNotFound)
 			return
@@ -541,15 +551,15 @@ func GetCreatableTypesHandler(w http.ResponseWriter, r *http.Request) {
 		parentTable := parentInstance.GetTableName()
 
 		// Get allowed child tables from TableChildren
-		log.Printf("GetCreatableTypesHandler: parentTable=%s, TableChildren keys=%v", parentTable, func() []string {
-			keys := make([]string, 0, len(dblayer.Factory.TableChildren))
-			for k := range dblayer.Factory.TableChildren {
-				keys = append(keys, k)
-			}
-			return keys
-		}())
+		// log.Printf("GetCreatableTypesHandler: parentTable=%s, TableChildren keys=%v", parentTable, func() []string {
+		// 	keys := make([]string, 0, len(dblayer.Factory.TableChildren))
+		// 	for k := range dblayer.Factory.TableChildren {
+		// 		keys = append(keys, k)
+		// 	}
+		// 	return keys
+		// }())
 		if childTables, exists := dblayer.Factory.TableChildren[parentTable]; exists {
-			log.Printf("GetCreatableTypesHandler: Found %d child tables for %s: %v", len(childTables), parentTable, childTables)
+			// log.Printf("GetCreatableTypesHandler: Found %d child tables for %s: %v", len(childTables), parentTable, childTables)
 			for _, childTable := range childTables {
 				childInstance := dblayer.Factory.GetInstanceByTableName(childTable)
 				if childInstance != nil {
@@ -631,13 +641,9 @@ func SearchObjectsHandler(w http.ResponseWriter, r *http.Request) {
 	includeDeleted := includeDeletedParam != "" && includeDeletedParam != "0" && strings.ToLower(includeDeletedParam) != "false"
 	log.Print("SearchObjectsHandler: includeDeletedParam=", includeDeletedParam, " includeDeleted=", includeDeleted)
 	// orderBy
-	orderByParam := r.URL.Query().Get("orderBy")
-	if orderByParam != "" {
-		orderByParam = strings.TrimSpace(orderByParam)
-	}
-	orderBy := strings.TrimSpace("name")
-	if orderBy == "" {
-		orderBy = "name"
+	orderBy := r.URL.Query().Get("orderBy")
+	if orderBy != "" {
+		orderBy = strings.TrimSpace(orderBy)
 	}
 
 	// searchJson
@@ -666,17 +672,30 @@ func SearchObjectsHandler(w http.ResponseWriter, r *http.Request) {
 		RespondSimpleError(w, ErrInvalidRequest, "Unknown classname: "+classname, http.StatusBadRequest)
 		return
 	}
-	if !searchInstance.IsDBObject() {
-		RespondSimpleError(w, ErrInvalidRequest, "Classname is not a DBObject: "+classname, http.StatusBadRequest)
-		return
+
+	// searchParams has key "$or" ?
+	if _, hasOr := searchParams["$or"]; hasOr {
+		log.Print("SearchObjectsHandler: searchParams has $or")
+		searchInstance.SetMetadata("or", searchParams["$or"].([]interface{}))
 	}
+
+	// if !searchInstance.IsDBObject() {
+	// 	log.Print("SearchObjectsHandler: Classname is not a DBObject: ", classname)
+	// 	RespondSimpleError(w, ErrInvalidRequest, "Classname is not a DBObject: "+classname, http.StatusBadRequest)
+	// 	return
+	// }
 	searchInstanceDescription := repo.GetInstanceByClassName(classname)
 
 	// Set search criteria
-	searchInstance.SetValue("name", namePattern)
-	searchInstanceDescription.SetValue("description", namePattern)
-	if searchJson != "" {
+	if searchJson == "" {
+		searchInstance.SetValue("name", namePattern)
+		searchInstanceDescription.SetValue("description", namePattern)
+	} else {
 		for key, val := range searchParams {
+			// Skip if it starts with $ (handled separately)
+			if strings.HasPrefix(key, "$") {
+				continue
+			}
 			searchInstance.SetValue(key, val)
 		}
 	}
@@ -723,7 +742,7 @@ func SearchObjectsHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			results = filteredResults
 		}
-	} else {
+	} else if searchInstance.IsDBObject() {
 		// Search by name AND description for better results
 		results = repo.SearchByNameAndDescription(namePattern, orderBy, !includeDeleted)
 	}
