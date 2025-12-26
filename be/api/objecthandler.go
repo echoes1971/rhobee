@@ -357,12 +357,12 @@ func UpdateObjectHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Remove protected fields that shouldn't be updated via API
 	delete(updateValues, "id")
-	// You cannot change group_id unless you are in that group
+	// Rule: You cannot change group_id unless you are in that group
 	if fullObj.GetValue("group_id") != nil && fullObj.GetValue("group_id") != "" && !slices.Contains(dbContext.GroupIDs, fmt.Sprintf("%v", fullObj.GetValue("group_id"))) {
 		log.Printf("UpdateObjectHandler: Removing group_id from updateValues, current=%v, user groups=%v", fullObj.GetValue("group_id"), dbContext.GroupIDs)
 		delete(updateValues, "group_id")
 	}
-	// You cannot change owner unless you are that owner
+	// Rule: You cannot change owner unless you are that owner
 	if fullObj.GetValue("owner") != nil && fullObj.GetValue("owner") != "" && fmt.Sprintf("%v", fullObj.GetValue("owner")) != dbContext.UserID {
 		log.Printf("UpdateObjectHandler: Removing owner from updateValues, current=%v, user=%v", fullObj.GetValue("owner"), dbContext.UserID)
 		delete(updateValues, "owner")
