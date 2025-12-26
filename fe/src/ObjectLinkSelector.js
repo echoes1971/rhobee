@@ -35,15 +35,20 @@ function ObjectLinkSelector({ value, onChange, classname, fieldName, label, requ
     // Load object details by ID
     const loadObjectDetails = async (objectId, classname) => {
         try {
-            const uri = classname == 'DBUser' ? `/users/${objectId}` : `/content/${objectId}`;
+            const uri = classname == 'DBUser' ? `/users/${objectId}` : classname == 'DBGroup' ? `/groups/${objectId}` : `/content/${objectId}`;
+            console.log("Loading details for "+uri);
             const response = await axiosInstance.get(uri);
             // if (response.data.success && response.data.data) { if you check .success it fails
             // alert(classname + "::" +JSON.stringify(response.data));
-            if (response.data.data || response.data.login) {
+            console.log("Loaded details:", response.data);
+            const _type = classname == 'DBUser' ? 'DBUser' : classname == 'DBGroup' ? 'DBGroup' : response.data.metadata.classname;
+            const _name = classname == 'DBUser' ? response.data.login || 'Unnamed' : classname == 'DBGroup' ? response.data.name || 'Unnamed' : response.data.data.name || 'Unnamed';
+            console.log("Determined type/name:", _type, _name);
+            if (response.data.data || response.data.login || response.data.name) {
                 setSelectedObject({
-                    id: classname == 'DBUser' ? response.data.id : response.data.data.id,
-                    name: classname == 'DBUser' ? response.data.login || 'Unnamed' : response.data.data.name || 'Unnamed',
-                    classname: classname == 'DBUser' ? 'DBUser' : response.data.metadata.classname,
+                    id: classname == 'DBUser' || classname == 'DBGroup' ? response.data.id : response.data.data.id,
+                    name: _name,
+                    classname: _type,
                 });
             }
         } catch (error) {
@@ -61,18 +66,63 @@ function ObjectLinkSelector({ value, onChange, classname, fieldName, label, requ
             return;
         }
 
+        var searchJson = null;
+        // switch (classname) {
+        //     case 'DBUser':
+        //         // searchJson = { "login": term };
+        //         break;
+        //     case 'DBGroup':
+        //         // Example: searchJson = { "name": term };
+        //         break;
+        //     default:
+        //         // No special filters
+        //         break;
+        // }
+
+        var searchFields = null;
+        var orderBy = 'name';
+        switch (classname) {
+            case 'DBUser':
+                searchFields = ['login', 'fullname', 'email'];
+                orderBy = 'login ASC';
+                break;
+            case 'DBGroup':
+                searchFields = ['name', 'description'];
+                break;
+            default:
+                break;
+        }
+
         setLoading(true);
         try {
+            if (searchFields!==null) {
+                searchJson = {
+                    "$or": searchFields.map(field => ({
+                        [field]: { "$like": `%${term}%` }
+                    }))
+                };
+            }
             const response = await axiosInstance.get('/objects/search', {
                 params: {
                     classname: classname,
                     name: term,
+                    searchJson: JSON.stringify(searchJson),
+                    orderBy: orderBy,
+                    offset: 0,
                     limit: 20,
                     type: _type // "link" = I want only objects that I can attach to (write permission)
                 }
             });
 
             if (response.data.success && response.data.objects) {
+                // IF DBUser, then copy fullname into description
+                if (classname === 'DBUser') {
+                    response.data.objects = response.data.objects.map(obj => ({
+                        ...obj,
+                        name: obj.login || 'Unnamed',
+                        description: obj.fullname || ''
+                    }));
+                }
                 setResults(response.data.objects);
                 setShowResults(true);
             }
@@ -114,7 +164,7 @@ function ObjectLinkSelector({ value, onChange, classname, fieldName, label, requ
 
     return (
         <Form.Group className="mb-3">
-            <Form.Label>{label}</Form.Label>
+            {label && <Form.Label className="mb-1">{label}</Form.Label>}
             
             {selectedObject ? (
                 <InputGroup>

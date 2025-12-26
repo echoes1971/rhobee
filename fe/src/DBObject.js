@@ -21,7 +21,7 @@ import ObjectLinkSelector from './ObjectLinkSelector'
 import PermissionsEditor from './PermissionsEditor';
 import { getErrorMessage } from "./errorHandler";
 import { HtmlView } from './ContentHtml';
-import axios from './axios';
+import axiosInstance from './axios';
 
 
 export function ObjectHeaderView({ data, metadata, objectData, dark }) {
@@ -69,13 +69,13 @@ export function ObjectFooterView({ data, metadata, objectData, dark }) {
                     <small style={{ opacity: 0.7 }}>{t('dbobjects.owner')}:</small>
                 </div>
                 <div className="col-md-3 col-8">
-                    <small style={{ opacity: 0.7 }}>{objectData && objectData.owner_name}</small>
+                    <small style={{ opacity: 0.7 }}><UserLinkView user_id={data.owner} dark={dark} /></small>
                 </div>
                 <div className="col-md-2 col-4 text-end">
                     <small style={{ opacity: 0.7 }}>{t('dbobjects.group')}:</small>
                 </div>
                 <div className="col-md-3 col-8">
-                    <small style={{ opacity: 0.7 }}>{objectData && objectData.group_name}</small>
+                    <small style={{ opacity: 0.7 }}><GroupLinkView group_id={data.group_id} dark={dark} /></small>
                 </div>
             </div>
             <div className="row">
@@ -83,7 +83,7 @@ export function ObjectFooterView({ data, metadata, objectData, dark }) {
                     <small style={{ opacity: 0.7 }}>{t('dbobjects.created')}:</small>
                 </div>
                 <div className="col-md-6 col-8">
-                    <small style={{ opacity: 0.7 }}>{formateDateTimeString(data.creation_date)} - {objectData && objectData.creator_name}</small>
+                    <small style={{ opacity: 0.7 }}>{formateDateTimeString(data.creation_date)} - <UserLinkView user_id={data.creator} dark={dark} /></small>
                 </div>
             </div>
             <div className="row">
@@ -91,7 +91,8 @@ export function ObjectFooterView({ data, metadata, objectData, dark }) {
                     <small style={{ opacity: 0.7 }}>{t('dbobjects.modified')}:</small>
                 </div>
                 <div className="col-md-6 col-8">
-                    <small style={{ opacity: 0.7 }}>{formateDateTimeString(data.last_modify_date)} -{objectData && objectData.last_modifier_name}</small>
+                    <small style={{ opacity: 0.7 }}>{formateDateTimeString(data.last_modify_date)} - <UserLinkView user_id={data.last_modify} dark={dark} /></small>
+                    
                 </div>
             </div>
             {data.deleted_date && 
@@ -100,7 +101,7 @@ export function ObjectFooterView({ data, metadata, objectData, dark }) {
                     <small style={{ opacity: 0.7 }}>{t('dbobjects.deleted')}:</small>
                 </div>
                 <div className="col-md-3 col-8">
-                    <small style={{ opacity: 0.7 }}>{data && data.deleted_date ? formateDateTimeString(data.deleted_date) : '--'} - {objectData && objectData.deleted_by_name ? objectData.deleted_by_name : '--'}</small>
+                    <small style={{ opacity: 0.7 }}>{data && data.deleted_date ? formateDateTimeString(data.deleted_date) : '--'} - <UserLinkView user_id={data.deleted_by} dark={dark} /></small>
                 </div>
             </div>
             }
@@ -113,6 +114,58 @@ export function ObjectView({ data, metadata, objectData, dark }) {
     const navigate = useNavigate();
     const { t } = useTranslation();
     
+    const [objectDataState, setObjectDataState] = useState(objectData);
+
+    useEffect(() => {
+        // if (metadata.classname === 'DBFolder' || metadata.classname === 'DBPage' || metadata.classname === 'DBNews') {
+        //     return;
+        // }
+        
+        const loadUserData = async () => {
+            // if (objectData!==null) {
+            //     return;
+            // }
+            try {
+                // Collect unique user IDs
+                const uniqueUserIds = new Set();
+                if (data.owner) uniqueUserIds.add(data.owner);
+                if (data.creator) uniqueUserIds.add(data.creator);
+                if (data.last_modify) uniqueUserIds.add(data.last_modify);
+                if (data.deleted_by) uniqueUserIds.add(data.deleted_by);
+                
+                // Fetch all unique users in parallel
+                const userPromises = Array.from(uniqueUserIds).map(userId =>
+                    axiosInstance.get(`/users/${userId}`).then(res => ({ id: userId, data: res.data }))
+                );
+                
+                const groupPromise = data.group_id && data.group_id!=="0" ? axiosInstance.get(`/groups/${data.group_id}`) : Promise.resolve({data: { name: '' }});
+                
+                const [users, groupRes] = await Promise.all([
+                    Promise.all(userPromises),
+                    groupPromise
+                ]);
+                
+                // Create a map of userId -> user data
+                const userMap = {};
+                users.forEach(user => {
+                    userMap[user.id] = user.data.fullname;
+                });
+                
+                setObjectData({
+                    owner_name: userMap[data.owner] || '',
+                    group_name: groupRes.data.name,
+                    creator_name: userMap[data.creator] || '',
+                    last_modifier_name: userMap[data.last_modify] || '',
+                    deleted_by_name: userMap[data.deleted_by] || ''
+                });
+            } catch (error) {
+                console.error('Error loading user data:', error);
+            }
+        };
+        
+        loadUserData();
+    }, [data.owner, data.group_id, data.creator, data.last_modify, data.deleted_by, metadata.classname]);
+
     return (
         <Card className="mb-3" bg={dark ? 'dark' : 'light'} text={dark ? 'light' : 'dark'}>
             <Card.Header className={dark ? 'bg-secondary bg-opacity-10' : ''} style={dark ? { borderBottom: '1px solid rgba(255,255,255,0.1)' } : {}}>
@@ -144,6 +197,8 @@ export function ObjectEdit({ data, metadata, onSave, onCancel, onDelete, saving,
         description: data.description || '',
         permissions: data.permissions || 'rwxr-x---',
         father_id: data.father_id || null,
+        owner: data.owner || null,
+        group_id: data.group_id || null,
     });
 
     const handleChange = (e) => {
@@ -166,8 +221,10 @@ export function ObjectEdit({ data, metadata, onSave, onCancel, onDelete, saving,
                 Editing {metadata.classname} - Basic fields only
             </Alert>
 
-            <Form.Group className="mb-3">
+            {/* <Form.Group className="mb-3"> */}
+            <div className="row">
                 {/* <Form.Label>{t('dbobjects.parent')}</Form.Label> */}
+                <div className="col-md-4 mb-3">
                 <ObjectLinkSelector
                     value={formData.father_id || '0'}
                     onChange={handleChange}
@@ -175,7 +232,29 @@ export function ObjectEdit({ data, metadata, onSave, onCancel, onDelete, saving,
                     fieldName="father_id"
                     label={t('dbobjects.parent')}
                 />
-            </Form.Group>
+                </div>
+                <div className="col-md-4 mb-3">
+                <ObjectLinkSelector
+                    value={formData.owner}
+                    onChange={handleChange}
+                    classname="DBUser"
+                    fieldName="owner"
+                    label={t('permissions.owner')}
+                    required={false}
+                />
+                </div>
+                <div className="col-md-4 mb-3">
+                <ObjectLinkSelector
+                    value={formData.group_id}
+                    onChange={handleChange}
+                    classname="DBGroup"
+                    fieldName="group_id"
+                    label={t('permissions.group')}
+                    required={false}
+                />
+                </div>
+            </div>
+            {/* </Form.Group> */}
 
             <PermissionsEditor
                 value={formData.permissions}
@@ -322,7 +401,7 @@ export function ObjectSearch({searchClassname, searchColumns, resultsColumns, or
 
     try {
       console.log('Searching objects with:', search, ' order by:', orderBy);
-      const response = await axios.get('/objects/search', {
+      const response = await axiosInstance.get('/objects/search', {
         params: {
           classname: searchClassname,
           searchJson: JSON.stringify(search),
@@ -373,7 +452,7 @@ export function ObjectSearch({searchClassname, searchColumns, resultsColumns, or
               description: ""
           };
 
-          const response = await axios.post('/objects', payload);
+          const response = await axiosInstance.post('/objects', payload);
           const newObjectId = response.data.data.id;
 
           // Notify parent (for refreshing children list)
