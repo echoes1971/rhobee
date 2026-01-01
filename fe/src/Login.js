@@ -34,7 +34,7 @@ function Login() {
 
   return (
     // Center horizontally and vertically, expand fields to reasonable size
-    <div className={`container mt-3 d-flex justify-content-center align-items-center ${themeClass}`}>
+    <div className={`container mt-2 mt-md-5 d-flex justify-content-center align-items-center ${themeClass}`}>
       <form onSubmit={handleSubmit} className="p-3">
         {errorMessage && (
           <div className="alert alert-danger" role="alert">
