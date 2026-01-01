@@ -12,13 +12,13 @@ References:
 
 ## 🎯 MVP - Priority Features
 
-- [ ] ObjectList: as Admin, I have a filter to see all deleted objects and massively select the delete
+- [x] ObjectList: as Admin, I have a filter to see all deleted objects and massively select the delete
 - [x] manifest.json to make it recognisable as a PWA
 
 
 ### Search & Discovery (NEXT - MVP BLOCKER)
 - [ ] Advanced filters
-  - [ ] deleted objects: only for admins and webmasters
+  - [x] deleted objects: only for admins and webmasters
   - [ ] Date range filter // Roberto: a generic range can be implemented, passing [_from_<name attribute>, _to_<name attribute>] in the metadata. These will be handled by SearchObjectsHandler that passes them to DBRepository.Search in the metadata of the search object
   - [ ] File type filter
   - [x] Author filter
@@ -186,8 +186,8 @@ References:
   - [ ] New users start with private group only (rwx------)
 
 ### Backend
-- [ ] Add Swagger/OpenAPI documentation // 👤 Roberto: if easy, I'd say to put it in place ASAP
-- [ ] Database transactionality for writes // 👤 Roberto: we have it, haven't we?
+- [x] Add Swagger/OpenAPI documentation // 👤 Roberto: if easy, I'd say to put it in place ASAP
+- [x] Database transactionality for writes
 - [ ] Transaction isolation level configuration // 👤 Roberto: we have it, haven't we?
 - [ ] Error handling improvements
   - [ ] Structured logging
@@ -200,12 +200,12 @@ References:
   - [ ] Database layer tests
   - [ ] Handler tests
   - [ ] Permission tests
-- [ ] Pagination for large result sets
+- [x] Pagination for large result sets
 - [ ] DB: Add indexes for name, description and html content to support text search
 - [ ] Support for PostgreSQL and SQLite3
 
 ### Developer Experience
-- [ ] API documentation improvements
+- [x] API documentation improvements
 - [ ] GraphQL endpoint (alternative to REST)? // 👤 Roberto: interesting, I need to learn about this new (for me) tool
 - [ ] Webhook system for events (onCreate, onUpdate, onDelete)
 - [ ] Plugin/extension system // 👤 Roberto: "nice to have" how can we make the project extendable, both in BE and in FE?
@@ -224,10 +224,14 @@ References:
   - [ ] Permission granted
 - [ ] Two-factor authentication (2FA)
 - [ ] ~~OAuth providers (Google, GitHub, etc.)~~ (moved to MVP priorities)
-- [ ] Export content (PDF, ZIP, JSON) // 👤 Roberto: YES!
-  - [ ] Export single pages, multiple pages in a ZIP file
+- [ ] Export content (PDF, ZIP, JSON)
+  - [ ] Command line (rhobee)
+    - [x] Export single pages, multiple pages, folders and subcontent (command line)
+    - [ ] zip export
   - [ ] Export a selected folder with all its subelements in a zip file that the user can download
+    - [ ] could be done reusing rhobee command line on server side?
 - [ ] Import content (from WordPress, other CMS)
+  - [x] rhobee command line
 - [ ] OpenGraph meta tags for social sharing
 - [ ] Print-friendly page styles // 👤 Roberto: YES !
 
