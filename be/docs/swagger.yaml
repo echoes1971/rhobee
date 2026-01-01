@@ -677,6 +677,42 @@ paths:
       summary: Delete a DBObject
       tags:
       - objects
+    get:
+      description: Retrieves a DBObject by its ID
+      parameters:
+      - description: Object ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Object data
+          schema:
+            $ref: '#/definitions/api.ObjectResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "404":
+          description: Object not found
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get a DBObject by ID
+      tags:
+      - objects
     put:
       consumes:
       - application/json

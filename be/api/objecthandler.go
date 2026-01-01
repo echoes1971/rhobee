@@ -239,6 +239,62 @@ func CreateObjectHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// GetObjectHandler godoc
+// @Summary Get a DBObject by ID
+// @Description Retrieves a DBObject by its ID
+// @Tags objects
+// @Produce json
+// @Param id path string true "Object ID"
+// @Success 200 {object} ObjectResponse "Object data"
+// @Failure 400 {object} ErrorResponse "Invalid request"
+// @Failure 401 {object} ErrorResponse "Unauthorized"
+// @Failure 403 {object} ErrorResponse "Forbidden"
+// @Failure 404 {object} ErrorResponse "Object not found"
+// @Security BearerAuth
+// @Router /objects/{id} [get]
+func GetObjectHandler(w http.ResponseWriter, r *http.Request) {
+	claims, err := GetClaimsFromRequest(r)
+	if err != nil {
+		RespondSimpleError(w, ErrUnauthorized, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+	dbContext := &dblayer.DBContext{
+		UserID:   claims["user_id"],
+		GroupIDs: strings.Split(claims["groups"], ","),
+		Schema:   dblayer.DbSchema,
+	}
+	repo := dblayer.NewDBRepository(dbContext, dblayer.Factory, dblayer.DbConnection)
+	repo.Verbose = false
+	vars := mux.Vars(r)
+	objectID := vars["id"]
+	if objectID == "" {
+		RespondSimpleError(w, ErrInvalidRequest, "Missing object ID", http.StatusBadRequest)
+		return
+	}
+	if len(objectID) == 18 {
+		objectID = strings.ReplaceAll(objectID, "-", "")
+	}
+	obj := repo.FullObjectById(objectID, true)
+	if obj == nil {
+		RespondSimpleError(w, ErrObjectNotFound, "Object not found", http.StatusNotFound)
+		return
+	}
+	// Check read permission
+	if !repo.CheckReadPermission(obj) {
+		RespondSimpleError(w, ErrForbidden, "You don't have permission to view this object", http.StatusForbidden)
+		return
+	}
+
+	// Return object
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(ObjectResponse{
+		Success:  true,
+		Data:     obj.GetAllValues(),
+		Metadata: obj.GetAllMetadata(),
+	})
+}
+
 // Body: {"name": "Updated Name", "description": "Updated description", ...}
 // UpdateObjectHandler godoc
 // @Summary Update an existing DBObject
