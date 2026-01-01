@@ -117,15 +117,15 @@ function PermissionsEditor({ value = 'rwxr-x---', onChange, name = 'permissions'
         // <Form.Group className={`mb-3 ${themeClass}`}>
             // {label && <Form.Label>{label}</Form.Label>}
             <Accordion className="mb-3 permissions-editor">
-                <Accordion.Item eventKey="0">
-                    <Accordion.Header>
+                <Accordion.Item eventKey="0" className='permissions-editor'>
+                    <Accordion.Header className='permissions-editor'>
                         <i className="bi bi-shield-lock me-2"></i>
                         { label ? label :
                             t('permissions.current') || 'Current permissions'
                         }: 
-                            <code className={`ms-2 me-2 text-dark`}>{permissionsToString(permissions)}</code>
+                            <code className={`ms-2 me-2 ${dark ? 'text-light' : 'text-dark'}`} style={{opacity: 0.7}}>{permissionsToString(permissions)}</code>
                     </Accordion.Header>
-                    <Accordion.Body>
+                    <Accordion.Body className='permissions-editor'>
                         <Row>
                             <Col md={4}>
                                 {renderPermissionCheckboxes('owner', t('permissions.owner') || 'Owner')}
