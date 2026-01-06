@@ -28,6 +28,14 @@ function PermissionsEditor({ value = 'rwxr-x---', onChange, name = 'permissions'
         others: { r: false, w: false, x: false }
     });
 
+
+    // Retrieve token from local storage
+    const token = localStorage.getItem("token");
+    // Retrieve group IDs from local storage
+    const groupIDs = localStorage.getItem("groups") ? JSON.parse(localStorage.getItem("groups")) : [];
+
+    const isGuest = !token || token === "" || (groupIDs.length <= 2 && groupIDs.includes("-4"));
+
     // Parse permissions string into object
     useEffect(() => {
         if (value && value.length === 9) {
@@ -111,6 +119,12 @@ function PermissionsEditor({ value = 'rwxr-x---', onChange, name = 'permissions'
             </div>
         </div>
     );
+
+    if (isGuest) {
+        return (
+            <></>
+        );
+    }
 
     return (
         // <Form.Group className={`mb-3 ${themeClass}`}>
