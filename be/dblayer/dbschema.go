@@ -115,6 +115,7 @@ func NewDBUser() *DBUser {
 		{Name: "pwd", Type: "varchar(255)", Constraints: []string{"NOT NULL"}},
 		{Name: "pwd_salt", Type: "varchar(4)", Constraints: []string{}},
 		{Name: "fullname", Type: "text", Constraints: []string{}},
+		{Name: "email", Type: "varchar(255)", Constraints: []string{}},
 		{Name: "group_id", Type: "varchar(16)", Constraints: []string{"NOT NULL"}},
 	}
 	keys := []string{"id"}
@@ -314,6 +315,7 @@ func (dbUser *DBUser) afterUpdate(dbr *DBRepository, tx *sql.Tx) error {
 
 func (dbUser *DBUser) beforeDelete(dbr *DBRepository, tx *sql.Tx) error {
 	// Delete all user-group associations for this user
+	log.Print("DBUser::beforeDelete: deleting user groups for user:", dbUser.GetValue("id"))
 	userGroup := NewUserGroup()
 	userGroup.SetValue("user_id", dbUser.GetValue("id"))
 	results, err := dbr.searchWithTx(userGroup, false, false, "user_id", tx)
@@ -328,6 +330,7 @@ func (dbUser *DBUser) beforeDelete(dbr *DBRepository, tx *sql.Tx) error {
 		}
 	}
 	// Delete personal group
+	log.Print("DBUser::beforeDelete: deleting personal group for user:", dbUser.GetValue("id"), dbUser.GetValue("group_id"))
 	personalGroup := NewDBGroup()
 	personalGroup.SetValue("id", dbUser.GetValue("group_id"))
 	_, err = dbr.deleteWithTx(personalGroup, tx)

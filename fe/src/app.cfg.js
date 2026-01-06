@@ -16,4 +16,6 @@ export const app_cfg = {
     app_name: getRuntimeConfig('REACT_APP_APP_NAME', ''),               // Empty fallback
     app_version: getRuntimeConfig('REACT_APP_APP_VERSION', ''),         // Empty fallback
     app_copyright: getRuntimeConfig('REACT_APP_SITE_COPYRIGHT', ''),    // Empty fallback
+    enable_google_oauth: getRuntimeConfig('REACT_APP_ENABLE_GOOGLE_OAUTH', 'false'),
+    enable_github_oauth: getRuntimeConfig('REACT_APP_ENABLE_GITHUB_OAUTH', 'false'),
 };

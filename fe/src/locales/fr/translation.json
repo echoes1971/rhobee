@@ -272,4 +272,8 @@
     "editor": {
         "insert_emoji": "Insérer Emoji"
     }
+    ,"auth": {
+      "sign_in_with_google": "Se connecter avec Google",
+      "sign_in_with_github": "Se connecter avec GitHub"
+    }
 }

@@ -34,6 +34,8 @@ services:
       - REACT_APP_SITE_TITLE=🐝 ρ-Bee CMS 🐝
       - REACT_APP_ENDPOINT=/api
       - REACT_APP_HOME_OBJECT_ID=-10
+      - REACT_APP_ENABLE_GOOGLE_OAUTH=false
+      - REACT_APP_ENABLE_GITHUB_OAUTH=false
 
   be:
     build:
@@ -41,8 +43,16 @@ services:
       dockerfile: Dockerfile
     expose:
       - "1971"
-    # environment:
-    #   - DB_URL=root:mysecret@tcp(mysql:3306)/rproject
+    environment:
+      # Fill these in for production with your OAuth credentials
+      - DB_URL=root:mysecret@tcp(mysql:3306)/rproject
+      - GOOGLE_CLIENT_ID=
+      - GOOGLE_CLIENT_SECRET=
+      - GOOGLE_REDIRECT_URL=
+      - GITHUB_CLIENT_ID=
+      - GITHUB_CLIENT_SECRET=
+      - GITHUB_REDIRECT_URL=
+      - APP_NAME=ρBee
     volumes:
       - be_files:/root/files
     depends_on:

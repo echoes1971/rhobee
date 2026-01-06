@@ -65,7 +65,6 @@ services:
       - "host.docker.internal:host-gateway"
       - "external.llama:192.168.1.232"  # Example static IP for external llama server
     environment:
-      - APP_NAME=R-Project
       # Ollama is optional - comment out or leave empty to disable
       - OLLAMA_URL=http://external.llama:11434/api/chat
       - OLLAMA_MODEL="llama3.2:latest"

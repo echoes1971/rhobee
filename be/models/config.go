@@ -19,6 +19,13 @@ type Config struct {
 	OllamaURL      string `json:"ollama_url"`
 	RootDirectory  string `json:"root_directory"`
 	FilesDirectory string `json:"files_directory"`
+	// OAuth configuration
+	GoogleClientID     string `json:"google_client_id"`
+	GoogleClientSecret string `json:"google_client_secret"`
+	GoogleRedirectURL  string `json:"google_redirect_url"`
+	GitHubClientID     string `json:"github_client_id"`
+	GitHubClientSecret string `json:"github_client_secret"`
+	GitHubRedirectURL  string `json:"github_redirect_url"`
 }
 
 func LoadConfig(filename string, config *Config) error {

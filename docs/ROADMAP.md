@@ -34,12 +34,13 @@ References:
 
 
 ### OAuth Integration (HIGH PRIORITY - if not complicated)
-- [ ] Google OAuth login // 👤 Roberto: YES !
-- [ ] OAuth user creation with:  // 👤 Roberto: YES !
-  - [ ] default permissions rwx------
-  - [ ] it will have its private group and then will be linked to the group "Guest" that has ID "-4" (use the type UserGroup)
-- [ ] Link existing account with OAuth
-- [ ] GitHub OAuth login
+- [x] Google OAuth login
+- [ ] OAuth user creation with:  // Roberto: YES - create minimal user if not exists
+  - [x] default permissions rwx------
+  - [x] link to Guest group ID "-4" by default (minimal implementation)
+  - [ ] Frontend: a guest MUST NOT be allowed to modify permissions (we do not want him/her to public illegal content, do we?)
+- [x] Link existing account with OAuth (optional later): done, if email match the user will be logged in automatically
+- [ ] GitHub OAuth login (next after Google)
 - [ ] Facebook OAuth login (optional)
 
 ---
@@ -116,8 +117,12 @@ References:
   - [x] basic implementation done
   - [ ] advanced: calendar view, compute recurring events
 - [ ] Versioning/History for DBPage (track who modified what when) // 👤 Roberto: how?
+- [ ] Versioning/History for DBPage (track who modified what when) // DESIGN: implement a single `object_history` table that stores JSON blobs of previous object states (generic for all types)
+-   - Rationale: single table avoids per-type history tables; store `object_id`, `classname`, `changed_by`, `changed_at`, `data_json` (text/blob)
+-   - Note: this is a simple snapshot approach (no diffs); acceptable for MVP
 - [ ] Draft system for content (save without publishing)
-- [ ] Content scheduling (publish at specific date/time) // 👤 Roberto: simple fields with publish date start and publish date end?
+- [ ] Draft system for content (save without publishing)
+- [x] Content scheduling (publish at specific date/time) // DECISION: implement `publish_date_start` and `publish_date_end` fields (simple, trivial)
 - [ ] Bulk operations // 👤 Roberto: yes
   - [ ] Delete multiple objects
   - [ ] Move multiple objects
@@ -135,7 +140,7 @@ References:
 ### Rich Text Editor Improvements
 - [ ] Custom CSS classes selector // 👤 Roberto: YES ! Let's customize the site colors at first (should be easy with bootstrap primary etc.). I'd like to have selectable skins for the public site, but that looks too much for now?
 - [ ] Markdown alternative editor // ❓ where do we store the markdown, in the html field or another? if it's the same field, how do we distinguish the 2 in View and Edit?
-  - [ ] Toggle between WYSIWYG and Markdown // 👤 Roberto: I love Markdown, I don't know why :)
+  - [x] Toggle between WYSIWYG and Markdown // DECISION: add `content_type` field ("html"|"markdown") and store raw markdown in same field when `content_type==markdown`.
   - [ ] Markdown preview
 - [ ] Code syntax highlighting // I'd say "nice to have" (it will give a professional feeling to the end user), by now it seems redundant as we have a wysiwig editor
 - [ ] ~~Tables support in ReactQuill~~ quill-table not compatible with the current quill version
@@ -148,7 +153,10 @@ References:
 - [ ] Quota management per user/group
 - [ ] File versioning // 👤 Roberto: how?
 - [ ] Preview for more file types (PDF viewer, video player) // 👤 Roberto: yes! how?
-- [ ] Image editing tools (crop, rotate, filters) // 👤 Roberto: if easy. "nice to have"
++ [ ] Preview for more file types (PDF viewer, video player) // DESIGN: use a video thumbnail frame for video; for PDF show generic icon to avoid exposing content
++ - For video: extract a frame server-side when uploading (thumbnail) and display it as preview.
++ - For PDF: show a PDF icon or metadata (no content rendering) to avoid exposing sensitive content.
++ [ ] Image editing tools (crop, rotate, filters) // 👤 Roberto: if easy. "nice to have"
 
 ### User Experience
 - [ ] Mobile responsive improvements // 👤 Roberto: it doesn't look so bad now in mobile, does it?

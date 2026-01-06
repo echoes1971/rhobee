@@ -479,8 +479,9 @@ func GetUserPersonHandler(w http.ResponseWriter, r *http.Request) {
 	newPerson.SetValue("name", fullname)
 	newPerson.SetValue("fk_users_id", userId)
 	newPerson.SetValue("owner", claims["user_id"])
-	newPerson.SetValue("group_id", strings.Split(claims["groups"], ",")[0]) // First group
-	newPerson.SetValue("permissions", "rwxr-----")                          // Owner and group can read
+	// Note: with this setting, only admins can see the person record
+	newPerson.SetValue("group_id", currentUser.GetValue("group_id")) //strings.Split(claims["groups"], ",")[0]) // First group
+	newPerson.SetValue("permissions", "rwx------")                   // Private by default
 
 	createdPerson, err := repo.Insert(newPerson)
 	if err != nil {

@@ -154,6 +154,26 @@ func main() {
 		AppConfig.FilesDirectory = filesDir
 	}
 
+	// OAuth settings from environment variables
+	if googleClientId := os.Getenv("GOOGLE_CLIENT_ID"); googleClientId != "" {
+		AppConfig.GoogleClientID = googleClientId
+	}
+	if googleClientSecret := os.Getenv("GOOGLE_CLIENT_SECRET"); googleClientSecret != "" {
+		AppConfig.GoogleClientSecret = googleClientSecret
+	}
+	if googleRedirectURL := os.Getenv("GOOGLE_REDIRECT_URL"); googleRedirectURL != "" {
+		AppConfig.GoogleRedirectURL = googleRedirectURL
+	}
+	if githubClientId := os.Getenv("GITHUB_CLIENT_ID"); githubClientId != "" {
+		AppConfig.GitHubClientID = githubClientId
+	}
+	if githubClientSecret := os.Getenv("GITHUB_CLIENT_SECRET"); githubClientSecret != "" {
+		AppConfig.GitHubClientSecret = githubClientSecret
+	}
+	if githubRedirectURL := os.Getenv("GITHUB_REDIRECT_URL"); githubRedirectURL != "" {
+		AppConfig.GitHubRedirectURL = githubRedirectURL
+	}
+
 	dblayer.InitDBLayer(AppConfig)
 	// dblayer.EnsureDBSchema()
 	dblayer.InitDBData()
@@ -177,6 +197,12 @@ func main() {
 	// Public Endpoints: login, logout
 	r.HandleFunc("/login", api.LoginHandler).Methods("POST")
 	r.HandleFunc("/logout", api.LogoutHandler).Methods("POST")
+
+	// OAuth endpoints (Google, GitHub)
+	r.HandleFunc("/oauth/google/start", api.GoogleOAuthStart).Methods("GET")
+	r.HandleFunc("/oauth/google/callback", api.GoogleOAuthCallback).Methods("GET")
+	r.HandleFunc("/oauth/github/start", api.GitHubOAuthStart).Methods("GET")
+	r.HandleFunc("/oauth/github/callback", api.GitHubOAuthCallback).Methods("GET")
 
 	// Public Endpoint: hello
 	r.HandleFunc("/ping", api.PingHandler).Methods("GET")

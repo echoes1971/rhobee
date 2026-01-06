@@ -1,8 +1,10 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "./axios";
 import { useTranslation } from "react-i18next";
 import { ThemeContext } from "./ThemeContext";
 import { getErrorMessage } from "./errorHandler";
+import { app_cfg } from "./app.cfg";
 
 function Login() {
   const { t } = useTranslation();
@@ -10,6 +12,26 @@ function Login() {
   const [pwd, setPwd] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const { dark, themeClass } = useContext(ThemeContext);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    function onMessage(ev) {
+      try {
+        const data = ev.data;
+        if (!data || !data.access_token) return;
+        localStorage.setItem('token', data.access_token);
+        localStorage.setItem('expires_at', data.expires_at);
+        if (data.user_id) localStorage.setItem('user_id', data.user_id);
+        if (data.login) localStorage.setItem('username', data.login);
+        if (data.groups) localStorage.setItem('groups', JSON.stringify((data.groups+"").split(',')));
+        navigate('/');
+      } catch (e) {
+        // ignore
+      }
+    }
+    window.addEventListener('message', onMessage);
+    return () => { window.removeEventListener('message', onMessage); };
+  }, [navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -25,7 +47,7 @@ function Login() {
       localStorage.setItem("username", login);
       localStorage.setItem("user_id", res.data.user_id);
       localStorage.setItem("groups", JSON.stringify(res.data.groups));
-      window.location.href = "/";
+      navigate("/");
     } catch (err) {
       const errorMsg = getErrorMessage(err, t("common.login_failed") || "Login failed");
       setErrorMessage(errorMsg);
@@ -57,6 +79,24 @@ function Login() {
           <div className="col-md-4"></div>
           <div className="col-md-8">
             <button className="btn btn-primary">{t("common.login")}</button>
+            <div className="mt-3">
+              { (app_cfg.enable_google_oauth === 'true' || app_cfg.enable_google_oauth === true || app_cfg.enable_google_oauth === '1') && (
+                <button type="button" className="btn btn-outline-danger me-2" onClick={() => {
+                  const startUrl = `${app_cfg.endpoint}/oauth/google/start`;
+                  window.location.href = startUrl;
+                }}>
+                  {t("auth.sign_in_with_google") || 'Sign in with Google'}
+                </button>
+              ) }
+              { (app_cfg.enable_github_oauth === 'true' || app_cfg.enable_github_oauth === true || app_cfg.enable_github_oauth === '1') && (
+                <button type="button" className="btn btn-outline-primary" onClick={() => {
+                  const startUrl = `${app_cfg.endpoint}/oauth/github/start`;
+                  window.location.href = startUrl;
+                }}>
+                  {t("auth.sign_in_with_github") || 'Sign in with GitHub'}
+                </button>
+              ) }
+            </div>
           </div>
         </div>
       </form>

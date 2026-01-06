@@ -49,10 +49,24 @@ type TokenResponse struct {
 var dbFiles_root_directory string = "."
 var dbFiles_dest_directory string = "files"
 
+// OAuth config values (set by InitAPI)
+var GoogleClientID string
+var GoogleClientSecret string
+var GoogleRedirectURL string
+var GitHubClientID string
+var GitHubClientSecret string
+var GitHubRedirectURL string
+
 func InitAPI(config models.Config) {
 	JWTKey = []byte(config.JWTSecret)
 	dbFiles_root_directory = config.RootDirectory
 	dbFiles_dest_directory = config.FilesDirectory
+	GoogleClientID = config.GoogleClientID
+	GoogleClientSecret = config.GoogleClientSecret
+	GoogleRedirectURL = config.GoogleRedirectURL
+	GitHubClientID = config.GitHubClientID
+	GitHubClientSecret = config.GitHubClientSecret
+	GitHubRedirectURL = config.GitHubRedirectURL
 	log.Print("API initialized with JWT key from config")
 }
 
