@@ -667,6 +667,53 @@ paths:
       summary: Start Google OAuth2 login
       tags:
       - oauth
+  /oauth/telegram/callback:
+    get:
+      description: Handles Telegram Login Widget callback and issues JWT
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: HTML page that stores token and redirects
+          schema:
+            type: string
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Telegram OAuth2 callback
+      tags:
+      - oauth
+  /oauth/telegram/verify:
+    get:
+      description: Verifies Telegram Login Widget data, creates user if needed, and
+        issues JWT
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: HTML page that stores token and redirects
+          schema:
+            type: string
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: Verifies Telegram data and logs in the user
+      tags:
+      - oauth
   /objects:
     post:
       consumes:

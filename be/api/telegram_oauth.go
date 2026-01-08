@@ -18,9 +18,15 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-// TelegramOAuthCallback handles Telegram Login Widget callback
-// Telegram sends data in URL fragment (#tgAuthResult=base64json), so we return
-// an HTML page that decodes it and calls the verification endpoint
+// TelegramOAuthCallback godoc
+// @Summary Telegram OAuth2 callback
+// @Description Handles Telegram Login Widget callback and issues JWT
+// @Tags oauth
+// @Produce json
+// @Success 200 {string} string "HTML page that stores token and redirects"
+// @Failure 400 {object} ErrorResponse "Invalid request"
+// @Failure 500 {object} ErrorResponse "Internal server error"
+// @Router /oauth/telegram/callback [get]
 func TelegramOAuthCallback(w http.ResponseWriter, r *http.Request) {
 	if TelegramBotToken == "" {
 		RespondSimpleError(w, ErrInternalServer, "Telegram OAuth not configured", http.StatusInternalServerError)
@@ -73,7 +79,16 @@ func TelegramOAuthCallback(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(html))
 }
 
-// telegramVerifyAndLogin verifies Telegram data and logs in the user
+// telegramVerifyAndLogin godoc
+// @Summary Verifies Telegram data and logs in the user
+// @Description Verifies Telegram Login Widget data, creates user if needed, and issues JWT
+// @Tags oauth
+// @Produce json
+// @Success 200 {string} string "HTML page that stores token and redirects"
+// @Failure 400 {object} ErrorResponse "Invalid request"
+// @Failure 401 {object} ErrorResponse "Unauthorized"
+// @Failure 500 {object} ErrorResponse "Internal server error"
+// @Router /oauth/telegram/verify [get]
 func telegramVerifyAndLogin(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
 	authDate := query.Get("auth_date")

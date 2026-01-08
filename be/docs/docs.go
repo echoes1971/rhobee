@@ -899,6 +899,76 @@ const docTemplate = `{
                 }
             }
         },
+        "/oauth/telegram/callback": {
+            "get": {
+                "description": "Handles Telegram Login Widget callback and issues JWT",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "oauth"
+                ],
+                "summary": "Telegram OAuth2 callback",
+                "responses": {
+                    "200": {
+                        "description": "HTML page that stores token and redirects",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/api.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/api.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/oauth/telegram/verify": {
+            "get": {
+                "description": "Verifies Telegram Login Widget data, creates user if needed, and issues JWT",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "oauth"
+                ],
+                "summary": "Verifies Telegram data and logs in the user",
+                "responses": {
+                    "200": {
+                        "description": "HTML page that stores token and redirects",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/api.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/api.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/api.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/objects": {
             "post": {
                 "security": [
