@@ -35,12 +35,12 @@ References:
 
 ### OAuth Integration (HIGH PRIORITY - if not complicated)
 - [x] Google OAuth login
-- [ ] OAuth user creation with:  // Roberto: YES - create minimal user if not exists
+- [x] OAuth user creation with:  // Roberto: YES - create minimal user if not exists
   - [x] default permissions rwx------
   - [x] link to Guest group ID "-4" by default (minimal implementation)
-  - [ ] Frontend: a guest MUST NOT be allowed to modify permissions (we do not want him/her to public illegal content, do we?)
+  - [x] Frontend: a guest MUST NOT be allowed to modify permissions (we do not want him/her to public illegal content, do we?)
 - [x] Link existing account with OAuth (optional later): done, if email match the user will be logged in automatically
-- [ ] GitHub OAuth login (next after Google)
+- [x] GitHub OAuth login (next after Google)
 - [ ] Facebook OAuth login (optional)
 
 ---
@@ -116,11 +116,9 @@ References:
 - [ ] DBEvent implementation
   - [x] basic implementation done
   - [ ] advanced: calendar view, compute recurring events
-- [ ] Versioning/History for DBPage (track who modified what when) // 👤 Roberto: how?
 - [ ] Versioning/History for DBPage (track who modified what when) // DESIGN: implement a single `object_history` table that stores JSON blobs of previous object states (generic for all types)
 -   - Rationale: single table avoids per-type history tables; store `object_id`, `classname`, `changed_by`, `changed_at`, `data_json` (text/blob)
 -   - Note: this is a simple snapshot approach (no diffs); acceptable for MVP
-- [ ] Draft system for content (save without publishing)
 - [ ] Draft system for content (save without publishing)
 - [x] Content scheduling (publish at specific date/time) // DECISION: implement `publish_date_start` and `publish_date_end` fields (simple, trivial)
 - [ ] Bulk operations // 👤 Roberto: yes
@@ -159,8 +157,8 @@ References:
 + [ ] Image editing tools (crop, rotate, filters) // 👤 Roberto: if easy. "nice to have"
 
 ### User Experience
-- [ ] Mobile responsive improvements // 👤 Roberto: it doesn't look so bad now in mobile, does it?
-- [ ] Dark mode polish
+- [x] Mobile responsive improvements: ongoing
+- [x] Dark mode polish
 - [ ] Accessibility improvements // 👤 Roberto: "nice to have"
   - [ ] ARIA labels
   - [ ] Keyboard navigation
