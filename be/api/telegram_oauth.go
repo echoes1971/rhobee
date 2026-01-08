@@ -19,14 +19,62 @@ import (
 )
 
 // TelegramOAuthCallback handles Telegram Login Widget callback
-// Verifies data hash using HMAC-SHA256 with bot token
+// Telegram sends data in URL fragment (#tgAuthResult=base64json), so we return
+// an HTML page that decodes it and calls the verification endpoint
 func TelegramOAuthCallback(w http.ResponseWriter, r *http.Request) {
 	if TelegramBotToken == "" {
 		RespondSimpleError(w, ErrInternalServer, "Telegram OAuth not configured", http.StatusInternalServerError)
 		return
 	}
 
-	// Parse query parameters
+	// Check if this is the verification request (has query params)
+	query := r.URL.Query()
+	if query.Get("id") != "" {
+		// This is the verification request with decoded params
+		telegramVerifyAndLogin(w, r)
+		return
+	}
+
+	// Initial callback: return HTML to decode fragment and call verify
+	html := `<!doctype html><html><head><meta charset="utf-8"></head><body><script>
+	(function(){
+		try {
+			const hash = window.location.hash.substring(1);
+			if (!hash || hash.indexOf('tgAuthResult=') === -1) {
+				alert('Invalid Telegram auth response');
+				window.location.href = '/login';
+				return;
+			}
+			const base64Data = hash.split('tgAuthResult=')[1];
+			const jsonData = atob(base64Data);
+			const data = JSON.parse(jsonData);
+			
+			// Build query string and call verify endpoint
+			const params = new URLSearchParams();
+			if (data.id) params.set('id', data.id);
+			if (data.first_name) params.set('first_name', data.first_name);
+			if (data.last_name) params.set('last_name', data.last_name);
+			if (data.username) params.set('username', data.username);
+			if (data.photo_url) params.set('photo_url', data.photo_url);
+			if (data.auth_date) params.set('auth_date', data.auth_date);
+			if (data.hash) params.set('hash', data.hash);
+			
+			window.location.href = window.location.pathname + '?' + params.toString();
+		} catch(e) {
+			console.error(e);
+			alert('Error processing Telegram auth: ' + e.message);
+			window.location.href = '/login';
+		}
+	})();
+	</script></body></html>`
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(html))
+}
+
+// telegramVerifyAndLogin verifies Telegram data and logs in the user
+func telegramVerifyAndLogin(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
 	authDate := query.Get("auth_date")
 	firstName := query.Get("first_name")
@@ -35,6 +83,9 @@ func TelegramOAuthCallback(w http.ResponseWriter, r *http.Request) {
 	username := query.Get("username")
 	photoURL := query.Get("photo_url")
 	hash := query.Get("hash")
+
+	// https://www.roccoangeloni.it/api/oauth/telegram/callback#
+	// tgAuthResult=eyJpZCI6MjIxMzYwMTExLCJmaXJzdF9uYW1lIjoiUm9iZXJ0byIsInVzZXJuYW1lIjoibXJfZWNob2VzIiwicGhvdG9fdXJsIjoiaHR0cHM6XC9cL3QubWVcL2lcL3VzZXJwaWNcLzMyMFwvMS00aERWbXNCN2d3U3oyVWotTmZMMU5CTDVqU0FtWFRDRGFsWWNPRHlldy5qcGciLCJhdXRoX2RhdGUiOjE3Njc4NjcyNzAsImhhc2giOiIyMmI0OTU1OWNkNDUzODY4ODI4MjdlOTgxZjQ2OTgwNjdkODk5MmUzMzUxMjY2MmIxOWViMGZlZWQ0ZTRkOWU5In0
 
 	if id == "" || hash == "" || authDate == "" {
 		RespondSimpleError(w, ErrInvalidRequest, "Missing required Telegram data", http.StatusBadRequest)
@@ -90,8 +141,8 @@ func TelegramOAuthCallback(w http.ResponseWriter, r *http.Request) {
 		userInst.SetValue("login", identifier)
 		userInst.SetValue("fullname", fullname)
 		userInst.SetValue("pwd", "")
-		userInst.SetValue("group_id", "-4")
-		userInst.SetValue("permissions", "rwx------")
+		// userInst.SetValue("group_id", "-4")
+		// userInst.SetValue("permissions", "rwx------")
 		created, err := repo.Insert(userInst)
 		if err != nil {
 			log.Printf("TelegramOAuthCallback: failed to create user: %v", err)
