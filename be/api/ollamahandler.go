@@ -23,16 +23,44 @@ func OllamaInit(appName, url, model string) error {
 	ollamaModel = model
 	ollamaAppName = appName
 
+	lastDefaultPageResponse = "<h2>Welcome! 👋</h2><p>Please log in to continue using the application.</p>"
+
 	if ollamaURL != "" && ollamaModel != "" {
 		// go UpdateOllamaDefaultPageResponse("en")
 		log.Printf("Ollama initialized with URL: %s and Model: %s\n", ollamaURL, ollamaModel)
 
 		OllamaFolderInit("Ollama Pages")
 
+		// Search for existing pages in the folder and randomly choose one to set lastDefaultPageResponse
+		dbContext := &dblayer.DBContext{
+			UserID:   "-1",           // DANGEROUS!!!! Think of something better here!!!
+			GroupIDs: []string{"-2"}, // Same here!!!
+			Schema:   dblayer.DbSchema,
+		}
+
+		repo := dblayer.NewDBRepository(dbContext, dblayer.Factory, dblayer.DbConnection)
+		repo.Verbose = false
+
+		page := repo.GetInstanceByTableName("pages")
+		if page == nil {
+			log.Println("Failed to create page instance for Ollama default page search")
+			return nil
+		}
+		page.SetValue("father_id", ollamaFolder.GetValue("id"))
+		results, err := repo.Search(page, false, false, "rand()")
+		if err != nil {
+			log.Printf("Failed to search for existing Ollama pages: %v\n", err)
+			return nil
+		}
+		if len(results) > 1 {
+			selectedPage := results[0].(*dblayer.DBPage)
+			lastDefaultPageResponse = selectedPage.GetValue("html").(string)
+			log.Printf("Using existing Ollama default page with ID %s\n", selectedPage.GetValue("id"))
+		}
+
 	} else {
 		log.Println("Ollama not configured - using fallback responses")
 	}
-	lastDefaultPageResponse = "<h2>Welcome! 👋</h2><p>Please log in to continue using the application.</p>"
 
 	return nil
 }
@@ -158,6 +186,20 @@ func DefaultPageOllamaHandler(w http.ResponseWriter, r *http.Request) {
 		langParam = "en"
 	}
 	log.Print("Requested language tag: ", langParam)
+
+	remote_ip := r.RemoteAddr
+	log.Printf("DefaultPageOllamaHandler called from IP: %s\n", remote_ip)
+	x_forwarded_for := r.Header.Get("X-Forwarded-For")
+	if x_forwarded_for != "" {
+		// remove duplicates in case of multiple proxies
+		ips := strings.Split(x_forwarded_for, ",")
+		log.Print("X-Forwarded-For IPs: ", ips)
+		x_forwarded_for = strings.TrimSpace(ips[0])
+
+		remote_ip = x_forwarded_for
+	}
+	log.Printf("X-Forwarded-For: %s\n", x_forwarded_for)
+	log.Printf("Using IP for logging: %s\n", remote_ip)
 
 	// Just use English for now
 	langParam = "en"
