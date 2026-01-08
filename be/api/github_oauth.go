@@ -21,7 +21,13 @@ var githubAuthEndpoint = oauth2.Endpoint{
 	TokenURL: "https://github.com/login/oauth/access_token",
 }
 
-// GitHubOAuthStart redirects to GitHub consent
+// GitHubOAuthStart godoc
+// @Summary Start GitHub OAuth2 login
+// @Description Redirects to GitHub OAuth2 consent screen
+// @Tags oauth
+// @Produce json
+// @Success 302 {string} string "Redirect to GitHub OAuth2 consent screen"
+// @Router /oauth/github/start [get]
 func GitHubOAuthStart(w http.ResponseWriter, r *http.Request) {
 	if GitHubClientID == "" || GitHubClientSecret == "" || GitHubRedirectURL == "" {
 		RespondSimpleError(w, ErrInternalServer, "GitHub OAuth not configured", http.StatusInternalServerError)
@@ -40,7 +46,15 @@ func GitHubOAuthStart(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, url, http.StatusFound)
 }
 
-// GitHubOAuthCallback handles GitHub callback and issues JWT
+// GitHubOAuthCallback godoc
+// @Summary GitHub OAuth2 callback
+// @Description Handles GitHub OAuth2 callback and issues JWT
+// @Tags oauth
+// @Produce json
+// @Success 200 {string} string "HTML page that stores token and redirects"
+// @Failure 400 {object} ErrorResponse "Invalid request"
+// @Failure 500 {object} ErrorResponse "Internal server error"
+// @Router /oauth/github/callback [get]
 func GitHubOAuthCallback(w http.ResponseWriter, r *http.Request) {
 	stateCookie, err := r.Cookie("oauth_state")
 	if err != nil {

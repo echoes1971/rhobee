@@ -793,6 +793,110 @@
                 }
             }
         },
+        "/oauth/github/callback": {
+            "get": {
+                "description": "Handles GitHub OAuth2 callback and issues JWT",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "oauth"
+                ],
+                "summary": "GitHub OAuth2 callback",
+                "responses": {
+                    "200": {
+                        "description": "HTML page that stores token and redirects",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/api.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/api.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/oauth/github/start": {
+            "get": {
+                "description": "Redirects to GitHub OAuth2 consent screen",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "oauth"
+                ],
+                "summary": "Start GitHub OAuth2 login",
+                "responses": {
+                    "302": {
+                        "description": "Redirect to GitHub OAuth2 consent screen",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/oauth/google/callback": {
+            "get": {
+                "description": "Handles Google OAuth2 callback and issues JWT",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "oauth"
+                ],
+                "summary": "Google OAuth2 callback",
+                "responses": {
+                    "200": {
+                        "description": "HTML page that stores token and redirects",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/api.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/api.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/oauth/google/start": {
+            "get": {
+                "description": "Redirects to Google OAuth2 consent screen",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "oauth"
+                ],
+                "summary": "Start Google OAuth2 login",
+                "responses": {
+                    "302": {
+                        "description": "Redirect to Google OAuth2 consent screen",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/objects": {
             "post": {
                 "security": [

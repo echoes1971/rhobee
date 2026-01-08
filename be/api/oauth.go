@@ -16,7 +16,13 @@ import (
 	"golang.org/x/oauth2/google"
 )
 
-// GoogleOAuthStart redirects the user to Google's OAuth consent screen
+// GoogleOAuthStart godoc
+// @Summary Start Google OAuth2 login
+// @Description Redirects to Google OAuth2 consent screen
+// @Tags oauth
+// @Produce json
+// @Success 302 {string} string "Redirect to Google OAuth2 consent screen"
+// @Router /oauth/google/start [get]
 func GoogleOAuthStart(w http.ResponseWriter, r *http.Request) {
 	if GoogleClientID == "" || GoogleClientSecret == "" || GoogleRedirectURL == "" {
 		RespondSimpleError(w, ErrInternalServer, "Google OAuth not configured", http.StatusInternalServerError)
@@ -38,7 +44,15 @@ func GoogleOAuthStart(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, url, http.StatusFound)
 }
 
-// GoogleOAuthCallback handles Google's OAuth callback and issues a JWT
+// GoogleOAuthCallback godoc
+// @Summary Google OAuth2 callback
+// @Description Handles Google OAuth2 callback and issues JWT
+// @Tags oauth
+// @Produce json
+// @Success 200 {string} string "HTML page that stores token and redirects"
+// @Failure 400 {object} ErrorResponse "Invalid request"
+// @Failure 500 {object} ErrorResponse "Internal server error"
+// @Router /oauth/google/callback [get]
 func GoogleOAuthCallback(w http.ResponseWriter, r *http.Request) {
 	// verify state
 	stateCookie, err := r.Cookie("oauth_state")
