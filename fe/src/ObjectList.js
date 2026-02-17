@@ -3,6 +3,7 @@ import { ListGroup, Card, Row, Col, Button, ButtonGroup } from 'react-bootstrap'
 import { useNavigate } from 'react-router-dom';
 import {
   classname2bootstrapIcon,
+  languageCode2FlagEmoji,
  } from './sitenavigation_utils';
  import {
   ImageView
@@ -124,15 +125,22 @@ function ObjectList({
                 >
                   <div className="d-flex justify-content-between align-items-start mb-2">
                     { item.classname !== 'DBFile' && (
+                      <span>
                       <i 
                       className={`bi bi-${classname2bootstrapIcon(item.classname)}`}
                       style={{ fontSize: '2rem' }}
                     ></i>
+                      </span>
                     )}
                     { item.classname === 'DBFile' && (
                       <ImageView id={item.id} title={item.name || 'Image'} thumbnail={false} style={{ fontSize: '2rem', minHeight: '2rem', maxWidth: '100px', maxHeight: '100px', borderRadius: '0.25rem' }} />
                     )}
                     <span className="badge bg-secondary">
+                      {(item.classname === 'DBPage' || item.classname === 'DBNews') && item.language && (
+                        <>
+                        <span className='pe-2'>{languageCode2FlagEmoji(item.language)}</span>
+                        </>
+                      )}
                       {item.classname}
                     </span>
                   </div>

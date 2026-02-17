@@ -156,6 +156,7 @@ function SiteNavigation() {
                                     description: child.metadata.classname !== 'DBNote' ? child.data.description : '',
                                     classname: child.metadata.classname,
                                     isDeleted: child.data.deleted_date ? true : false,
+                                    language: child.data.language || null,
                                 }))}
                                 showViewToggle={true}
                                 storageKey="siteNavigationChildrenViewMode"
