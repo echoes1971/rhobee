@@ -20,4 +20,12 @@ export const app_cfg = {
     enable_github_oauth: getRuntimeConfig('REACT_APP_ENABLE_GITHUB_OAUTH', 'false'),
     enable_telegram_oauth: getRuntimeConfig('REACT_APP_ENABLE_TELEGRAM_OAUTH', 'false'),
     telegram_bot_id: getRuntimeConfig('REACT_APP_TELEGRAM_BOT_ID', ''),
+
+    supported_languages: {
+        it: "Italiano",
+        en: "English",
+        fr: "Français",
+        de: "Deutsch",
+    },
+    default_language: getRuntimeConfig('REACT_APP_DEFAULT_LANGUAGE', 'en'),
 };

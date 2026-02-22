@@ -1,5 +1,6 @@
 import React, { useParams } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { useTranslation } from "react-i18next";
 import AppNavbar from "./Navbar";
 import './App.css';
 
@@ -29,6 +30,27 @@ import { AppFooter } from './Footer';
 import { isAdminUser, isWebmasterUser, isGuestUser, isTokenValid } from './sitenavigation_utils';
 
 function App() {
+  // 
+  const { t, i18n } = useTranslation();
+  console.log("App: current language: " + i18n.language);
+  // IF language IS NOT set in localStorage, get browser language and set it if supported by the app
+  const storedLanguage = localStorage.getItem("lang");
+  console.log("App: stored language: " + storedLanguage);
+  if (!storedLanguage) {
+    const browserLanguage = navigator.language || navigator.userLanguage;
+    const browserLanguageCode = browserLanguage.substring(0, 2); // Get first 2 chars (e.g. "en", "it", etc.)
+    console.log("App: browser language: " + browserLanguageCode);
+    const supportedLanguages = Object.keys(app_cfg.supported_languages);
+    if (supportedLanguages.includes(browserLanguageCode)) {
+      i18n.changeLanguage(browserLanguageCode);
+      localStorage.setItem("lang", browserLanguageCode);
+    } else {
+      // If browser language is not supported, set default language
+      i18n.changeLanguage(app_cfg.default_language);
+      localStorage.setItem("lang", app_cfg.default_language);
+    }
+  }
+
   // const token = localStorage.getItem("token");
   const isValidToken = isTokenValid();
   // console.log("App: token present: " + (token ? "yes" : "no") + ", valid: " + (validToken ? "yes" : "no"));
