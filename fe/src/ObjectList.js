@@ -8,6 +8,7 @@ import {
  import {
   ImageView
  } from './ContentWidgets';
+import { app_cfg } from './app.cfg';
 
 /**
  * ObjectList - Reusable component to display a list of objects
@@ -30,6 +31,7 @@ function ObjectList({
 }) {
   const navigate = useNavigate();
   // const { dark, themeClass } = useContext(ThemeContext);
+  const language = localStorage.getItem("lang") || app_cfg.default_language || 'en';
   const [viewMode, setViewMode] = useState(
     localStorage.getItem(storageKey) || defaultView
   );
@@ -76,6 +78,8 @@ function ObjectList({
       {viewMode === 'list' ? (
         <ListGroup variant={dark ? 'dark' : undefined}>
           {items.map((item) => (
+            // skip if item is DBPage or DBNews and language doesn't match current language
+            (item.classname === 'DBPage' || item.classname === 'DBNews') && item.language && item.language.substring(0, 2) !== language ? null : (
             <ListGroup.Item
               key={item.id}
               action
@@ -108,11 +112,13 @@ function ObjectList({
                 )}
               </div>
             </ListGroup.Item>
-          ))}
+          )))}
         </ListGroup>
       ) : (
         <Row>
           {items.map((item) => (
+            // skip if item is DBPage or DBNews and language doesn't match current language
+            (item.classname === 'DBPage' || item.classname === 'DBNews') && item.language && item.language.substring(0, 2) !== language ? null : (
             <Col key={item.id} xs={12} md={6} lg={4} className="mb-3">
               <Card 
                 className="h-100"
@@ -159,7 +165,7 @@ function ObjectList({
                 </Card.Body>
               </Card>
             </Col>
-          ))}
+          )))}
         </Row>
       )}
     </>
