@@ -30,7 +30,7 @@ import { AppFooter } from './Footer';
 import { isAdminUser, isWebmasterUser, isGuestUser, isTokenValid } from './sitenavigation_utils';
 
 function App() {
-  // 
+  // Initialize i18n and set language based on localStorage or browser settings
   const { t, i18n } = useTranslation();
   console.log("App: current language: " + i18n.language);
   // IF language IS NOT set in localStorage, get browser language and set it if supported by the app
