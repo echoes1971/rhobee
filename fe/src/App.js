@@ -1,10 +1,11 @@
-import React, { useParams } from 'react';
+import React, { useParams, useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useTranslation } from "react-i18next";
 import AppNavbar from "./Navbar";
 import './App.css';
 
 import { app_cfg } from './app.cfg';
+import { initializePlugins, getPluginRoutes } from './plugins';
 
 import DefaultPage from "./DefaultPage";
 import { AdminDashboard } from './admin/Dashboard';
@@ -30,6 +31,8 @@ import { AppFooter } from './Footer';
 import { isAdminUser, isWebmasterUser, isGuestUser, isTokenValid } from './sitenavigation_utils';
 
 function App() {
+  const [pluginRoutes, setPluginRoutes] = useState([]);
+
   // Initialize i18n and set language based on localStorage or browser settings
   const { t, i18n } = useTranslation();
   console.log("App: current language: " + i18n.language);
@@ -57,6 +60,12 @@ function App() {
   const groups = localStorage.getItem("groups") ? JSON.parse(localStorage.getItem("groups")) : [];
   const isAdmin = isAdminUser();
   const isWebmaster = isWebmasterUser();
+
+  // Initialize plugins on app load
+  useEffect(() => {
+    initializePlugins();
+    setPluginRoutes(getPluginRoutes());
+  }, []);
   
   return (
     <div className="d-flex flex-column min-vh-100">
@@ -110,6 +119,11 @@ function App() {
             <Route path="/groups" element={isValidToken && isAdmin ? <Groups /> : <Navigate to="/" />} />
 
             <Route path="/objects"    element={isValidToken ?    <Objects /> : <Navigate to="/" />} />
+
+            {/* **** Plugin Routes **** */}
+            {pluginRoutes.map((route, idx) => (
+              <Route key={`plugin-${idx}`} path={route.path} element={route.element} />
+            ))}
 
             {/* Default -> redirect to / */}
             <Route path="*" element={<Navigate to="/default" />} />
