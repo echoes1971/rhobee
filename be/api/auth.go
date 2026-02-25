@@ -45,7 +45,8 @@ func GetClaimsFromRequest(r *http.Request) (map[string]string, error) {
 		return JWTKey, nil
 	})
 	if err != nil || !token.Valid {
-		log.Print("Deleting token from db due to invalidity.")
+		log.Print("GetClaimsFromRequest: error:", err)
+		log.Print("GetClaimsFromRequest: Deleting token from db due to invalidity.")
 		DeleteToken(repo, tokenString)
 		return nil, http.ErrNoCookie
 	}
@@ -97,7 +98,8 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		// log.Printf("err: %v\n", err)
 		if err != nil || !token.Valid {
 			RespondSimpleError(w, ErrInvalidToken, "Invalid or expired token", http.StatusUnauthorized)
-			log.Print("Deleting token from db due to invalidity.")
+			log.Print("AuthMiddleware: error:", err)
+			log.Print("AuthMiddleware: Deleting token from db due to invalidity.")
 			DeleteToken(repo, tokenString)
 			return
 		}

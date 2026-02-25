@@ -380,7 +380,7 @@ func (dbGroup *DBGroup) NewInstance() DBEntityInterface {
 }
 
 func (dbGroup *DBGroup) beforeInsert(dbr *DBRepository, tx *sql.Tx) error {
-	if dbGroup.GetValue("id") == "" {
+	if !dbGroup.HasValue("id") || dbGroup.GetValue("id") == "" {
 		groupID, _ := uuid16HexGo()
 		dbGroup.SetValue("id", groupID)
 	}

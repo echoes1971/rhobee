@@ -162,6 +162,12 @@ func GetChildrenHandler(w http.ResponseWriter, r *http.Request) {
 		if !child.HasMetadata("classname") {
 			child.SetMetadata("classname", child.GetTypeName())
 		}
+		if child.GetTypeName() == "DBPage" || child.GetMetadata("classname") == "DBPage" || child.GetTypeName() == "DBNews" || child.GetMetadata("classname") == "DBNews" {
+			fullObject := repo.FullObjectById(child.GetValue("id").(string), ignoreDeleted)
+			if fullObject != nil {
+				child.SetValue("language", fullObject.GetValue("language"))
+			}
+		}
 		childrenData = append(childrenData, map[string]interface{}{
 			"data":     child.GetAllValues(),
 			"metadata": child.GetAllMetadata(),

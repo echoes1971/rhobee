@@ -3,10 +3,12 @@ import { ListGroup, Card, Row, Col, Button, ButtonGroup } from 'react-bootstrap'
 import { useNavigate } from 'react-router-dom';
 import {
   classname2bootstrapIcon,
+  languageCode2FlagEmoji,
  } from './sitenavigation_utils';
  import {
   ImageView
  } from './ContentWidgets';
+import { app_cfg } from './app.cfg';
 
 /**
  * ObjectList - Reusable component to display a list of objects
@@ -29,6 +31,7 @@ function ObjectList({
 }) {
   const navigate = useNavigate();
   // const { dark, themeClass } = useContext(ThemeContext);
+  const language = localStorage.getItem("lang") || app_cfg.default_language || 'en';
   const [viewMode, setViewMode] = useState(
     localStorage.getItem(storageKey) || defaultView
   );
@@ -75,6 +78,8 @@ function ObjectList({
       {viewMode === 'list' ? (
         <ListGroup variant={dark ? 'dark' : undefined}>
           {items.map((item) => (
+            // skip if item is DBPage or DBNews and language doesn't match current language
+            (item.classname === 'DBPage' || item.classname === 'DBNews') && item.language && item.language.substring(0, 2) !== language ? null : (
             <ListGroup.Item
               key={item.id}
               action
@@ -107,11 +112,13 @@ function ObjectList({
                 )}
               </div>
             </ListGroup.Item>
-          ))}
+          )))}
         </ListGroup>
       ) : (
         <Row>
           {items.map((item) => (
+            // skip if item is DBPage or DBNews and language doesn't match current language
+            (item.classname === 'DBPage' || item.classname === 'DBNews') && item.language && item.language.substring(0, 2) !== language ? null : (
             <Col key={item.id} xs={12} md={6} lg={4} className="mb-3">
               <Card 
                 className="h-100"
@@ -124,15 +131,22 @@ function ObjectList({
                 >
                   <div className="d-flex justify-content-between align-items-start mb-2">
                     { item.classname !== 'DBFile' && (
+                      <span>
                       <i 
                       className={`bi bi-${classname2bootstrapIcon(item.classname)}`}
                       style={{ fontSize: '2rem' }}
                     ></i>
+                      </span>
                     )}
                     { item.classname === 'DBFile' && (
                       <ImageView id={item.id} title={item.name || 'Image'} thumbnail={false} style={{ fontSize: '2rem', minHeight: '2rem', maxWidth: '100px', maxHeight: '100px', borderRadius: '0.25rem' }} />
                     )}
                     <span className="badge bg-secondary">
+                      {(item.classname === 'DBPage' || item.classname === 'DBNews') && item.language && (
+                        <>
+                        <span className='pe-2'>{languageCode2FlagEmoji(item.language)}</span>
+                        </>
+                      )}
                       {item.classname}
                     </span>
                   </div>
@@ -151,7 +165,7 @@ function ObjectList({
                 </Card.Body>
               </Card>
             </Col>
-          ))}
+          )))}
         </Row>
       )}
     </>

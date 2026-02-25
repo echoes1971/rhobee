@@ -45,6 +45,21 @@ export function classname2bootstrapIcon(classname) {
             return 'question-circle-fill';
     }
 }
+export function languageCode2FlagEmoji(languageCode) {
+    const flags = {
+        it: "🇮🇹",
+        en: "🇬🇧",
+        fr: "🇫🇷",
+        de: "🇩🇪",
+    };
+    if (!languageCode) return '🏳️';
+    const code = languageCode.substring(0, 2);
+    // code has values like "EN", "FR", "DE", etc. We can convert these to regional indicator symbols to display flags  
+    if (flags[code]) {
+        return flags[code];
+    }
+    return '🏳️';
+}
 export function formatDescription(description) {
     if (!description) return '';
     // replace \n with <br/>
