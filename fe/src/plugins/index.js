@@ -22,6 +22,10 @@ export const registerPlugin = (name, plugin) => {
   plugins[name] = plugin;
   console.log(`[Plugin System] Registered: ${name}`);
 
+  // Collect Group ID for plugin activation
+  const groupId = plugin.group_id || null;
+  plugins[name].group_id = groupId; // Store group ID in plugin config for later use
+
   // Collect routes
   if (plugin.routes && Array.isArray(plugin.routes)) {
     pluginRoutes.push(...plugin.routes);
@@ -49,6 +53,8 @@ export const registerPlugin = (name, plugin) => {
 };
 
 export const getPlugin = (name) => plugins[name];
+export const getPluginGroupId = (name) => plugins[name]?.group_id || null;
+export const getAllPluginNames = () => Object.keys(plugins).sort();
 export const getAllPlugins = () => ({ ...plugins });
 export const getPluginRoutes = () => [...pluginRoutes];
 export const getPluginMenuItems = () => [...pluginMenuItems];
