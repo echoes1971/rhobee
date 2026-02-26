@@ -5,6 +5,8 @@ import { ThemeContext } from "./ThemeContext";
 import { useTranslation } from "react-i18next";
 import { app_cfg } from "./app.cfg";
 import axios from "./axios";
+import { hasGroupAccess, isAdminUser, isWebmasterUser, isGuestUser } from "./sitenavigation_utils";
+import { getPlugin, getAllPluginNames } from './plugins';
 
 function AppNavbar() {
   const navigate = useNavigate();
@@ -16,9 +18,8 @@ function AppNavbar() {
   const site_title = app_cfg.site_title;
   const site_root = app_cfg.app_home_object_id;
   const [children, setChildren] = useState([]);
-  const groups = localStorage.getItem("groups") ? JSON.parse(localStorage.getItem("groups")) : [];
-  const isAdmin = groups.includes("-2");
-  const isWebmaster = groups.includes(app_cfg.webmaster_group_id);
+  const isAdmin = isAdminUser();
+  const isWebmaster = isWebmasterUser();
 
   const changeLanguage = (lng) => {
     i18n.changeLanguage(lng);
@@ -117,6 +118,26 @@ function AppNavbar() {
                 {child.data.name}
               </Nav.Link>
             ))}
+
+            {username && getAllPluginNames().map(pluginName => {
+              const plugin = getPlugin(pluginName);
+              console.log(`Checking plugin ${pluginName} with group_id ${plugin.group_id} against user groups.`);
+              if (plugin.menuItems && plugin.menuItems.length > 0 && hasGroupAccess(plugin.group_id)) {
+                console.log(`Adding menu for plugin ${pluginName}`);
+                return (
+                  <NavDropdown title={plugin.name} id={`${pluginName}-nav-dropdown`} align="end" {...(dark ? { menuVariant: 'dark' } : {})}>
+                    {plugin.menuItems && plugin.menuItems.map((item, idx) => (
+                      item.label &&
+                      <NavDropdown.Item as={Link} key={`${pluginName}-menu-${idx}`} to={item.path}>
+                        {item.icon && <i className={`${item.icon} me-2`}></i>}
+                        {item.label}
+                      </NavDropdown.Item>
+                      || <NavDropdown.Divider key={`${pluginName}-divider-${idx}`} />
+                    ))}
+                  </NavDropdown>
+                );
+              }
+            })}
 
             {username && isWebmaster ? (
               <NavDropdown title="Webmaster 🛠️" id="webmaster-nav-dropdown" align="end" {...(dark ? { menuVariant: 'dark' } : {})}>

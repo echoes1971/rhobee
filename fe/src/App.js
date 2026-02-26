@@ -5,7 +5,7 @@ import AppNavbar from "./Navbar";
 import './App.css';
 
 import { app_cfg } from './app.cfg';
-import { initializePlugins, getPluginRoutes } from './plugins';
+import { initializePlugins, getAllPluginNames, getPlugin } from './plugins';
 
 import DefaultPage from "./DefaultPage";
 import { AdminDashboard } from './admin/Dashboard';
@@ -28,7 +28,7 @@ import SiteNavigation from './SiteNavigation';
 import ContentEdit from './ContentEdit';
 import Search from './Search';
 import { AppFooter } from './Footer';
-import { isAdminUser, isWebmasterUser, isGuestUser, isTokenValid } from './sitenavigation_utils';
+import { hasGroupAccess, isAdminUser, isWebmasterUser, isGuestUser, isTokenValid } from './sitenavigation_utils';
 
 function App() {
   const [pluginRoutes, setPluginRoutes] = useState([]);
@@ -64,7 +64,17 @@ function App() {
   // Initialize plugins on app load
   useEffect(() => {
     initializePlugins();
-    setPluginRoutes(getPluginRoutes());
+    getAllPluginNames().forEach(pluginName => {
+      const plugin = getPlugin(pluginName);
+      console.log(`App loaded with plugin ${pluginName} (group_id: ${plugin.group_id}). User groups: ${groups}`);
+      // IF plugin has routes and user has access, add them to the app's pluginRoutes state
+      if (plugin.routes && plugin.routes.length > 0 && hasGroupAccess(plugin.group_id)) {
+        console.log(`Adding routes for plugin ${pluginName}`);
+        setPluginRoutes(prevRoutes => [...prevRoutes, ...plugin.routes]);
+      } else {
+        console.log(`Plugin ${pluginName} has no routes or user does not have access (group_id: ${plugin.group_id})`);
+      }
+    });
   }, []);
   
   return (

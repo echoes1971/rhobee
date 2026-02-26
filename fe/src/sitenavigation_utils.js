@@ -112,3 +112,10 @@ export function isGuestUser() {
     const groupIDs = localStorage.getItem("groups") ? JSON.parse(localStorage.getItem("groups")) : [];
     return !token || token === "" || (groupIDs.length <= 2 && groupIDs.includes("-4"));
 }
+export function hasGroupAccess(requiredGroupId) {
+    if (requiredGroupId === null || requiredGroupId === undefined) {
+        return true; // No group restriction
+    }
+    const groups = localStorage.getItem("groups") ? JSON.parse(localStorage.getItem("groups")) : [];
+    return groups.includes(String(requiredGroupId));
+}
