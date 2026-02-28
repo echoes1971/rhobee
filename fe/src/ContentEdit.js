@@ -16,6 +16,7 @@ import { PersonEdit } from './dbobjects/DBPeople';
 import { ThemeContext } from './ThemeContext';
 import { classname2bootstrapIcon } from './sitenavigation_utils';
 import { UserLinkView } from './ContentWidgets';
+import { getAllPluginEditComponents } from './plugins';
 
 // Main ContentEdit component
 function ContentEdit() {
@@ -29,6 +30,20 @@ function ContentEdit() {
     const [error, setError] = useState(null);
     const [data, setData] = useState(null);
     const [metadata, setMetadata] = useState(null);
+
+    const editComponents = {
+        'DBNote': NoteEdit,
+        'DBNews': PageEdit,
+        'DBPage': PageEdit,
+        'DBPerson': PersonEdit,
+        'DBCompany': CompanyEdit,
+        'DBEvent': EventEdit,
+        'DBFile': FileEdit,
+        'DBFolder': FolderEdit,
+        'DBLink': LinkEdit,
+    };
+    // Merge plugin edit components (these can override defaults if classname matches)
+    Object.assign(editComponents, getAllPluginEditComponents());
 
     useEffect(() => {
         const loadObject = async () => {
@@ -155,37 +170,43 @@ function ContentEdit() {
     const classname = metadata.classname;
 
     // Render appropriate edit form based on classname
-    let EditComponent;
-    switch (classname) {
-        case 'DBNote':
-            EditComponent = NoteEdit;
-            break;
-        case 'DBNews':
-        case 'DBPage':
-            EditComponent = PageEdit;
-            break;
-        case 'DBPerson':
-            EditComponent = PersonEdit;
-            break;
-        case 'DBCompany':
-            EditComponent = CompanyEdit;
-            break;
-        case 'DBEvent':
-            EditComponent = EventEdit;
-            break;
-        case 'DBFile':
-            EditComponent = FileEdit;
-            break;
-        case 'DBFolder':
-            EditComponent = FolderEdit;
-            break;
-        case 'DBLink':
-            EditComponent = LinkEdit;
-            break;
-        default:
-            EditComponent = ObjectEdit;
-            break;
+    let EditComponent = null;
+    if (editComponents[classname]) {
+      EditComponent = editComponents[classname];
+    } else {
+       EditComponent = ObjectEdit;
     }
+
+    // switch (classname) {
+    //     case 'DBNote':
+    //         EditComponent = NoteEdit;
+    //         break;
+    //     case 'DBNews':
+    //     case 'DBPage':
+    //         EditComponent = PageEdit;
+    //         break;
+    //     case 'DBPerson':
+    //         EditComponent = PersonEdit;
+    //         break;
+    //     case 'DBCompany':
+    //         EditComponent = CompanyEdit;
+    //         break;
+    //     case 'DBEvent':
+    //         EditComponent = EventEdit;
+    //         break;
+    //     case 'DBFile':
+    //         EditComponent = FileEdit;
+    //         break;
+    //     case 'DBFolder':
+    //         EditComponent = FolderEdit;
+    //         break;
+    //     case 'DBLink':
+    //         EditComponent = LinkEdit;
+    //         break;
+    //     default:
+    //         EditComponent = ObjectEdit;
+    //         break;
+    // }
 
     return (
         <Container className="mt-4">

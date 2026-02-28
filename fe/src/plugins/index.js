@@ -8,6 +8,8 @@ import i18n from 'i18next';
 const plugins = {};
 const pluginRoutes = [];
 const pluginMenuItems = [];
+const pluginViewComponents = {};
+const pluginEditComponents = {};
 
 /**
  * Register a plugin
@@ -26,9 +28,27 @@ export const registerPlugin = (name, plugin) => {
   const groupId = plugin.group_id || null;
   plugins[name].group_id = groupId; // Store group ID in plugin config for later use
 
-  // Collect routes
+  // Collect routes (annotate with plugin name/group to allow filtering later)
   if (plugin.routes && Array.isArray(plugin.routes)) {
-    pluginRoutes.push(...plugin.routes);
+    plugin.routes.forEach(r => {
+      // keep original object but add metadata
+      const annotated = { ...r };
+      if (groupId !== null) annotated._groupId = groupId;
+      annotated._pluginName = name;
+      pluginRoutes.push(annotated);
+    });
+  }
+
+  // Collect view/edit components
+  if (plugin.view_components && typeof plugin.view_components === 'object') {
+    Object.entries(plugin.view_components).forEach(([classname, Component]) => {
+      pluginViewComponents[classname] = Component;
+    });
+  }
+  if (plugin.edit_components && typeof plugin.edit_components === 'object') {
+    Object.entries(plugin.edit_components).forEach(([classname, Component]) => {
+      pluginEditComponents[classname] = Component;
+    });
   }
 
   // Collect menu items
@@ -36,12 +56,26 @@ export const registerPlugin = (name, plugin) => {
     pluginMenuItems.push(...plugin.menuItems);
   }
 
-  // Register translations
+  // Register translations.  We keep a dedicated namespace (plugin-<name>) and
+  // also merge the same resources into the default namespace under a top-level
+  // key so that existing code can continue using dot‑separated labels like
+  // "plugin-projects.DBProject".
   if (plugin.translations && typeof plugin.translations === 'object') {
     Object.entries(plugin.translations).forEach(([lang, resources]) => {
       if (resources && typeof resources === 'object') {
-        i18n.addResourceBundle(lang, `plugin-${name}`, resources, true, true);
-        console.log(`[Plugin System] Added translations for ${lang}: plugin-${name}`);
+        const ns = `plugin-${name}`;
+        // dedicated namespace
+        i18n.addResourceBundle(lang, ns, resources, true, true);
+        // also add as a nested object in the default namespace for backward
+        // compatibility with t('plugin-projects.DBProject') style keys
+        const defaultBundle = i18n.getResourceBundle(lang, i18n.options.defaultNS) || {};
+        if (!defaultBundle[ns]) {
+          defaultBundle[ns] = {};
+        }
+        Object.assign(defaultBundle[ns], resources);
+        i18n.addResourceBundle(lang, i18n.options.defaultNS, defaultBundle, true, true);
+
+        console.log(`[Plugin System] Added translations for ${lang}: ${ns}`);
       }
     });
   }
@@ -57,6 +91,8 @@ export const getPluginGroupId = (name) => plugins[name]?.group_id || null;
 export const getAllPluginNames = () => Object.keys(plugins).sort();
 export const getAllPlugins = () => ({ ...plugins });
 export const getPluginRoutes = () => [...pluginRoutes];
+export const getAllPluginViewComponents = () => ({ ...pluginViewComponents });
+export const getAllPluginEditComponents = () => ({ ...pluginEditComponents });
 export const getPluginMenuItems = () => [...pluginMenuItems];
 
 /**

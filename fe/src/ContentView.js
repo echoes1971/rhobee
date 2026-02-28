@@ -12,6 +12,7 @@ import { ObjectView } from './dbobjects/DBObject';
 import { PageView } from './dbobjects/DBPage';
 import { PersonView } from './dbobjects/DBPeople';
 import axiosInstance from './axios';
+import { getAllPluginViewComponents } from './plugins';
 
 
 
@@ -19,6 +20,20 @@ import axiosInstance from './axios';
 // Main ContentView component - switches based on classname
 export function ContentView({ data, metadata, dark, onFilesUploaded }) {
     const [objectData, setObjectData] = useState(null);
+
+    const viewComponents = {
+        'DBCompany': CompanyView,
+        'DBEvent': EventView,
+        'DBFile': FileView,
+        'DBFolder': FolderView,
+        'DBLink': LinkView,
+        'DBNote': NoteView,
+        'DBNews': PageView,
+        'DBPage': PageView,
+        'DBPerson': PersonView,
+    }
+    // Merge plugin view components (these can override defaults if classname matches)
+    Object.assign(viewComponents, getAllPluginViewComponents());
     
     // const token = localStorage.getItem("token");
     // const username = localStorage.getItem("username");
@@ -77,29 +92,36 @@ export function ContentView({ data, metadata, dark, onFilesUploaded }) {
 
     const classname = metadata.classname;
 
-    switch (classname) {
-        case 'DBCompany':
-            return <CompanyView data={data} metadata={metadata} objectData={objectData} dark={dark} />;
-        case 'DBPerson':
-            return <PersonView data={data} metadata={metadata} objectData={objectData} dark={dark} />;
-        // // CMS
-        case 'DBEvent':
-            return <EventView data={data} metadata={metadata} objectData={objectData} dark={dark} />;
-        case 'DBFile':
-            return <FileView data={data} metadata={metadata} dark={dark} />;
-        case 'DBFolder':
-            return <FolderView data={data} metadata={metadata} dark={dark} onFilesUploaded={onFilesUploaded} />;
-        case 'DBLink':
-            return <LinkView data={data} metadata={metadata} objectData={objectData} dark={dark} />;
-        case 'DBNote':
-            return <NoteView data={data} metadata={metadata} objectData={objectData} dark={dark} />;
-        case 'DBNews':
-        //     return <NewsView data={data} metadata={metadata} dark={dark} />;
-        case 'DBPage':
-            return <PageView data={data} metadata={metadata} dark={dark} />;
-        default:
-            return <ObjectView data={data} metadata={metadata} objectData={objectData} dark={dark} />;
+    let ComponentView = null;
+    if (viewComponents[classname]) {
+      ComponentView = viewComponents[classname];
+    } else {
+       ComponentView = ObjectView;
     }
-}
 
-// export default ContentView;
+    return <ComponentView data={data} metadata={metadata} objectData={objectData} dark={dark} onFilesUploaded={onFilesUploaded} />;
+
+    // switch (classname) {
+    //     case 'DBCompany':
+    //         return <CompanyView data={data} metadata={metadata} objectData={objectData} dark={dark} />;
+    //     case 'DBPerson':
+    //         return <PersonView data={data} metadata={metadata} objectData={objectData} dark={dark} />;
+    //     // // CMS
+    //     case 'DBEvent':
+    //         return <EventView data={data} metadata={metadata} objectData={objectData} dark={dark} />;
+    //     case 'DBFile':
+    //         return <FileView data={data} metadata={metadata} dark={dark} />;
+    //     case 'DBFolder':
+    //         return <FolderView data={data} metadata={metadata} dark={dark} onFilesUploaded={onFilesUploaded} />;
+    //     case 'DBLink':
+    //         return <LinkView data={data} metadata={metadata} objectData={objectData} dark={dark} />;
+    //     case 'DBNote':
+    //         return <NoteView data={data} metadata={metadata} objectData={objectData} dark={dark} />;
+    //     case 'DBNews':
+    //     //     return <NewsView data={data} metadata={metadata} dark={dark} />;
+    //     case 'DBPage':
+    //         return <PageView data={data} metadata={metadata} dark={dark} />;
+    //     default:
+    //         return <ObjectView data={data} metadata={metadata} objectData={objectData} dark={dark} />;
+    // }
+}
