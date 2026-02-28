@@ -1,11 +1,11 @@
-import React, { useParams, useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useTranslation } from "react-i18next";
 import AppNavbar from "./Navbar";
 import './App.css';
 
 import { app_cfg } from './app.cfg';
-import { initializePlugins, getAllPluginNames, getPlugin } from './plugins';
+import { initializePlugins, getPluginRoutes } from './plugins';
 
 import DefaultPage from "./DefaultPage";
 import { AdminDashboard } from './admin/Dashboard';
@@ -31,7 +31,20 @@ import { AppFooter } from './Footer';
 import { hasGroupAccess, isAdminUser, isWebmasterUser, isGuestUser, isTokenValid } from './sitenavigation_utils';
 
 function App() {
-  const [pluginRoutes, setPluginRoutes] = useState([]);
+  // run plugin registration once when module is evaluated (above the component),
+  // but we also ensure it's invoked here before any route logic to cover hot reload.
+  initializePlugins();
+
+  // compute filtered pluginRoutes based on user groups
+  const groups = localStorage.getItem("groups") ? JSON.parse(localStorage.getItem("groups")) : [];
+  let pluginRoutes = getPluginRoutes();
+  // if plugin routes include _groupId metadata, filter by access
+  pluginRoutes = pluginRoutes.filter(r => {
+    if (r._groupId != null) {
+      return hasGroupAccess(r._groupId, groups);
+    }
+    return true;
+  });
 
   // Initialize i18n and set language based on localStorage or browser settings
   const { t, i18n } = useTranslation();
@@ -57,24 +70,15 @@ function App() {
   // const token = localStorage.getItem("token");
   const isValidToken = isTokenValid();
   // console.log("App: token present: " + (token ? "yes" : "no") + ", valid: " + (validToken ? "yes" : "no"));
-  const groups = localStorage.getItem("groups") ? JSON.parse(localStorage.getItem("groups")) : [];
   const isAdmin = isAdminUser();
   const isWebmaster = isWebmasterUser();
 
-  // Initialize plugins on app load
+  // if any onAppLoad hooks are needed, iterate here
   useEffect(() => {
-    initializePlugins();
-    getAllPluginNames().forEach(pluginName => {
-      const plugin = getPlugin(pluginName);
-      console.log(`App loaded with plugin ${pluginName} (group_id: ${plugin.group_id}). User groups: ${groups}`);
-      // IF plugin has routes and user has access, add them to the app's pluginRoutes state
-      if (plugin.routes && plugin.routes.length > 0 && hasGroupAccess(plugin.group_id)) {
-        console.log(`Adding routes for plugin ${pluginName}`);
-        setPluginRoutes(prevRoutes => [...prevRoutes, ...plugin.routes]);
-      } else {
-        console.log(`Plugin ${pluginName} has no routes or user does not have access (group_id: ${plugin.group_id})`);
-      }
-    });
+    // e.g. run plugin hooks: getAllPluginNames().forEach(name => {
+    //   const plugin = getPlugin(name);
+    //   plugin.hooks?.onAppLoad && plugin.hooks.onAppLoad();
+    // });
   }, []);
   
   return (

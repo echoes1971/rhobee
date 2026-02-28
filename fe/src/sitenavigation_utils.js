@@ -13,37 +13,26 @@ export function formatObjectId(objId) {
     return objId;
 }
 export function classname2bootstrapIcon(classname) {
-    switch (classname) {
-        case 'DBCompany':
-            return 'building';
-        case 'DBEvent':
-            return 'calendar-event';
-        case 'DBFile':
-            return 'file-earmark-fill';
-        case 'DBFolder':
-            return 'folder-fill';
-        // case 'DBImage':
-        //     return 'image-fill';
-        case 'DBLink':
-            return 'link-45deg';
-        case 'DBNews':
-            return 'newspaper-fill';
-        case 'DBNote':
-            return 'file-text-fill';
-        case 'DBObject':
-            return 'box-fill';
-        case 'DBPage':
-            return 'file-richtext-fill';
-        case 'DBPerson':
-            return 'person-fill';
+    const mapping = {
+        'DBCompany': 'building',
+        'DBEvent': 'calendar-event',
+        'DBFile': 'file-earmark-fill',
+        'DBFolder': 'folder-fill',
+        // 'DBImage': 'image-fill',
+        'DBLink': 'link-45deg',
+        'DBNews': 'newspaper-fill',
+        'DBNote': 'file-text-fill',
+        'DBObject': 'box-fill',
+        'DBPage': 'file-richtext-fill',
+        'DBPerson': 'person-fill',
 
-        case 'DBUser':
-            return 'person-fill';
-        case 'DBGroup':
-            return 'people-fill';
-        default:
-            return 'question-circle-fill';
+        'DBUser': 'person-fill',
+        'DBGroup': 'people-fill',
+    };
+    if (mapping[classname]) {
+        return mapping[classname];
     }
+    return 'question-circle-fill';
 }
 export function languageCode2FlagEmoji(languageCode) {
     const flags = {

@@ -356,7 +356,18 @@ export function CheckWritePermission({objectData}) {
          || permissions[7] === 'w';
 }
 
-export function ObjectSearch({searchClassname, searchColumns, resultsColumns, orderBy, dark, themeClass}) {
+/**
+ * 
+ * @param searchTitleLabel Label for the search form title, used as key for translation (e.g. "dbobjects.DBProject"). If not provided, it will default to "dbobjects."+searchClassname
+ * @param searchClassname Classname to search (e.g. "DBProject")
+ * @param searchColumns Array of columns to include in the search form, with format: { name: "Label", attribute: "attribute_name", type: "string|date|datetime|objectlink" }
+ * @param resultsColumns Array of columns to include in the results table, with format: { name: "Label", attribute: "attribute_name", type: "string|date|datetime|objectlink" }
+ * @param orderBy Default order by column (e.g. "name")
+ * @param dark Whether to use dark theme
+ * @param themeClass Additional CSS class for theming (e.g. "bg-light bg-opacity-50")
+ * @returns 
+ */
+export function ObjectSearch({searchTitleLabel,searchClassname, searchColumns, resultsColumns, orderBy, dark, themeClass}) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchFormData, setSearchFormData] = useState({
@@ -508,7 +519,7 @@ export function ObjectSearch({searchClassname, searchColumns, resultsColumns, or
 
   return (
     <div className={`container mt-3 ${themeClass}`}>
-      <h2 className={dark ? "text-light" : "text-dark"}>{t("dbobjects."+searchClassname)}</h2>
+      <h2 className={dark ? "text-light" : "text-dark"}>{t(searchTitleLabel ||"dbobjects."+searchClassname)}</h2>
 
       {/* Search form */}
       <Form id="searchForm" onSubmit={handleSearch}>
