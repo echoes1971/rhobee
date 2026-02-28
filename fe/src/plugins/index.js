@@ -10,6 +10,7 @@ const pluginRoutes = [];
 const pluginMenuItems = [];
 const pluginViewComponents = {};
 const pluginEditComponents = {};
+const pluginClassnameToIcon = {};
 
 /**
  * Register a plugin
@@ -48,6 +49,13 @@ export const registerPlugin = (name, plugin) => {
   if (plugin.edit_components && typeof plugin.edit_components === 'object') {
     Object.entries(plugin.edit_components).forEach(([classname, Component]) => {
       pluginEditComponents[classname] = Component;
+    });
+  }
+
+  // Collect classname to icon mappings
+  if (plugin.classname2bootstrapIcon && typeof plugin.classname2bootstrapIcon === 'object') {
+    Object.entries(plugin.classname2bootstrapIcon).forEach(([classname, icon]) => {
+      pluginClassnameToIcon[classname] = icon;
     });
   }
 
@@ -93,6 +101,7 @@ export const getAllPlugins = () => ({ ...plugins });
 export const getPluginRoutes = () => [...pluginRoutes];
 export const getAllPluginViewComponents = () => ({ ...pluginViewComponents });
 export const getAllPluginEditComponents = () => ({ ...pluginEditComponents });
+export const getPluginClassnameToIcon = () => ({ ...pluginClassnameToIcon });
 export const getPluginMenuItems = () => [...pluginMenuItems];
 
 /**

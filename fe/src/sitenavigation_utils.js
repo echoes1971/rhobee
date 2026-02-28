@@ -3,6 +3,7 @@ import { Spinner } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import axiosInstance from './axios';
 import { app_cfg } from './app.cfg';
+import { getPluginClassnameToIcon } from './plugins';
 
 // Format object ID: if 16 chars, format as xxxx-xxxxxxxx-xxxx
 export function formatObjectId(objId) {
@@ -29,6 +30,9 @@ export function classname2bootstrapIcon(classname) {
         'DBUser': 'person-fill',
         'DBGroup': 'people-fill',
     };
+    // Merge plugin classname to icon mappings (these can override defaults if classname matches)
+    const pluginMapping = getPluginClassnameToIcon();
+    Object.assign(mapping, pluginMapping);
     if (mapping[classname]) {
         return mapping[classname];
     }
