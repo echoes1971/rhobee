@@ -4,7 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { 
     formateDateTimeString, 
-    formatDescription, 
+    formatDescription,
+    classname2label,
     classname2bootstrapIcon,
 } from '../sitenavigation_utils';
 import {
@@ -46,7 +47,7 @@ export function ObjectHeaderView({ data, metadata, objectData, dark }) {
             </div>
             <div className="row">
                 <div className="col-md-2 col-4 text-end">
-                    <small style={{ opacity: 0.7 }}><i className={`bi bi-${classname2bootstrapIcon(metadata.classname)}`} title={metadata.classname}></i> {t('dbobjects.' + metadata.classname)}</small>
+                    <small style={{ opacity: 0.7 }}><i className={`bi bi-${classname2bootstrapIcon(metadata.classname)}`} title={metadata.classname}></i> {t(classname2label(metadata.classname) || 'dbobjects.' + metadata.classname)}</small>
                 </div>
                 <div className="col-md-3 col-8">
                     <small style={{ opacity: 0.7 }}>{t('dbobjects.id')}: {data.id}</small>
@@ -358,7 +359,6 @@ export function CheckWritePermission({objectData}) {
 
 /**
  * 
- * @param searchTitleLabel Label for the search form title, used as key for translation (e.g. "dbobjects.DBProject"). If not provided, it will default to "dbobjects."+searchClassname
  * @param searchClassname Classname to search (e.g. "DBProject")
  * @param searchColumns Array of columns to include in the search form, with format: { name: "Label", attribute: "attribute_name", type: "string|date|datetime|objectlink" }
  * @param resultsColumns Array of columns to include in the results table, with format: { name: "Label", attribute: "attribute_name", type: "string|date|datetime|objectlink" }
@@ -367,7 +367,7 @@ export function CheckWritePermission({objectData}) {
  * @param themeClass Additional CSS class for theming (e.g. "bg-light bg-opacity-50")
  * @returns 
  */
-export function ObjectSearch({searchTitleLabel,searchClassname, searchColumns, resultsColumns, orderBy, dark, themeClass}) {
+export function ObjectSearch({searchClassname, searchColumns, resultsColumns, orderBy, dark, themeClass}) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchFormData, setSearchFormData] = useState({
@@ -519,7 +519,7 @@ export function ObjectSearch({searchTitleLabel,searchClassname, searchColumns, r
 
   return (
     <div className={`container mt-3 ${themeClass}`}>
-      <h2 className={dark ? "text-light" : "text-dark"}>{t(searchTitleLabel ||"dbobjects."+searchClassname)}</h2>
+      <h2 className={dark ? "text-light" : "text-dark"}>{t(classname2label(searchClassname) ||"dbobjects."+searchClassname)}</h2>
 
       {/* Search form */}
       <Form id="searchForm" onSubmit={handleSearch}>

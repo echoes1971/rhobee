@@ -3,7 +3,7 @@ import { Spinner } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import axiosInstance from './axios';
 import { app_cfg } from './app.cfg';
-import { getPluginClassnameToIcon } from './plugins';
+import { getPlugin, getAllPluginNames, getPluginClassnameToIcon } from './plugins';
 
 // Format object ID: if 16 chars, format as xxxx-xxxxxxxx-xxxx
 export function formatObjectId(objId) {
@@ -37,6 +37,22 @@ export function classname2bootstrapIcon(classname) {
         return mapping[classname];
     }
     return 'question-circle-fill';
+}
+/**
+ * 
+ * @param {string} classname 
+ * @returns IF there's a translation for this classname in any plugin, return "plugin-PLUGINNAME.CLASSNAME" for translation lookup, otherwise return null
+ */
+export function classname2label(classname) {
+    const pluginNames = getAllPluginNames();
+    for (const pluginName of pluginNames) {
+        const plugin = getPlugin(pluginName);
+        if (!plugin.translations || typeof plugin.translations !== 'object' || !plugin.translations.en) continue;
+        if (plugin.translations.en[classname]) {
+            return `plugin-${pluginName}.${classname}`;
+        }
+    }
+    return null;
 }
 export function languageCode2FlagEmoji(languageCode) {
     const flags = {

@@ -14,7 +14,7 @@ import { ObjectEdit, ObjectFooterView } from './dbobjects/DBObject';
 import { PageEdit } from './dbobjects/DBPage';
 import { PersonEdit } from './dbobjects/DBPeople';
 import { ThemeContext } from './ThemeContext';
-import { classname2bootstrapIcon } from './sitenavigation_utils';
+import { classname2label, classname2bootstrapIcon } from './sitenavigation_utils';
 import { UserLinkView } from './ContentWidgets';
 import { getAllPluginEditComponents } from './plugins';
 
@@ -218,7 +218,7 @@ function ContentEdit() {
                     </h2>
                     <div className="row">
                         <div className="col-md-1 col-4 text-end">
-                            <small style={{ opacity: 0.7 }}><i className={`bi bi-${classname2bootstrapIcon(metadata.classname)}`} title={metadata.classname}></i> {t('dbobjects.' + metadata.classname)}</small>
+                            <small style={{ opacity: 0.7 }}><i className={`bi bi-${classname2bootstrapIcon(metadata.classname)}`} title={metadata.classname}></i> {t(classname2label(metadata.classname) || 'dbobjects.' + metadata.classname)}</small>
                         </div>
                         <div className="col-md-3 col-8">
                             <small style={{ opacity: 0.7 }}>{data.id}</small>
