@@ -277,6 +277,6 @@ export function Timetracks() {
     { name: t("dbobjects.deleted") || "Deleted", attribute: "deleted_date", type: "dateSelector", hideOnSmall: true },
   ]
   return (
-    <ObjectSearch searchTitleLabel="plugin-projects.DBTimeTrack" searchClassname={searchClassname} searchColumns={searchColumns} resultsColumns={resultsColumns} dark={dark} themeClass={themeClass} />
+    <ObjectSearch searchClassname={searchClassname} searchColumns={searchColumns} resultsColumns={resultsColumns} dark={dark} themeClass={themeClass} />
     );
 }
