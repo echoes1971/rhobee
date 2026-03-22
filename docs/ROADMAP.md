@@ -8,44 +8,18 @@ References:
   See the php subfolder.
 - db/00_initial.sql
 
+
 ---
 
-## 🎯 MVP - Priority Features
+## ✅ Completed Features
 
 - [x] ObjectList: as Admin, I have a filter to see all deleted objects and massively select the delete
 - [x] manifest.json to make it recognisable as a PWA
-
-
-### Search & Discovery (NEXT - MVP BLOCKER)
-- [ ] Advanced filters
-  - [x] deleted objects: only for admins and webmasters
-  - [ ] Date range filter // Roberto: a generic range can be implemented, passing [_from_<name attribute>, _to_<name attribute>] in the metadata. These will be handled by SearchObjectsHandler that passes them to DBRepository.Search in the metadata of the search object
-  - [ ] File type filter
-  - [x] Author filter
-  - [x] Language filter
-- [ ] Search results highlighting
-- [ ] Search in name, description, and HTML content // ⚠️ all objects have name and description, only page and news have html
-- [x] Pagination for search results
 
 ### Documentation
 - [x] Easy steps to get the CMS up and running on your machine
 - [x] Project description: brief description of the project, some how-to, feature list, history?
 - [x] License: gpl? lgpl? apache 2.0
-
-
-### OAuth Integration (HIGH PRIORITY - if not complicated)
-- [x] Google OAuth login
-- [x] OAuth user creation with:  // Roberto: YES - create minimal user if not exists
-  - [x] default permissions rwx------
-  - [x] link to Guest group ID "-4" by default (minimal implementation)
-  - [x] Frontend: a guest MUST NOT be allowed to modify permissions (we do not want him/her to public illegal content, do we?)
-- [x] Link existing account with OAuth (optional later): done, if email match the user will be logged in automatically
-- [x] GitHub OAuth login (next after Google)
-- [ ] Facebook OAuth login (optional)
-
----
-
-## ✅ Completed Features
 
 ### CMS Core
 - [x] DBFolder with index pages (multi-language)
@@ -58,11 +32,6 @@ References:
 - [x] File embedding system with JWT tokens
 - [x] FileSelector with write permission filtering
 - [x] Multi-language support (EN, IT, DE, FR)
-
-### Search & Discovery
-- [x] Full-text search in HTML content // 👤 Roberto: A search box in the NavBar that leads to a /nav/search with results and filters
-  - [x] Anonymous user search (public content only)
-  - [x] Logged user search (public + accessible content)
 
 ### Rich Text Editor Improvements
 - [x] Pre condition: make it a separate reusable component
@@ -97,10 +66,45 @@ References:
 ### Security & Performance
 - [x] Password encryption with salt (already in plan, not implemented) // 👤 Roberto: it's done
 
+### OAuth Integration (HIGH PRIORITY - if not complicated)
+- [x] Google OAuth login
+- [x] OAuth user creation with:  // Roberto: YES - create minimal user if not exists
+  - [x] default permissions rwx------
+  - [x] link to Guest group ID "-4" by default (minimal implementation)
+  - [x] Frontend: a guest MUST NOT be allowed to modify permissions (we do not want him/her to public illegal content, do we?)
+- [x] Link existing account with OAuth (optional later): done, if email match the user will be logged in automatically
+- [x] GitHub OAuth login (next after Google)
+- [ ] ~~Facebook OAuth login (optional)~~
 
 ---
 
 ## 📋 TODO - Organized by Priority
+
+### CMS Core
+- [ ] DBFolder children sort
+  - [ ] BE: add a field to manage "order by" of the children; the order by is performed on common DBObject fields
+  - [ ] UI: edit the field, show the sorted children
+
+### Project Management plugin
+- [x] DBProject
+- [ ] DBTimetrack
+  - [ ] UI
+- [ ] DBTodo
+  - [ ] UI
+
+### Search & Discovery
+- [x] Full-text search in HTML content // 👤 Roberto: A search box in the NavBar that leads to a /nav/search with results and filters
+  - [x] Anonymous user search (public content only)
+  - [x] Logged user search (public + accessible content)
+- [ ] Advanced filters
+  - [x] deleted objects: only for admins and webmasters
+  - [x] Date range filter
+  - [ ] File type filter
+  - [x] Author filter
+  - [x] Language filter
+- [ ] Search results highlighting
+- [ ] Search in name, description, and HTML content // ⚠️ all objects have name and description, only page and news have html
+- [x] Pagination for search results
 
 ### Security & Performance
 - [ ] Token auto-refresh (file preview tokens expire after 15 min)
@@ -132,9 +136,6 @@ References:
 - [ ] Content templates
 - [ ] Ollama integration? For assisted document redacting or automatic translation? llama3.2 seems light and efficient enough. Open to suggestions
 
-### OAuth Integration (HIGH PRIORITY - if not complicated)
-
-
 ### Rich Text Editor Improvements
 - [ ] Custom CSS classes selector // 👤 Roberto: YES ! Let's customize the site colors at first (should be easy with bootstrap primary etc.). I'd like to have selectable skins for the public site, but that looks too much for now?
 - [ ] Markdown alternative editor // ❓ where do we store the markdown, in the html field or another? if it's the same field, how do we distinguish the 2 in View and Edit?
@@ -146,15 +147,14 @@ References:
 ### File Management
 - [x] File upload progress indicator
 - [x] Batch file upload (multiple files at once) // 👤 Roberto: yes
-- [ ] Image resizing/thumbnails on upload (backend exists, integrate in UI) // 👤 Roberto: we have already thumbnails
+- [x] Image resizing/thumbnails on upload (backend exists, integrate in UI)
 - [ ] File storage optimization (nested directory structure: `files/XX/YY/ZZZZ...`) // 👤 Roberto: now the structure is <father_id>/<file>
 - [ ] Quota management per user/group
 - [ ] File versioning // 👤 Roberto: how?
-- [ ] Preview for more file types (PDF viewer, video player) // 👤 Roberto: yes! how?
-+ [ ] Preview for more file types (PDF viewer, video player) // DESIGN: use a video thumbnail frame for video; for PDF show generic icon to avoid exposing content
-+ - For video: extract a frame server-side when uploading (thumbnail) and display it as preview.
-+ - For PDF: show a PDF icon or metadata (no content rendering) to avoid exposing sensitive content.
-+ [ ] Image editing tools (crop, rotate, filters) // 👤 Roberto: if easy. "nice to have"
+- [ ] Preview for more file types (PDF viewer, video player) // DESIGN: use a video thumbnail frame for video; for PDF show generic icon to avoid exposing content
+  - For video: extract a frame server-side when uploading (thumbnail) and display it as preview.
+  - For PDF: show a PDF icon or metadata (no content rendering) to avoid exposing sensitive content.
+- [ ] Image editing tools (crop, rotate, filters) // 👤 Roberto: if easy. "nice to have"
 
 ### User Experience
 - [x] Mobile responsive improvements: ongoing
@@ -166,12 +166,13 @@ References:
 - [ ] Undo/Redo system for editors
 - [ ] Auto-save drafts (local storage) // 👤 Roberto: why not :)
 - [ ] Copy/paste improvements in editor
-- [ ] Drag & drop file insertion in editor // 👤 Roberto: yes
+- [x] Drag & drop file insertion in editor
 
 ### Administration
 - [ ] Admin dashboard with statistics
-  - [ ] User activity // 👤 Roberto: how?
-  - [ ] Content statistics
+  - [x] User activity // 👤 Roberto: how?
+  - [x] Content statistics
+  - [ ] Link from charts to research. Example: created 10 pages last week -> search page with correct filters
   - [ ] Storage usage // 👤 Roberto: should be easy
   - [ ] Popular pages // 👤 Roberto: needs db support
 - [ ] Audit log (comprehensive who/what/when tracking) // 👤 Roberto: not easy
@@ -189,12 +190,12 @@ References:
   - [ ] Non-logged user can register
   - [ ] Email confirmation to activate account
   - [ ] Add user_enabled field to table
-  - [ ] New users start with private group only (rwx------)
+  - [x] New users start with private group only (rwx------)
 
 ### Backend
 - [x] Add Swagger/OpenAPI documentation // 👤 Roberto: if easy, I'd say to put it in place ASAP
 - [x] Database transactionality for writes
-- [ ] Transaction isolation level configuration // 👤 Roberto: we have it, haven't we?
+- [x] Transaction isolation level configuration
 - [ ] Error handling improvements
   - [ ] Structured logging
   - [ ] Error messages to UI
@@ -208,13 +209,16 @@ References:
   - [ ] Permission tests
 - [x] Pagination for large result sets
 - [ ] DB: Add indexes for name, description and html content to support text search
-- [ ] Support for PostgreSQL and SQLite3
+- [x] Support for PostgreSQL and SQLite3
 
 ### Developer Experience
 - [x] API documentation improvements
 - [ ] GraphQL endpoint (alternative to REST)? // 👤 Roberto: interesting, I need to learn about this new (for me) tool
 - [ ] Webhook system for events (onCreate, onUpdate, onDelete)
-- [ ] Plugin/extension system // 👤 Roberto: "nice to have" how can we make the project extendable, both in BE and in FE?
+- [ ] Plugin/extension system
+  - [x] Frontend
+  - [ ] Backend: in progress, by now a schema_XXX.go is added in DBLayer package, but that's ugly
+    - [ ] plugin directory that allows: add APIs, DBObjects and extra logic
 - [x] CLI tools for admin tasks
 - [x] Docker compose for development // 👤 Roberto: ongoing?
 - [x] Hot reload for backend (air or similar) // 👤 Roberto: is active, check the .dev compose file
@@ -229,7 +233,6 @@ References:
   - [ ] User mentioned
   - [ ] Permission granted
 - [ ] Two-factor authentication (2FA)
-- [ ] ~~OAuth providers (Google, GitHub, etc.)~~ (moved to MVP priorities)
 - [ ] Export content (PDF, ZIP, JSON)
   - [ ] Command line (rhobee)
     - [x] Export single pages, multiple pages, folders and subcontent (command line)
