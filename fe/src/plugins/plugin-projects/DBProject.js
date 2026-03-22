@@ -131,11 +131,6 @@ export function ProjectEdit({ data, metadata, onSave, onCancel, onDelete, saving
 
     return (
         <Form onSubmit={handleSubmit}>
-            <Alert variant="info" className="mb-3">
-                <i className="bi bi-info-circle me-2"></i>
-                Editing {metadata.classname} - Basic fields only
-            </Alert>
-
             <div className="row">
                 <div className="col-md-4 mb-3">
                 <ObjectLinkSelector
