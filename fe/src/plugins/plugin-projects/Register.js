@@ -36,7 +36,7 @@ export default function registerProjectsPlugin() {
     },
 
     classname2bootstrapIcon: {
-      "DBProject": "folder2-open",
+      "DBProject": "gear", //"folder2-open",
       "DBTimeTrack": "clock-history",
       "DBTodo": "check-square",
     },
@@ -44,7 +44,7 @@ export default function registerProjectsPlugin() {
     // Menu items to add to navigation
     menuItems: [
       // Bootstrap Icons: https://icons.getbootstrap.com/
-      { label: 'Projects', path: '/projects', icon: 'bi-folder2-open' },
+      { label: 'Projects', path: '/projects', icon: 'bi-gear' },
       { label: 'Timetracks', path: '/timetracks', icon: 'bi-clock-history' },
       { label: 'Todos', path: '/todos', icon: 'bi-check-square' },
       // {}, // Empty item for horizontal separator
