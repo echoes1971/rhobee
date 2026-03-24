@@ -494,6 +494,90 @@ export function ObjectLinkView({ obj_id, dark }) {
     );
 }
 
+// Component: show object without the link
+export function ObjectView({ obj_id, dark }) {
+    const [myObject, setMyObject] = useState(null);
+
+    useEffect(() => {
+        const fetchObject = async () => {
+            // Read from localStorage every time (avoid stale state)
+            const stored = localStorage.getItem('objects_cache');
+            const cacheData = stored ? JSON.parse(stored) : null;
+
+            // Check if cache exists and is not expired (1 minute)
+            // Do localStorage.removeItem('objects_cache'); // TESTING: clear cache
+            const now = Date.now();
+            const CACHE_DURATION = 1 * 60 * 1000 //24 * 60 * 60 * 1000; // 24 hours in milliseconds
+            
+            let objects = {};
+            if (cacheData && cacheData.expires_at && cacheData.expires_at > now) {
+                // Cache is valid
+                objects = cacheData.objects || {};
+                const remainingSeconds = Math.floor((cacheData.expires_at - now) / 1000);
+                // console.log(`Objects cache VALID - expires in ${remainingSeconds}s at:`, new Date(cacheData.expires_at).toLocaleTimeString());
+            } else {
+                // Cache expired or doesn't exist - will be recreated
+                if (cacheData?.expires_at) {
+                    console.log('Objects cache EXPIRED at:', new Date(cacheData.expires_at).toLocaleTimeString(), 'now:', new Date(now).toLocaleTimeString());
+                } else {
+                    console.log('Objects cache MISSING, will rebuild');
+                }
+            }
+            
+            if (objects[obj_id]) {
+                setMyObject(objects[obj_id]);
+                // console.log('Loaded object from cache: ', obj_id, "=", objects[obj_id].data.name);
+                return;
+            }
+            
+            // Object not in cache, fetch from backend
+            try {
+                const response = await axiosInstance.get(`/content/${obj_id}`);
+                setMyObject(response.data);
+                // Update cache - re-read to avoid race conditions
+                const currentStored = localStorage.getItem('objects_cache');
+                const currentCache = currentStored ? JSON.parse(currentStored) : null;
+                
+                // Preserve expiry if cache is still valid, otherwise create new expiry
+                let expiresAt = now + CACHE_DURATION;
+                // TESTING: Force new expiry every time (comment out to preserve existing expiry)
+                /*
+                if (currentCache && currentCache.expires_at && currentCache.expires_at > now) {
+                    expiresAt = currentCache.expires_at; // Keep existing expiry
+                }
+                */
+                
+                const updatedCache = {
+                    expires_at: expiresAt,
+                    objects: {
+                        ...(currentCache?.objects || {}),
+                        [obj_id]: response.data
+                    }
+                };
+                
+                localStorage.setItem('objects_cache', JSON.stringify(updatedCache));
+                // console.log('Fetched and cached object: ', obj_id, "=", response.data.data.name);
+            } catch (error) {
+                console.error('Error fetching object:', error);
+            }
+        }
+
+        if (obj_id && obj_id !== "0") {
+            fetchObject();
+        }
+    }, [obj_id]);
+
+    if (!obj_id || obj_id === "0") {
+        return null;
+    }
+
+    return (
+        <span>
+            {myObject ? myObject.data.name : obj_id}
+        </span>
+    );
+}
+
 
 export function LanguageSelector({ fieldName, value, onChange, dark }) {
     const { t } = useTranslation();
