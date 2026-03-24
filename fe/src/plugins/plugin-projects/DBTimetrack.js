@@ -25,7 +25,14 @@ import { HtmlView } from '../../ContentHtml';
 import axiosInstance from '../../axios';
 import { ThemeContext } from '../../ThemeContext';
 
-
+/*
+	function getViewColumnNames() { return array(
+// 		'fk_progetto','father_id','fk_obj_id',
+		'name','description',
+		'fk_progetto','dalle_ore','alle_ore','ore_intervento','ore_viaggio','km_viaggio',
+		'luogo_di_intervento','stato','costo_per_ora','costo_valuta',
+		); }
+*/
 export function TimetrackView({ data, metadata, objectData, dark }) {
     const navigate = useNavigate();
     const { t } = useTranslation();
@@ -105,6 +112,14 @@ export function TimetrackView({ data, metadata, objectData, dark }) {
     );
 }
 
+/*
+	function getDetailColumnNames() { return array('creation_date','creator','fk_progetto','father_id','fk_obj_id','name','description',
+// 		'creator','creation_date','last_modify','last_modify_date',
+		'fk_progetto','dalle_ore','alle_ore','ore_intervento','ore_viaggio','km_viaggio',
+		'luogo_di_intervento','stato','costo_per_ora','costo_valuta',
+		'owner','group_id','permissions',
+	); }
+*/
 export function TimetrackEdit({ data, metadata, onSave, onCancel, onDelete, saving, error, dark }) {
     const { t } = useTranslation();
     const [formData, setFormData] = useState({

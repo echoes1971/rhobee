@@ -603,16 +603,16 @@ func NewDBTimeTrack() *DBTimeTrack {
 		{Name: "name", Type: "varchar(255)", Constraints: []string{"NOT NULL"}},
 		{Name: "description", Type: "text", Constraints: []string{"DEFAULT NULL"}},
 		{Name: "fk_obj_id", Type: "varchar(16)", Constraints: []string{"DEFAULT NULL"}},
-		{Name: "fk_progetto", Type: "varchar(16)", Constraints: []string{"DEFAULT NULL"}},
-		{Name: "dalle_ore", Type: "datetime", Constraints: []string{"DEFAULT NULL"}},
-		{Name: "alle_ore", Type: "datetime", Constraints: []string{"DEFAULT NULL"}},
-		{Name: "ore_intervento", Type: "datetime", Constraints: []string{"DEFAULT NULL"}},
-		{Name: "ore_viaggio", Type: "datetime", Constraints: []string{"DEFAULT NULL"}},
-		{Name: "km_viaggio", Type: "int", Constraints: []string{"NOT NULL", "DEFAULT 0"}},
-		{Name: "luogo_di_intervento", Type: "int", Constraints: []string{"NOT NULL", "DEFAULT 0"}},
-		{Name: "stato", Type: "int", Constraints: []string{"NOT NULL", "DEFAULT 0"}},
-		{Name: "costo_per_ora", Type: "float", Constraints: []string{"NOT NULL", "DEFAULT 0"}},
-		{Name: "costo_valuta", Type: "varchar(255)", Constraints: []string{"DEFAULT NULL"}},
+		{Name: "fk_project", Type: "varchar(16)", Constraints: []string{"DEFAULT NULL"}},
+		{Name: "from_time", Type: "datetime", Constraints: []string{"DEFAULT NULL"}},
+		{Name: "to_time", Type: "datetime", Constraints: []string{"DEFAULT NULL"}},
+		{Name: "intervention_hours", Type: "datetime", Constraints: []string{"DEFAULT NULL"}},
+		{Name: "travel_hours", Type: "datetime", Constraints: []string{"DEFAULT NULL"}},
+		{Name: "travel_distance", Type: "int", Constraints: []string{"NOT NULL", "DEFAULT 0"}},
+		{Name: "intervention_location", Type: "int", Constraints: []string{"NOT NULL", "DEFAULT 0"}},
+		{Name: "status", Type: "int", Constraints: []string{"NOT NULL", "DEFAULT 0"}},
+		{Name: "hourly_rate", Type: "float", Constraints: []string{"NOT NULL", "DEFAULT 0"}},
+		{Name: "currency", Type: "varchar(255)", Constraints: []string{"DEFAULT NULL"}},
 	}
 	keys := []string{"id"}
 	foreignKeys := []ForeignKey{
@@ -625,7 +625,7 @@ func NewDBTimeTrack() *DBTimeTrack {
 		{Column: "fk_obj_id", RefTable: "projects", RefColumn: "id"},
 		{Column: "fk_obj_id", RefTable: "folders", RefColumn: "id"},
 		{Column: "fk_obj_id", RefTable: "todo", RefColumn: "id"},
-		{Column: "fk_progetto", RefTable: "projects", RefColumn: "id"},
+		{Column: "fk_project", RefTable: "projects", RefColumn: "id"},
 	}
 	return &DBTimeTrack{
 		DBObject: DBObject{
@@ -717,16 +717,16 @@ func NewDBTodo() *DBTodo {
 		{Name: "name", Type: "varchar(255)", Constraints: []string{"NOT NULL"}},
 		{Name: "description", Type: "text", Constraints: []string{"DEFAULT NULL"}},
 		{Name: "priority", Type: "int", Constraints: []string{"NOT NULL", "DEFAULT 0"}},
-		{Name: "data_segnalazione", Type: "datetime", Constraints: []string{"DEFAULT NULL"}},
-		{Name: "fk_segnalato_da", Type: "varchar(16)", Constraints: []string{"DEFAULT NULL"}},
-		{Name: "fk_cliente", Type: "varchar(16)", Constraints: []string{"DEFAULT NULL"}},
-		{Name: "fk_progetto", Type: "varchar(16)", Constraints: []string{"DEFAULT NULL"}},
-		{Name: "fk_funzionalita", Type: "varchar(16)", Constraints: []string{"DEFAULT NULL"}},
-		{Name: "fk_tipo", Type: "varchar(16)", Constraints: []string{"DEFAULT NULL"}},
-		{Name: "stato", Type: "int", Constraints: []string{"NOT NULL", "DEFAULT 0"}},
-		{Name: "descrizione", Type: "text", Constraints: []string{"NOT NULL"}},
-		{Name: "intervento", Type: "text", Constraints: []string{"NOT NULL"}},
-		{Name: "data_chiusura", Type: "datetime", Constraints: []string{"DEFAULT NULL"}},
+		{Name: "reported_date", Type: "datetime", Constraints: []string{"DEFAULT NULL"}},
+		{Name: "fk_reported_by", Type: "varchar(16)", Constraints: []string{"DEFAULT NULL"}},
+		{Name: "fk_customer", Type: "varchar(16)", Constraints: []string{"DEFAULT NULL"}},
+		{Name: "fk_project", Type: "varchar(16)", Constraints: []string{"DEFAULT NULL"}},
+		{Name: "fk_functionality", Type: "varchar(16)", Constraints: []string{"DEFAULT NULL"}},
+		{Name: "fk_type", Type: "varchar(16)", Constraints: []string{"DEFAULT NULL"}},
+		{Name: "status", Type: "int", Constraints: []string{"NOT NULL", "DEFAULT 0"}},
+		{Name: "todo_description", Type: "text", Constraints: []string{"NOT NULL"}},
+		{Name: "intervention", Type: "text", Constraints: []string{"NOT NULL"}},
+		{Name: "closed_date", Type: "datetime", Constraints: []string{"DEFAULT NULL"}},
 	}
 	keys := []string{"id"}
 	foreignKeys := []ForeignKey{
@@ -737,9 +737,9 @@ func NewDBTodo() *DBTodo {
 		{Column: "deleted_by", RefTable: "users", RefColumn: "id"},
 		{Column: "father_id", RefTable: "objects", RefColumn: "id"},
 
-		{Column: "fk_segnalato_da", RefTable: "people", RefColumn: "id"},
-		{Column: "fk_cliente", RefTable: "companies", RefColumn: "id"},
-		{Column: "fk_progetto", RefTable: "projects", RefColumn: "id"},
+		{Column: "fk_reported_by", RefTable: "people", RefColumn: "id"},
+		{Column: "fk_customer", RefTable: "companies", RefColumn: "id"},
+		{Column: "fk_project", RefTable: "projects", RefColumn: "id"},
 
 		{Column: "father_id", RefTable: "folders", RefColumn: "id"},
 		{Column: "father_id", RefTable: "todo", RefColumn: "id"},
@@ -772,8 +772,15 @@ func (dbTodo *DBTodo) beforeInsert(dbr *DBRepository, tx *sql.Tx) error {
 		return err
 	}
 
-	if !dbTodo.HasValue("data_segnalazione") {
-		dbTodo.SetValue("data_segnalazione", time.Now().Format("2006-01-02 15:04:05"))
+	if !dbTodo.HasValue("todo_description") {
+		dbTodo.SetValue("todo_description", "")
+	}
+	if !dbTodo.HasValue("intervention") {
+		dbTodo.SetValue("intervention", "")
+	}
+
+	if !dbTodo.HasValue("reported_date") {
+		dbTodo.SetValue("reported_date", time.Now().Format("2006-01-02 15:04:05"))
 	}
 	// $data_segnalazione = $this->getValue('data_segnalazione');
 	// if($data_segnalazione==null || $data_segnalazione=="" || $data_segnalazione=="00:00" || $data_segnalazione=="0000/00/00 00:00") {

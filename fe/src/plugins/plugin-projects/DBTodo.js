@@ -15,6 +15,7 @@ import {
   LanguageSelector,
   LanguageView,
   ObjectLinkView,
+  ObjectView,
   UserLinkView,
 } from '../../ContentWidgets';
 import { ObjectSearch, ObjectHeaderView, ObjectFooterView } from "../../dbobjects/DBObject";
@@ -89,13 +90,55 @@ export function TodoView({ data, metadata, objectData, dark }) {
             </Card.Header>
             <Card.Body className={dark ? 'bg-secondary bg-opacity-10' : ''}>
                 <h2 className={dark ? 'text-light' : 'text-dark'}>{data.name}</h2>
-                {!data.html && data.description && <hr />}
-                {data.description && (
-                    <Card.Text dangerouslySetInnerHTML={{ __html: formatDescription(data.description) }}></Card.Text>
+                <hr />
+                <div className="row">
+                     <div className='col-md-2 col-4 text-end'>{t('plugin-projects.priority')}:</div>
+                     <div className='col-md-3 col-8'>{data.priority}</div>
+                </div>
+                <div className="row">
+                    <div className='col-md-2 col-4 text-end'>{t('plugin-projects.reported_date')}:</div>
+                    <div className='col-md-3 col-8'> {formateDateTimeString(data.reported_date)}</div>
+                    <div className='col-md-2 col-4 text-end'>{t('plugin-projects.fk_reported_by')}:</div>
+                    <div className='col-md-3 col-8'><ObjectLinkView obj_id={data.fk_reported_by} dark={dark} /></div>
+                </div>
+                <div className="row">
+                    <div className='col-md-2 col-4 text-end'>{t('plugin-projects.fk_customer')}:</div>
+                    <div className='col-md-3 col-8'><ObjectLinkView obj_id={data.fk_customer} dark={dark} /></div>
+                    <div className='col-md-2 col-4 text-end'>{t('plugin-projects.fk_project')}:</div>
+                    <div className='col-md-3 col-8'><ObjectLinkView obj_id={data.fk_project} dark={dark} /></div>
+                </div>
+                <div className="row">
+                    <div className='col-md-2 col-4 text-end'>{t('plugin-projects.fk_type')}:</div>
+                    <div className='col-md-3 col-8'><ObjectView obj_id={data.fk_type} dark={dark} /></div>
+                    <div className='col-md-2 col-4 text-end'>{t('plugin-projects.status')}:</div>
+                    <div className='col-md-3 col-8'>{data.status} %</div>
+                </div>
+                {data.todo_description && (
+                    <>
+                        <div className="row">&nbsp;</div>
+                        <div className="row">
+                            <div className='col-md-2 col-4 text-end'>{t('plugin-projects.todo_description')}: </div>
+                            <div className='col-md-10 col-8' dangerouslySetInnerHTML={{ __html: formatDescription(data.todo_description) }} />
+                        </div>
+                    </>
                 )}
-                {data.html && <hr />}
-                {data.html && (
-                    <HtmlView htmlContent={data.html} dark={dark} />
+                {data.intervention && (
+                    <>
+                    <div className="row">&nbsp;</div>
+                    <div className="row">
+                        <div className='col-md-2 col-4 text-end'>{t('plugin-projects.intervention')}: </div>
+                        <div className='col-md-10 col-8' dangerouslySetInnerHTML={{ __html: formatDescription(data.intervention) }} />
+                    </div>
+                    </>
+                )}
+                {data.closed_date && data.closed_date !== '0000-00-00 00:00:00' && (
+                    <>
+                <div className="row">&nbsp;</div>
+                <div className="row">
+                    <div className='col-md-2 col-4 text-end'>{t('plugin-projects.closed_date')}: </div>
+                    <div className='col-md-3 col-8' >{formateDateTimeString(data.closed_date)}</div>
+                </div>
+                </>
                 )}
             </Card.Body>
             <Card.Footer className={dark ? 'bg-secondary bg-opacity-10' : ''} style={dark ? { borderTop: '1px solid rgba(255,255,255,0.1)' } : {}}>
@@ -105,11 +148,26 @@ export function TodoView({ data, metadata, objectData, dark }) {
     );
 }
 
+/*
+	function getDetailColumnNames() { return array('name',
+// 		'creator','creation_date','last_modify','last_modify_date','description','fk_obj_id',
+		'priority','reported_date','fk_reported_by','fk_customer','fk_project','fk_type','status','todo_description','intervention','closed_date',
+		'owner','group_id','permissions',
+	); }
+ */
+
 export function TodoEdit({ data, metadata, onSave, onCancel, onDelete, saving, error, dark }) {
     const { t } = useTranslation();
     const [formData, setFormData] = useState({
         name: data.name || '',
-        description: data.description || '',
+        priority: data.priority || '',
+        reported_date: data.reported_date || '',
+        fk_reported_by: data.fk_reported_by || '',
+        fk_customer: data.fk_customer || '',
+        fk_project: data.fk_project || '',
+        fk_type: data.fk_type || '',
+        status: data.status || '',
+        todo_description: data.todo_description || '',
         permissions: data.permissions || 'rwxr-x---',
         father_id: data.father_id || null,
         owner: data.owner || null,
@@ -187,13 +245,15 @@ export function TodoEdit({ data, metadata, onSave, onCancel, onDelete, saving, e
                 />
             </Form.Group>
 
+		{/* 'priority','reported_date','fk_reported_by','fk_customer','fk_project','fk_type','status','todo_description','intervention','closed_date', */}
+
             <Form.Group className="mb-3">
-                <Form.Label>{t('common.description')}</Form.Label>
+                <Form.Label>{t('plugin-projects.todo_description')}</Form.Label>
                 <Form.Control
                     as="textarea"
-                    name="description"
+                    name="todo_description"
                     rows={10}
-                    value={formData.description}
+                    value={formData.todo_description}
                     onChange={handleChange}
                 />
             </Form.Group>
