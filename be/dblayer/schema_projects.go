@@ -744,7 +744,7 @@ func NewDBTodo() *DBTodo {
 		{Column: "father_id", RefTable: "folders", RefColumn: "id"},
 		{Column: "father_id", RefTable: "todo", RefColumn: "id"},
 
-		{Column: "fk_tipo", RefTable: "todo_tipo", RefColumn: "id"},
+		{Column: "fk_type", RefTable: "todo_tipo", RefColumn: "id"},
 	}
 	return &DBTodo{
 		DBObject: DBObject{

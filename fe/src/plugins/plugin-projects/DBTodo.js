@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { Alert, Button, Card, Col, Form, Row, Spinner } from 'react-bootstrap';
+import { Accordion, Alert, Button, Card, Col, Form, Row, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { 
@@ -158,6 +158,7 @@ export function TodoView({ data, metadata, objectData, dark }) {
 
 export function TodoEdit({ data, metadata, onSave, onCancel, onDelete, saving, error, dark }) {
     const { t } = useTranslation();
+    const { themeClass } = useContext(ThemeContext);
     const [formData, setFormData] = useState({
         name: data.name || '',
         priority: data.priority || '',
@@ -168,6 +169,8 @@ export function TodoEdit({ data, metadata, onSave, onCancel, onDelete, saving, e
         fk_type: data.fk_type || '',
         status: data.status || '',
         todo_description: data.todo_description || '',
+        intervention: data.intervention || '',
+        closed_date: data.closed_date || '',
         permissions: data.permissions || 'rwxr-x---',
         father_id: data.father_id || null,
         owner: data.owner || null,
@@ -191,7 +194,7 @@ export function TodoEdit({ data, metadata, onSave, onCancel, onDelete, saving, e
         <Form onSubmit={handleSubmit}>
             <Alert variant="info" className="mb-3">
                 <i className="bi bi-info-circle me-2"></i>
-                Editing {metadata.classname} - Basic fields only
+                Editing {metadata.classname} - Think which fields you want to edit, and fill only those.
             </Alert>
 
             <div className="row">
@@ -234,6 +237,98 @@ export function TodoEdit({ data, metadata, onSave, onCancel, onDelete, saving, e
                 dark={dark}
             />
 
+            <div className="row">
+                <div className="col-md-6 mb-3">
+                    <Form.Group className="mb-3">
+                        <Form.Label>{t('plugin-projects.priority')}: {formData.priority || 0}</Form.Label>
+                        {/* <Form.Control
+                            as="input"
+                            type="number"
+                            name="priority"
+                            min="0"
+                            max="10"
+                            value={formData.priority || ''}
+                            onChange={handleChange}
+                        /> */}
+                        <Form.Range 
+                            name="priority"
+                            value={formData.priority || 0}
+                            onChange={e => { handleChange(e); }}
+                            min={0}
+                            max={10}
+                            step={1}
+                        />
+                    </Form.Group>
+                </div>
+                <div className="col-md-6 mb-3">
+                    <ObjectLinkSelector
+                        value={formData.fk_type || '0'}
+                        onChange={handleChange}
+                        classname="DBTodoTipo"
+                        fieldName="fk_type"
+                        label={t('plugin-projects.fk_type')}
+                    />
+                </div>
+            </div>
+
+            <div className="row">
+                <div className="col-md-6 mb-3">
+                    <Form.Group>
+                        <Form.Label>{t('plugin-projects.reported_date')}</Form.Label>
+                        <Form.Control
+                            type="datetime-local"
+                            name="reported_date"
+                            value={formData.reported_date ? formData.reported_date.replace(' ', 'T') : ''}
+                            onChange={handleChange}
+                        />
+                    </Form.Group>
+                </div>
+                <div className="col-md-6 mb-3">
+                    <ObjectLinkSelector
+                        value={formData.fk_reported_by || '0'}
+                        onChange={handleChange}
+                        classname="DBPerson"
+                        fieldName="fk_reported_by"
+                        label={t('plugin-projects.fk_reported_by')}
+                    />
+                </div>
+            </div>
+
+            <div className="row">
+                <div className="col-md-6 mb-3">
+                    <Form.Group>
+                        <Form.Label>{t('plugin-projects.status')} {formData.status || 0}%</Form.Label>
+                        {/* <Form.Control
+                            type="number"
+                            name="status"
+                            min="0"
+                            max="100"
+                            value={formData.status || ''}
+                            onChange={handleChange}
+                        /> */}
+                        <Form.Range 
+                            name="status"
+                            value={formData.status}
+                            onChange={e => { handleChange(e); }}
+                            min={0}
+                            max={100}
+                            step={1}
+                        />
+                    </Form.Group>
+                </div>
+                <div className="col-md-6 mb-3">
+                    <Form.Group className="mb-3">
+                        <Form.Label>{t('plugin-projects.closed_date')}</Form.Label>
+                        <Form.Control
+                            type="datetime-local"
+                            name="closed_date"
+                            value={formData.closed_date ? formData.closed_date.replace(' ', 'T') : ''}
+                            onChange={handleChange}
+                        />
+                    </Form.Group>
+                </div>
+            </div>
+
             <Form.Group className="mb-3">
                 <Form.Label>{t('common.name')}</Form.Label>
                 <Form.Control
@@ -245,18 +340,56 @@ export function TodoEdit({ data, metadata, onSave, onCancel, onDelete, saving, e
                 />
             </Form.Group>
 
-		{/* 'priority','reported_date','fk_reported_by','fk_customer','fk_project','fk_type','status','todo_description','intervention','closed_date', */}
+            <Accordion className='mb-3' defaultActiveKey="0">
+                <Accordion.Item eventKey="0" className={themeClass} alwaysOpen>
+                    <Accordion.Header>{t('plugin-projects.todo_description')}</Accordion.Header>
+                    <Accordion.Body>
+                        <Form.Control
+                            as="textarea"
+                            name="todo_description"
+                            rows={5}
+                            value={formData.todo_description}
+                            onChange={handleChange}
+                        />
+                    </Accordion.Body>
+                </Accordion.Item>
+            </Accordion>
 
-            <Form.Group className="mb-3">
-                <Form.Label>{t('plugin-projects.todo_description')}</Form.Label>
-                <Form.Control
-                    as="textarea"
-                    name="todo_description"
-                    rows={10}
-                    value={formData.todo_description}
-                    onChange={handleChange}
-                />
-            </Form.Group>
+            <Accordion className='mb-3'>
+                <Accordion.Item eventKey="0" className={themeClass}>
+                    <Accordion.Header>{t('plugin-projects.intervention')}</Accordion.Header>
+                    <Accordion.Body>
+                        <Form.Control
+                            as="textarea"
+                            name="intervention"
+                            rows={5}
+                            value={formData.intervention}
+                            onChange={handleChange}
+                        />
+                    </Accordion.Body>
+                </Accordion.Item>
+            </Accordion>
+
+            <div className="row">
+                <div className="col-md-6 mb-3">
+                    <ObjectLinkSelector
+                        value={formData.fk_customer || '0'}
+                        onChange={handleChange}
+                        classname="DBCustomer"
+                        fieldName="fk_customer"
+                        label={t('plugin-projects.fk_customer')}
+                    />
+                </div>
+                <div className="col-md-6 mb-3">
+                    <ObjectLinkSelector
+                        value={formData.fk_project || '0'}
+                        onChange={handleChange}
+                        classname="DBProject"
+                        fieldName="fk_project"
+                        label={t('plugin-projects.fk_project')}
+                    />
+                </div>
+            </div>
 
             {error && (
                 <Alert variant="danger" className="mb-3">
