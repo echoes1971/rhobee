@@ -13,9 +13,11 @@ import { classname2bootstrapIcon } from './sitenavigation_utils';
  * @param {string} classname - DBObject classname to search (e.g., "DBCompany", "DBUser")
  * @param {string} fieldName - Name of the foreign key field (e.g., "fk_companies_id")
  * @param {string} label - Label to display above the selector
+ * @param {number} min_search_length - Minimum characters to start searching (default: 2)
+ * @param {string} order_by - Field to order search results by (default: "name")
  * @param {boolean} required - Whether the field is required
  */
-function ObjectLinkSelector({ value, onChange, classname, fieldName, label, required = false, _type="link" }) {
+function ObjectLinkSelector({ value, onChange, classname, fieldName, label, min_search_length = 2, order_by="name", required = false, _type="link" }) {
     const { t } = useTranslation();
     const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(false);
@@ -60,7 +62,7 @@ function ObjectLinkSelector({ value, onChange, classname, fieldName, label, requ
     const handleSearch = async (term) => {
         setSearchTerm(term);
         
-        if (term.length < 2) {
+        if (term.length < min_search_length) {
             setResults([]);
             setShowResults(false);
             return;
@@ -80,7 +82,7 @@ function ObjectLinkSelector({ value, onChange, classname, fieldName, label, requ
         // }
 
         var searchFields = null;
-        var orderBy = 'name';
+        var orderBy = order_by || 'name';
         switch (classname) {
             case 'DBUser':
                 searchFields = ['login', 'fullname', 'email'];
@@ -192,6 +194,9 @@ function ObjectLinkSelector({ value, onChange, classname, fieldName, label, requ
                         <Form.Control
                             type="text"
                             value={searchTerm}
+                            onFocus={(e) => {
+                                if(min_search_length==0) handleSearch('');
+                            }}
                             onChange={(e) => handleSearch(e.target.value)}
                             placeholder={t('common.search') || 'Search...'}
                             required={required}
