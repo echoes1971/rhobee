@@ -43,7 +43,7 @@
     "links": "Links",
     "user_id": "User",
     "company_id": "Company",
-    "search_hint": "Type at least 2 characters to search",
+    "search_hint": "Start typing to search",
     "no_results": "No results found",
     "select_all": "Select All",
     "deselect_all": "Deselect All",
