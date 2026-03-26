@@ -92,8 +92,10 @@ export function TodoView({ data, metadata, objectData, dark }) {
                 <h2 className={dark ? 'text-light' : 'text-dark'}>{data.name}</h2>
                 <hr />
                 <div className="row">
-                     <div className='col-md-2 col-4 text-end'>{t('plugin-projects.priority')}:</div>
-                     <div className='col-md-3 col-8'>{data.priority}</div>
+                    <div className='col-md-2 col-4 text-end'>{t('plugin-projects.fk_type')}:</div>
+                    <div className='col-md-3 col-8'><ObjectView obj_id={data.fk_type} dark={dark} /></div>
+                    <div className='col-md-2 col-4 text-end'>{t('plugin-projects.priority')}:</div>
+                    <div className='col-md-3 col-8'>{data.priority}</div>
                 </div>
                 <div className="row">
                     <div className='col-md-2 col-4 text-end'>{t('plugin-projects.reported_date')}:</div>
@@ -102,25 +104,23 @@ export function TodoView({ data, metadata, objectData, dark }) {
                     <div className='col-md-3 col-8'><ObjectLinkView obj_id={data.fk_reported_by} dark={dark} /></div>
                 </div>
                 <div className="row">
-                    <div className='col-md-2 col-4 text-end'>{t('plugin-projects.fk_customer')}:</div>
-                    <div className='col-md-3 col-8'><ObjectLinkView obj_id={data.fk_customer} dark={dark} /></div>
-                    <div className='col-md-2 col-4 text-end'>{t('plugin-projects.fk_project')}:</div>
-                    <div className='col-md-3 col-8'><ObjectLinkView obj_id={data.fk_project} dark={dark} /></div>
-                </div>
-                <div className="row">
-                    <div className='col-md-2 col-4 text-end'>{t('plugin-projects.fk_type')}:</div>
-                    <div className='col-md-3 col-8'><ObjectView obj_id={data.fk_type} dark={dark} /></div>
                     <div className='col-md-2 col-4 text-end'>{t('plugin-projects.status')}:</div>
                     <div className='col-md-3 col-8'>{data.status} %</div>
-                </div>
-                {data.todo_description && (
+                    {data.closed_date && data.closed_date !== '0000-00-00 00:00:00' && (
                     <>
-                        <div className="row">&nbsp;</div>
-                        <div className="row">
-                            <div className='col-md-2 col-4 text-end'>{t('plugin-projects.todo_description')}: </div>
-                            <div className='col-md-10 col-8' dangerouslySetInnerHTML={{ __html: formatDescription(data.todo_description) }} />
-                        </div>
+                    <div className='col-md-2 col-4 text-end'>{t('plugin-projects.closed_date')}: </div>
+                    <div className='col-md-3 col-8' >{formateDateTimeString(data.closed_date)}</div>
                     </>
+                )}
+                </div>
+                {(data.todo_description || data.intervention) && (
+                    <hr />
+                )}
+                {data.todo_description && (
+                    <div className="row">
+                        <div className='col-md-2 col-4 text-end'>{t('plugin-projects.todo_description')}: </div>
+                        <div className='col-md-10 col-8' dangerouslySetInnerHTML={{ __html: formatDescription(data.todo_description) }} />
+                    </div>
                 )}
                 {data.intervention && (
                     <>
@@ -131,15 +131,13 @@ export function TodoView({ data, metadata, objectData, dark }) {
                     </div>
                     </>
                 )}
-                {data.closed_date && data.closed_date !== '0000-00-00 00:00:00' && (
-                    <>
-                <div className="row">&nbsp;</div>
+                <hr />
                 <div className="row">
-                    <div className='col-md-2 col-4 text-end'>{t('plugin-projects.closed_date')}: </div>
-                    <div className='col-md-3 col-8' >{formateDateTimeString(data.closed_date)}</div>
+                    <div className='col-md-2 col-4 text-end'>{t('plugin-projects.fk_customer')}:</div>
+                    <div className='col-md-3 col-8'><ObjectLinkView obj_id={data.fk_customer} dark={dark} /></div>
+                    <div className='col-md-2 col-4 text-end'>{t('plugin-projects.fk_project')}:</div>
+                    <div className='col-md-3 col-8'><ObjectLinkView obj_id={data.fk_project} dark={dark} /></div>
                 </div>
-                </>
-                )}
             </Card.Body>
             <Card.Footer className={dark ? 'bg-secondary bg-opacity-10' : ''} style={dark ? { borderTop: '1px solid rgba(255,255,255,0.1)' } : {}}>
                 <ObjectFooterView data={data} metadata={metadata} objectData={objectData} dark={dark} />
@@ -192,11 +190,6 @@ export function TodoEdit({ data, metadata, onSave, onCancel, onDelete, saving, e
 
     return (
         <Form onSubmit={handleSubmit}>
-            <Alert variant="info" className="mb-3">
-                <i className="bi bi-info-circle me-2"></i>
-                Editing {metadata.classname} - Think which fields you want to edit, and fill only those.
-            </Alert>
-
             <div className="row">
                 <div className="col-md-4 mb-3">
                 <ObjectLinkSelector
@@ -264,9 +257,12 @@ export function TodoEdit({ data, metadata, onSave, onCancel, onDelete, saving, e
                     <ObjectLinkSelector
                         value={formData.fk_type || '0'}
                         onChange={handleChange}
-                        classname="DBTodoTipo"
+                        classname="DBTodoType"
                         fieldName="fk_type"
                         label={t('plugin-projects.fk_type')}
+                        _type=""
+                        order_by="order_position"
+                        min_search_length={0}
                     />
                 </div>
             </div>
@@ -290,6 +286,7 @@ export function TodoEdit({ data, metadata, onSave, onCancel, onDelete, saving, e
                         classname="DBPerson"
                         fieldName="fk_reported_by"
                         label={t('plugin-projects.fk_reported_by')}
+                        min_search_length={1}
                     />
                 </div>
             </div>
@@ -340,7 +337,7 @@ export function TodoEdit({ data, metadata, onSave, onCancel, onDelete, saving, e
                 />
             </Form.Group>
 
-            <Accordion className='mb-3' defaultActiveKey="0">
+            <Accordion className='mb-3' defaultActiveKey={formData.todo_description ? "0" : null}>
                 <Accordion.Item eventKey="0" className={themeClass} alwaysOpen>
                     <Accordion.Header>{t('plugin-projects.todo_description')}</Accordion.Header>
                     <Accordion.Body>
@@ -355,7 +352,7 @@ export function TodoEdit({ data, metadata, onSave, onCancel, onDelete, saving, e
                 </Accordion.Item>
             </Accordion>
 
-            <Accordion className='mb-3'>
+            <Accordion className='mb-3' defaultActiveKey={formData.intervention ? "0" : null}>
                 <Accordion.Item eventKey="0" className={themeClass}>
                     <Accordion.Header>{t('plugin-projects.intervention')}</Accordion.Header>
                     <Accordion.Body>
@@ -375,7 +372,7 @@ export function TodoEdit({ data, metadata, onSave, onCancel, onDelete, saving, e
                     <ObjectLinkSelector
                         value={formData.fk_customer || '0'}
                         onChange={handleChange}
-                        classname="DBCustomer"
+                        classname="DBCompany"
                         fieldName="fk_customer"
                         label={t('plugin-projects.fk_customer')}
                     />

@@ -894,11 +894,11 @@ CREATE TABLE `rprj_todo_tipo` (
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 */
-type DBTodoTipo struct {
+type DBTodoType struct {
 	DBObject
 }
 
-func NewDBTodoTipo() *DBTodoTipo {
+func NewDBTodoType() *DBTodoType {
 	columns := []Column{
 		{Name: "id", Type: "varchar(16)", Constraints: []string{"NOT NULL"}},
 		{Name: "owner", Type: "varchar(16)", Constraints: []string{"NOT NULL"}},
@@ -924,10 +924,10 @@ func NewDBTodoTipo() *DBTodoTipo {
 		{Column: "deleted_by", RefTable: "users", RefColumn: "id"},
 		{Column: "father_id", RefTable: "objects", RefColumn: "id"},
 	}
-	return &DBTodoTipo{
+	return &DBTodoType{
 		DBObject: DBObject{
 			DBEntity: *NewDBEntity(
-				"DBTodoTipo",
+				"DBTodoType",
 				"todo_tipo",
 				columns,
 				keys,
@@ -937,30 +937,30 @@ func NewDBTodoTipo() *DBTodoTipo {
 		},
 	}
 }
-func (dbTodoTipo *DBTodoTipo) NewInstance() DBEntityInterface {
-	return NewDBTodoTipo()
+func (dbTodoType *DBTodoType) NewInstance() DBEntityInterface {
+	return NewDBTodoType()
 }
-func (dbTodoTipo *DBTodoTipo) GetOrderBy() []string {
+func (dbTodoType *DBTodoType) GetOrderBy() []string {
 	return []string{"order_position", "id"}
 }
-func (dbTodoTipo *DBTodoTipo) beforeInsert(dbr *DBRepository, tx *sql.Tx) error {
+func (dbTodoType *DBTodoType) beforeInsert(dbr *DBRepository, tx *sql.Tx) error {
 	if dbr.Verbose {
-		log.Print("DBTodoTipo.beforeInsert called")
+		log.Print("DBTodoType.beforeInsert called")
 	}
-	err := dbTodoTipo.DBObject.beforeInsert(dbr, tx)
+	err := dbTodoType.DBObject.beforeInsert(dbr, tx)
 	if err != nil {
-		log.Print("DBTodoTipo.beforeInsert: error in parent beforeInsert:", err)
+		log.Print("DBTodoType.beforeInsert: error in parent beforeInsert:", err)
 		return err
 	}
 
-	query := "SELECT COALESCE(MAX(order_position), 0) AS order_position FROM " + DbSchema + "_" + dbTodoTipo.GetTableName()
-	results := dbr.Select("DBEObject", dbTodoTipo.GetTableName(), query)
+	query := "SELECT COALESCE(MAX(order_position), 0) AS order_position FROM " + DbSchema + "_" + dbTodoType.GetTableName()
+	results := dbr.Select("DBEObject", dbTodoType.GetTableName(), query)
 	if len(results) == 1 {
 		intVal := 0
 		fmt.Scanf(results[0].GetValue("order_position").(string), "%d", &intVal)
-		dbTodoTipo.SetValue("order_position", intVal+1)
+		dbTodoType.SetValue("order_position", intVal+1)
 	} else {
-		dbTodoTipo.SetValue("order_position", 1)
+		dbTodoType.SetValue("order_position", 1)
 	}
 	return nil
 }

@@ -4,6 +4,7 @@ import { Navigate } from 'react-router-dom';
 import { Projects, ProjectEdit, ProjectView } from './DBProject';
 import { Timetracks, TimetrackEdit, TimetrackView } from './DBTimetrack';
 import { Todos, TodoEdit, TodoView } from './DBTodo';
+import { Todotypes, TodotypeEdit, TodotypeView } from './DBTodoType';
 
 /**
  * Example Plugin Registration with Translations
@@ -22,23 +23,27 @@ export default function registerProjectsPlugin() {
       { path: '/projects', element: <Projects /> },
       { path: '/timetracks', element: <Timetracks /> },
       { path: '/todos', element: <Todos /> },
+      { path: '/todo-types', element: <Todotypes /> },
     ],
 
     view_components: {
       "DBProject":ProjectView,
       "DBTimeTrack": TimetrackView,
       "DBTodo": TodoView,
+      "DBTodoType": TodotypeView,
     },
     edit_components: {
       "DBProject":ProjectEdit,
       "DBTimeTrack": TimetrackEdit,
       "DBTodo": TodoEdit,
+      "DBTodoType": TodotypeEdit,
     },
 
     classname2bootstrapIcon: {
       "DBProject": "gear", //"folder2-open",
       "DBTimeTrack": "clock-history",
       "DBTodo": "check-square",
+      "DBTodoType": "check-square-fill",
     },
     
     // Menu items to add to navigation
@@ -47,7 +52,8 @@ export default function registerProjectsPlugin() {
       { label: 'Projects', path: '/projects', icon: 'bi-gear' },
       { label: 'Timetracks', path: '/timetracks', icon: 'bi-clock-history' },
       { label: 'Todos', path: '/todos', icon: 'bi-check-square' },
-      // {}, // Empty item for horizontal separator
+      {}, // Empty item for horizontal separator
+      { label: 'Todo Types', path: '/todo-types', icon: 'bi-check-square-fill' },
       // { label: 'Item 2', path: '/item2', icon: 'bi-gear-fill' },
     ],
 
@@ -60,6 +66,7 @@ export default function registerProjectsPlugin() {
         "DBProject": 'Project',
         "DBTimeTrack": 'Timetrack',
         "DBTodo": 'Todo',
+        "DBTodoType": 'Todo Type',
         'priority': 'Priority',
         'reported_date': 'Reported Date',
         'fk_reported_by': 'Reported By',
@@ -69,13 +76,15 @@ export default function registerProjectsPlugin() {
         'status': 'Status',
         'todo_description': 'Description',
         'intervention': 'Intervention',
-        'closed_date': 'Closed Date'
+        'closed_date': 'Closed Date',
+        'order_position': 'Position',
       },
       fr: {
         "plugin_name": 'Projets',
         "DBProject": 'Projet',
         "DBTimeTrack": 'Suivi du temps',
         "DBTodo": 'Tâche',
+        "DBTodoType": 'Type de tâche',
         'priority': 'Priorité',
         'reported_date': 'Date de signalement',
         'fk_reported_by': 'Signalé par',
@@ -85,13 +94,15 @@ export default function registerProjectsPlugin() {
         'status': 'Statut',
         'todo_description': 'Description',
         'intervention': 'Intervention',
-        'closed_date': 'Date de clôture'
+        'closed_date': 'Date de clôture',
+        'order_position': 'Position',
       },
       it: {
         "plugin_name": 'Progetti',
         "DBProject": 'Progetto',
         "DBTimeTrack": 'Tracciamento del tempo',
         "DBTodo": 'Da fare',
+        "DBTodoType": 'Tipo di da fare',
         'priority': 'Priorità',
         'reported_date': 'Data di segnalazione',
         'fk_reported_by': 'Segnalato da',
@@ -101,13 +112,15 @@ export default function registerProjectsPlugin() {
         'status': 'Stato',
         'todo_description': 'Descrizione',
         'intervention': 'Intervento',
-        'closed_date': 'Data di chiusura'
+        'closed_date': 'Data di chiusura',
+        'order_position': 'Posizione',
       },
       de: {
         "plugin_name": 'Projekte',
         "DBProject": 'Projekt',
         "DBTimeTrack": 'Zeiterfassung',
         "DBTodo": 'Aufgabe',
+        "DBTodoType": 'Aufgabentyp',
         'priority': 'Priorität',
         'reported_date': 'Meldedatum',
         'fk_reported_by': 'Gemeldet von',
@@ -117,7 +130,8 @@ export default function registerProjectsPlugin() {
         'status': 'Status',
         'todo_description': 'Beschreibung',
         'intervention': 'Intervention',
-        'closed_date': 'Abschlussdatum'
+        'closed_date': 'Abschlussdatum',
+        'order_position': 'Position',
       },
     },
     
