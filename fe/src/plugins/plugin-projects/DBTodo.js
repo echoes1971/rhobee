@@ -449,22 +449,43 @@ export function Todos() {
 
   const searchClassname = "DBTodo";
 
+  // 'name','priority','reported_date','fk_reported_by','fk_customer','fk_project','father_id','fk_type','_from_status','_to_status'
   const searchColumns = [
     { name: t("dbobjects.name") || "Name", attribute: "name", type: "string" },
-    { name: t("dbobjects.description") || "Description", attribute: "description", type: "string" },
+    { name: t("plugin-projects.fk_type") || "Type", attribute: "fk_type", type: "objectLink", classname: "DBTodoType", min_search_length: 0, order_by: "order_position" },
+    { name: t("plugin-projects.priority") || "Priority", attribute: "priority", type: "numberRangeSelector", min: 0, max: 10, step: 1  },
+    { name: t("plugin-projects.reported_date") || "Reported Date", attribute: "reported_date", type: "dateSelector" },
+    { name: t("plugin-projects.fk_reported_by") || "Reported By", attribute: "fk_reported_by", type: "objectLink", classname: "DBPerson", min_search_length: 1 },
+    { name: (t("plugin-projects.status") || "Status") + " %", attribute: "status", type: "numberRangeSelector", min: 0, max: 100, step: 1 },
+    { name: t("plugin-projects.fk_customer") || "Customer", attribute: "fk_customer", type: "objectLink", classname: "DBCompany", min_search_length: 1 },
+    { name: t("plugin-projects.fk_project") || "Project", attribute: "fk_project", type: "objectLink", classname: "DBProject", min_search_length: 1 },
     { name: t("dbobjects.parent") || "Parent", attribute: "father_id", type: "objectLink" },
-    { name: t("dbobjects.created") || "Created", attribute: "creation_date", type: "dateSelector" },
-    { name: t("dbobjects.modified") || "Modified", attribute: "last_modify_date", type: "dateSelector" },
-    { name: t("dbobjects.deleted") || "Deleted", attribute: "deleted_date", type: "dateSelector" },
+    // { name: (t("plugin-projects.status") || "Status") + " >=", attribute: "_from_status", type: "number" },
+    // { name: (t("plugin-projects.status") || "Status") + " <=", attribute: "_to_status", type: "number" },
+
+    // { name: t("dbobjects.created") || "Created", attribute: "creation_date", type: "dateSelector" },
+    // { name: t("dbobjects.modified") || "Modified", attribute: "last_modify_date", type: "dateSelector" },
+    // { name: t("dbobjects.deleted") || "Deleted", attribute: "deleted_date", type: "dateSelector" },
   ];
 
   const resultsColumns = [
+    //priority
+    { name: t("plugin-projects.priority") || "Priority", attribute: "priority", type: "number", hideOnSmall: false },
+    // reported_date
+    { name: t("plugin-projects.reported_date") || "Reported Date", attribute: "reported_date", type: "dateSelector", hideOnSmall: false },
+    // fk_reported_by
+    // { name: t("plugin-projects.fk_reported_by") || "Reported By", attribute: "fk_reported_by", type: "objectLink", hideOnSmall: false },
+    // fk_customer
+    { name: t("plugin-projects.fk_customer") || "Customer", attribute: "fk_customer", type: "objectLink", hideOnSmall: true },
+    // fk_project
+    { name: t("plugin-projects.fk_project") || "Project", attribute: "fk_project", type: "objectLink", hideOnSmall: false },
     { name: t("dbobjects.parent") || "Parent", attribute: "father_id", type: "objectLink", hideOnSmall: true },
     { name: t("dbobjects.name") || "Name", attribute: "name", type: "string", hideOnSmall: false },
-    { name: t("dbobjects.description") || "Description", attribute: "description", type: "string", hideOnSmall: true },
-    { name: t("dbobjects.created") || "Created", attribute: "creation_date", type: "dateSelector", hideOnSmall: true },
-    { name: t("dbobjects.modified") || "Modified", attribute: "last_modify_date", type: "dateSelector", hideOnSmall: true },
-    { name: t("dbobjects.deleted") || "Deleted", attribute: "deleted_date", type: "dateSelector", hideOnSmall: true },
+    // fk_type
+    { name: t("plugin-projects.fk_type") || "Type", attribute: "fk_type", type: "objectLink", hideOnSmall: true },
+    { name: t("plugin-projects.status") || "Status", attribute: "status", type: "number", hideOnSmall: true },
+    // closed_date
+    { name: t("plugin-projects.closed_date") || "Closed Date", attribute: "closed_date", type: "dateSelector", hideOnSmall: true },
   ]
   return (
     <ObjectSearch searchClassname={searchClassname} searchColumns={searchColumns} resultsColumns={resultsColumns} dark={dark} themeClass={themeClass} />
