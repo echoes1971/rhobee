@@ -486,6 +486,18 @@ export function ObjectSearch({searchClassname, searchColumns, resultsColumns, or
     }));
   };
 
+  const handleRangeInputChange = (e) => {
+    const { name, value } = e.target;
+    const baseName = name.replace(/^_from_/, '').replace(/^_to_/, '');
+    setSearchFormData((prevData) => ({
+      ...prevData,
+      [baseName]: [
+        name.startsWith('_from_') ? value : prevData[baseName]?.[0] || '',
+        name.startsWith('_to_') ? value : prevData[baseName]?.[1] || '',
+      ],
+    }));
+  }
+
   const handleSearch = (e) => {
     e.preventDefault();
     fetchObjects(searchFormData, searchOrderBy, 0);
@@ -533,10 +545,12 @@ export function ObjectSearch({searchClassname, searchColumns, resultsColumns, or
                     <ObjectLinkSelector
                         value={searchFormData[col.attribute] || '0'}
                         onChange={handleInputChange}
-                        classname="DBObject"
+                        classname={col.classname || "DBObject"}
                         fieldName={col.attribute}
-                        label={t('dbobjects.' + col.attribute)}
+                        label={col.name || t('dbobjects.' + col.attribute)}
                         _type="search"
+                        min_search_length={col.min_search_length !== undefined ? col.min_search_length : 2}
+                        order_by={col.order_by || "name"}
                     />
                   </>
                 ) : col.type === "countrySelector" ? (
@@ -545,7 +559,7 @@ export function ObjectSearch({searchClassname, searchColumns, resultsColumns, or
                         value={searchFormData[col.attribute] || ''}
                         onChange={handleInputChange}
                         fieldName={col.attribute}
-                        label={t('dbobjects.' + col.attribute)}
+                        label={col.name || t('dbobjects.' + col.attribute)}
                         _type="search"
                     />
                   </>
@@ -555,7 +569,7 @@ export function ObjectSearch({searchClassname, searchColumns, resultsColumns, or
                         value={searchFormData[col.attribute] || ''}
                         onChange={handleInputChange}
                         fieldName={col.attribute}
-                        label={t('dbobjects.' + col.attribute)}
+                        label={col.name || t('dbobjects.' + col.attribute)}
                     />
                   </>
                 ) : col.type === "userSelector" ? (
@@ -565,7 +579,7 @@ export function ObjectSearch({searchClassname, searchColumns, resultsColumns, or
                         onChange={handleInputChange}
                         classname="DBUser"
                         fieldName={col.attribute}
-                        label={t('dbobjects.' + col.attribute)}
+                        label={col.name || t('dbobjects.' + col.attribute)}
                         _type="search"
                     />
                   </>
@@ -591,9 +605,37 @@ export function ObjectSearch({searchClassname, searchColumns, resultsColumns, or
                     />
                     </Row>
                   </>
+                ) : col.type === "numberRangeSelector" ? (
+                    <>
+                    <Form.Label>{col.name}</Form.Label>
+                    <Row className="g-2">
+                    <Form.Control
+                        type="number"
+                        min={col.min}
+                        max={col.max}
+                        step={col.step}
+                        name={'_from_' + col.attribute}
+                        value={searchFormData[col.attribute] ? searchFormData[col.attribute][0] || '' : ''}
+                        placeholder={t('common.from')}
+                        onChange={handleRangeInputChange}
+                        onSubmit={handleSearch}
+                    />
+                    <Form.Control
+                        type="number"
+                        min={col.min}
+                        max={col.max}
+                        step={col.step}
+                        name={'_to_' + col.attribute}
+                        value={searchFormData[col.attribute] ? searchFormData[col.attribute][1] || '' : ''}
+                        placeholder={t('common.to')}
+                        onChange={handleRangeInputChange}
+                        onSubmit={handleSearch}
+                    />
+                    </Row>
+                    </>
                 ) : (
                   <>
-                  <Form.Label>{t('dbobjects.' + col.attribute)}</Form.Label>
+                  <Form.Label>{col.name || t('dbobjects.' + col.attribute)}</Form.Label>
                   <Form.Control
                       type="text"
                       name={col.attribute}
