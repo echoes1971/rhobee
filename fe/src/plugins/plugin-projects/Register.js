@@ -1,4 +1,5 @@
 import { registerPlugin } from '../index';
+import { isAdminUser } from '../../sitenavigation_utils';
 import { Navigate } from 'react-router-dom';
 
 import { Projects, ProjectEdit, ProjectView } from './DBProject';
@@ -11,7 +12,8 @@ import { Todotypes, TodotypeEdit, TodotypeView } from './DBTodoType';
  * This file is automatically discovered and executed by the plugin system
  */
 export default function registerProjectsPlugin() {
-  registerPlugin('projects', {
+  const userIsAdmin = isAdminUser();
+  var pluginConfig = {
     name: 'Projects',
     version: '1.0.0',
     description: 'Contains the logic for the old Project Management implementation in PHP',
@@ -23,20 +25,17 @@ export default function registerProjectsPlugin() {
       { path: '/projects', element: <Projects /> },
       { path: '/timetracks', element: <Timetracks /> },
       { path: '/todos', element: <Todos /> },
-      { path: '/todo-types', element: <Todotypes /> },
     ],
 
     view_components: {
       "DBProject":ProjectView,
       "DBTimeTrack": TimetrackView,
       "DBTodo": TodoView,
-      "DBTodoType": TodotypeView,
     },
     edit_components: {
       "DBProject":ProjectEdit,
       "DBTimeTrack": TimetrackEdit,
       "DBTodo": TodoEdit,
-      "DBTodoType": TodotypeEdit,
     },
 
     classname2bootstrapIcon: {
@@ -52,8 +51,7 @@ export default function registerProjectsPlugin() {
       { label: 'Projects', path: '/projects', icon: 'bi-gear' },
       { label: 'Timetracks', path: '/timetracks', icon: 'bi-clock-history' },
       { label: 'Todos', path: '/todos', icon: 'bi-check-square' },
-      {}, // Empty item for horizontal separator
-      { label: 'Todo Types', path: '/todo-types', icon: 'bi-check-square-fill' },
+      // {}, // Empty item for horizontal separator
       // { label: 'Item 2', path: '/item2', icon: 'bi-gear-fill' },
     ],
 
@@ -138,11 +136,19 @@ export default function registerProjectsPlugin() {
     // Plugin hooks for lifecycle events
     hooks: {
       onRegister: () => {
-        console.log('Example plugin registered');
+        console.log('Projects plugin registered');
       },
       onAppLoad: () => {
-        console.log('Example plugin app loaded');
+        console.log('Projects plugin app loaded');
       }
     }
-  });
+  }
+  if (userIsAdmin) {
+    pluginConfig.routes.push({ path: '/todo-types', element: <Todotypes /> });
+    pluginConfig.view_components["DBTodoType"] = TodotypeView;
+    pluginConfig.edit_components["DBTodoType"] = TodotypeEdit;
+    pluginConfig.menuItems.push({});
+    pluginConfig.menuItems.push({ label: 'Todo Types', path: '/todo-types', icon: 'bi-check-square-fill' });
+  }
+  registerPlugin('projects', pluginConfig);
 }
