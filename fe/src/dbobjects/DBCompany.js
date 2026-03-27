@@ -336,12 +336,10 @@ export function Companies() {
 
   const searchColumns = [
     { name: t("dbobjects.name") || "Name", attribute: "name", type: "string" },
+    { name: t("common.zip") || "ZIP", attribute: "zip", type: "string" },
+    { name: t("common.city") || "City", attribute: "city", type: "string" },
     { name: t("dbobjects.fk_countrylist_id") || "Country", attribute: "fk_countrylist_id", type: "countrySelector" },
-    { name: t("dbobjects.parent") || "Parent", attribute: "father_id", type: "objectLink" },
-
-    // { name: t("dbobjects.name") || "Name", attribute: "name2", type: "string" },
-    // { name: t("dbobjects.name") || "Name", attribute: "name3", type: "string" },
-    // { name: t("dbobjects.name") || "Name", attribute: "name4", type: "string" },
+    // { name: t("dbobjects.parent") || "Parent", attribute: "father_id", type: "objectLink" },
   ];
 
   const resultsColumns = [
