@@ -28,7 +28,7 @@ import SiteNavigation from './SiteNavigation';
 import ContentEdit from './ContentEdit';
 import Search from './Search';
 import { AppFooter } from './Footer';
-import { hasGroupAccess, isAdminUser, isWebmasterUser, isGuestUser, isTokenValid } from './sitenavigation_utils';
+import { hasGroupAccess, isAdminUser, isWebmasterUser, isGuestUser, isTokenValid, isUserLoggedIn, logoutUser } from './sitenavigation_utils';
 
 function App() {
   // run plugin registration once when module is evaluated (above the component),
@@ -69,9 +69,15 @@ function App() {
 
   // const token = localStorage.getItem("token");
   const isValidToken = isTokenValid();
+  const isUserLoggedIn_ = isUserLoggedIn();
   // console.log("App: token present: " + (token ? "yes" : "no") + ", valid: " + (validToken ? "yes" : "no"));
   const isAdmin = isAdminUser();
   const isWebmaster = isWebmasterUser();
+
+  if (isUserLoggedIn_ && !isValidToken) {
+    console.warn("App: user is logged in but token is invalid/expired, logging out");
+    logoutUser();
+  }
 
   // if any onAppLoad hooks are needed, iterate here
   useEffect(() => {
