@@ -266,6 +266,20 @@ export function TimetrackEdit({ data, metadata, onSave, onCancel, onDelete, savi
     );
 }
 
+const statusMap = {
+    "": "--",
+    "0": "to be invoiced",
+    "1": "not to be invoiced",
+    "2": "invoiced",
+    "3": "assistance"
+}
+const interventionLocationMap = {
+    "": "--",
+    "0": "Office",
+    "1": "Remote (via ssh/etc.)",
+    "2": "On site"
+}
+
 export function Timetracks() {
   const { t } = useTranslation();
   const { dark, themeClass } = useContext(ThemeContext);
@@ -274,23 +288,28 @@ export function Timetracks() {
 
   const searchClassname = "DBTimeTrack";
 
+  // 'fk_progetto','name','fk_obj_id','luogo_di_intervento','stato',
   const searchColumns = [
+    { name: t("plugin-projects.fk_project") || "Project", attribute: "fk_project", type: "objectLink", classname: "DBProject", min_search_length: 1 },
     { name: t("dbobjects.name") || "Name", attribute: "name", type: "string" },
-    { name: t("dbobjects.description") || "Description", attribute: "description", type: "string" },
+    // { name: t("dbobjects.description") || "Description", attribute: "description", type: "string" },
+    { name: t("plugin-projects.intervention_location") || "Intervention Location", attribute: "intervention_location", type: "select", options: interventionLocationMap, hideOnSmall: false },
+    { name: t("plugin-projects.status") || "Status", attribute: "status", type: "select", options: statusMap, hideOnSmall: false },
     { name: t("dbobjects.parent") || "Parent", attribute: "father_id", type: "objectLink" },
-    { name: t("dbobjects.created") || "Created", attribute: "creation_date", type: "dateSelector" },
-    { name: t("dbobjects.modified") || "Modified", attribute: "last_modify_date", type: "dateSelector" },
-    { name: t("dbobjects.deleted") || "Deleted", attribute: "deleted_date", type: "dateSelector" },
+
+    // { name: t("dbobjects.created") || "Created", attribute: "creation_date", type: "dateSelector" },
+    // { name: t("dbobjects.modified") || "Modified", attribute: "last_modify_date", type: "dateSelector" },
+    // { name: t("dbobjects.deleted") || "Deleted", attribute: "deleted_date", type: "dateSelector" },
   ];
 
   const resultsColumns = [
     { name: t("plugin-projects.fk_project") || "Project", attribute: "fk_project", type: "objectLink", hideOnSmall: false },
     // status, from_time, to_time, name, intervention_hours, fatherid
-    { name: t("plugin-projects.status") || "Status", attribute: "status", type: "string", hideOnSmall: false },
-    { name: t("common.from") || "From", attribute: "from_time", type: "dateSelector", hideOnSmall: false },
-    { name: t("common.to") || "To", attribute: "to_time", type: "dateSelector", hideOnSmall: false },
+    { name: t("plugin-projects.status") || "Status", attribute: "status", type: "map", map: statusMap, hideOnSmall: false },
+    { name: t("common.from") || "From", attribute: "from_time", type: "dateTime", hideOnSmall: false },
+    { name: t("common.to") || "To", attribute: "to_time", type: "dateTime", hideOnSmall: false },
     { name: t("dbobjects.name") || "Name", attribute: "name", type: "string", hideOnSmall: false },
-    { name: t("plugin-projects.intervention_hours") || "Intervention Hours", attribute: "intervention_hours", type: "dateSelector", hideOnSmall: true },
+    { name: t("plugin-projects.intervention_hours") || "Intervention Hours", attribute: "intervention_hours", type: "dateTime", hideOnSmall: true },
     { name: t("dbobjects.parent") || "Parent", attribute: "father_id", type: "objectLink", hideOnSmall: true },
     // { name: t("dbobjects.description") || "Description", attribute: "description", type: "string", hideOnSmall: true },
     // { name: t("dbobjects.created") || "Created", attribute: "creation_date", type: "dateSelector", hideOnSmall: true },
