@@ -633,6 +633,20 @@ export function ObjectSearch({searchClassname, searchColumns, resultsColumns, or
                     />
                     </Row>
                     </>
+                ) : col.type === "select" ? (
+                  <>
+                  <Form.Label>{col.name}</Form.Label>
+                  <Form.Select
+                      name={col.attribute}
+                      value={searchFormData[col.attribute] || ''}
+                      onChange={handleInputChange}
+                      onSubmit={handleSearch}
+                  >
+                    {col.options && Object.entries(col.options).map(([key, label], index) => (
+                      <option value={key}>{label}</option>
+                    ))}
+                  </Form.Select>
+                  </>
                 ) : (
                   <>
                   <Form.Label>{col.name || t('dbobjects.' + col.attribute)}</Form.Label>
@@ -736,6 +750,10 @@ export function ObjectSearch({searchClassname, searchColumns, resultsColumns, or
                         </td>
                     ) : col.type === "dateTime" ? (
                         <td className={col.hideOnSmall ? "d-none d-md-table-cell" : ""} key={cindex}>{formateDateTimeString(result[col.attribute])}</td>
+                    ) : col.type === "map" ? (
+                        <td className={col.hideOnSmall ? "d-none d-md-table-cell" : ""} key={cindex}>
+                            {col.map[result[col.attribute]] || result[col.attribute]}
+                        </td>
                     ) : col.type === "urlView" ? (
                         <td className={col.hideOnSmall ? "d-none d-md-table-cell" : ""} key={cindex}>
                           {(() => {

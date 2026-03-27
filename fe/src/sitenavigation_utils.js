@@ -88,8 +88,13 @@ export function formateDateTimeString(dateTimeString) {
     if (!dateTimeString) return '';
     const date = new Date(dateTimeString);
     var ret = date.toLocaleString();
-    ret = ret.replace('0000-00-00 ', ''); // Handle MySQL zero date
-    ret = ret.replace(' 00:00:00', ''); // Remove time if it's zero
+    if (ret === 'Invalid Date') {
+        // If the date is invalid, return the original string (after stripping zero date/time)
+        ret = dateTimeString;
+        ret = ret.replace('0000-00-00 ', '');
+        ret = ret.replace(' 00:00:00', '');
+        ret = ret.replace('00:00:00', '');
+    }
     return ret;
 }
 
