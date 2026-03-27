@@ -284,12 +284,18 @@ export function Timetracks() {
   ];
 
   const resultsColumns = [
-    { name: t("dbobjects.parent") || "Parent", attribute: "father_id", type: "objectLink", hideOnSmall: true },
+    { name: t("plugin-projects.fk_project") || "Project", attribute: "fk_project", type: "objectLink", hideOnSmall: false },
+    // status, from_time, to_time, name, intervention_hours, fatherid
+    { name: t("plugin-projects.status") || "Status", attribute: "status", type: "string", hideOnSmall: false },
+    { name: t("common.from") || "From", attribute: "from_time", type: "dateSelector", hideOnSmall: false },
+    { name: t("common.to") || "To", attribute: "to_time", type: "dateSelector", hideOnSmall: false },
     { name: t("dbobjects.name") || "Name", attribute: "name", type: "string", hideOnSmall: false },
-    { name: t("dbobjects.description") || "Description", attribute: "description", type: "string", hideOnSmall: true },
-    { name: t("dbobjects.created") || "Created", attribute: "creation_date", type: "dateSelector", hideOnSmall: true },
-    { name: t("dbobjects.modified") || "Modified", attribute: "last_modify_date", type: "dateSelector", hideOnSmall: true },
-    { name: t("dbobjects.deleted") || "Deleted", attribute: "deleted_date", type: "dateSelector", hideOnSmall: true },
+    { name: t("plugin-projects.intervention_hours") || "Intervention Hours", attribute: "intervention_hours", type: "dateSelector", hideOnSmall: true },
+    { name: t("dbobjects.parent") || "Parent", attribute: "father_id", type: "objectLink", hideOnSmall: true },
+    // { name: t("dbobjects.description") || "Description", attribute: "description", type: "string", hideOnSmall: true },
+    // { name: t("dbobjects.created") || "Created", attribute: "creation_date", type: "dateSelector", hideOnSmall: true },
+    // { name: t("dbobjects.modified") || "Modified", attribute: "last_modify_date", type: "dateSelector", hideOnSmall: true },
+    // { name: t("dbobjects.deleted") || "Deleted", attribute: "deleted_date", type: "dateSelector", hideOnSmall: true },
   ]
   return (
     <ObjectSearch searchClassname={searchClassname} searchColumns={searchColumns} resultsColumns={resultsColumns} dark={dark} themeClass={themeClass} />

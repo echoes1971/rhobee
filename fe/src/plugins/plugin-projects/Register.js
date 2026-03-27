@@ -1,5 +1,5 @@
 import { registerPlugin } from '../index';
-import { isAdminUser } from '../../sitenavigation_utils';
+import { isTokenValid, isAdminUser } from '../../sitenavigation_utils';
 import { Navigate } from 'react-router-dom';
 
 import { Projects, ProjectEdit, ProjectView } from './DBProject';
@@ -13,6 +13,15 @@ import { Todotypes, TodotypeEdit, TodotypeView } from './DBTodoType';
  */
 export default function registerProjectsPlugin() {
   const userIsAdmin = isAdminUser();
+  const tokenIsValid = isTokenValid();
+
+  // the plugin requires authentication
+  if (!tokenIsValid) {
+    console.warn("Projects plugin: user is not authenticated, skipping plugin registration");
+    return;
+  }
+
+  
   var pluginConfig = {
     name: 'Projects',
     version: '1.0.0',
@@ -76,6 +85,12 @@ export default function registerProjectsPlugin() {
         'intervention': 'Intervention',
         'closed_date': 'Closed Date',
         'order_position': 'Position',
+        'intervention_hours': 'Intervention Hours',
+        'travel_hours': 'Travel Hours',
+        'travel_distance': 'Travel Distance',
+        'intervention_location': 'Intervention Location',
+        'hourly_rate': 'Hourly Rate',
+        'currency': 'Currency',
       },
       fr: {
         "plugin_name": 'Projets',
@@ -94,6 +109,13 @@ export default function registerProjectsPlugin() {
         'intervention': 'Intervention',
         'closed_date': 'Date de clôture',
         'order_position': 'Position',
+        'intervention_hours': 'Heures d’intervention',
+        'travel_hours': 'Heures de déplacement',
+        'travel_distance': 'Distance de déplacement',
+        'intervention_location': 'Lieu de l’intervention',
+        'hourly_rate': 'Tarif horaire',
+        'currency': 'Devise',
+
       },
       it: {
         "plugin_name": 'Progetti',
@@ -112,6 +134,12 @@ export default function registerProjectsPlugin() {
         'intervention': 'Intervento',
         'closed_date': 'Data di chiusura',
         'order_position': 'Posizione',
+        'intervention_hours': 'Ore di intervento',
+        'travel_hours': 'Ore di viaggio',
+        'travel_distance': 'Distanza di viaggio',
+        'intervention_location': 'Luogo di intervento',
+        'hourly_rate': 'Tariffa oraria',
+        'currency': 'Valuta',
       },
       de: {
         "plugin_name": 'Projekte',
@@ -130,6 +158,12 @@ export default function registerProjectsPlugin() {
         'intervention': 'Intervention',
         'closed_date': 'Abschlussdatum',
         'order_position': 'Position',
+        'intervention_hours': 'Interventionsstunden',
+        'travel_hours': 'Reisezeit',
+        'travel_distance': 'Reisedistanz',
+        'intervention_location': 'Interventionsort',
+        'hourly_rate': 'Stundensatz',
+        'currency': 'Währung',
       },
     },
     
