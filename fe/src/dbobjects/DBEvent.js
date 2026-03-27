@@ -877,12 +877,12 @@ export function Events() {
 
   const searchColumns = [
     { name: t("dbobjects.name") || "Name", attribute: "name", type: "string" },
-    { name: t("dbobjects.description") || "Description", attribute: "description", type: "string" },
-    { name: t("dbobjects.parent") || "Parent", attribute: "father_id", type: "objectLink" },
-    { name: t("dbobjects.created") || "Created", attribute: "creation_date", type: "dateSelector" },
-    { name: t("dbobjects.modified") || "Modified", attribute: "last_modify_date", type: "dateSelector" },
+    // { name: t("dbobjects.description") || "Description", attribute: "description", type: "string" },
+    // { name: t("dbobjects.parent") || "Parent", attribute: "father_id", type: "objectLink" },
     { name: t("event.start") || "Start", attribute: "start_date", type: "dateSelector" },
     { name: t("event.end") || "End", attribute: "end_date", type: "dateSelector" },
+    { name: t("dbobjects.created") || "Created", attribute: "creation_date", type: "dateSelector" },
+    { name: t("dbobjects.modified") || "Modified", attribute: "last_modify_date", type: "dateSelector" },
   ];
 
   const orderBy = "start_date";
@@ -890,14 +890,11 @@ export function Events() {
   const resultsColumns = [
     { name: t("event.start") || "Start Date", attribute: "start_date", type: "datetime", hideOnSmall: false },
     { name: t("event.end") || "End Date", attribute: "end_date", type: "datetime", hideOnSmall: false },
-    // { name: t("dbobjects.created") || "Created", attribute: "creator", type: "userLink", hideOnSmall: true },
-    // { name: t("dbobjects.group") || "Group", attribute: "group_id", type: "groupLink", hideOnSmall: true },
-    { name: t("dbobjects.parent") || "Parent", attribute: "father_id", type: "objectLink", hideOnSmall: true },
-    // { name: t("files.preview") || "File", attribute: "id", type: "imageView", hideOnSmall: true },
     { name: t("dbobjects.name") || "Name", attribute: "name", type: "string", hideOnSmall: false },
-    { name: t("dbobjects.description") || "Description", attribute: "description", type: "string", hideOnSmall: true },
-    { name: t("dbobjects.created") || "Created", attribute: "creation_date", type: "dateSelector", hideOnSmall: true },
-    { name: t("dbobjects.modified") || "Modified", attribute: "last_modify_date", type: "dateSelector", hideOnSmall: true },
+    { name: t("dbobjects.parent") || "Parent", attribute: "father_id", type: "objectLink", hideOnSmall: true },
+    // { name: t("dbobjects.description") || "Description", attribute: "description", type: "string", hideOnSmall: true },
+    // { name: t("dbobjects.created") || "Created", attribute: "creation_date", type: "dateSelector", hideOnSmall: true },
+    // { name: t("dbobjects.modified") || "Modified", attribute: "last_modify_date", type: "dateSelector", hideOnSmall: true },
   ]
   return (
     <ObjectSearch searchClassname={searchClassname} searchColumns={searchColumns} resultsColumns={resultsColumns} dark={dark} themeClass={themeClass} />
