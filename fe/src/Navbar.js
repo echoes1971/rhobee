@@ -5,7 +5,7 @@ import { ThemeContext } from "./ThemeContext";
 import { useTranslation } from "react-i18next";
 import { app_cfg } from "./app.cfg";
 import axios from "./axios";
-import { hasGroupAccess, isAdminUser, isWebmasterUser, isGuestUser } from "./sitenavigation_utils";
+import { hasGroupAccess, isAdminUser, isWebmasterUser, isGuestUser, isUserLoggedIn, logoutUser } from "./sitenavigation_utils";
 import { getPlugin, getAllPluginNames } from './plugins';
 
 function AppNavbar() {
@@ -20,6 +20,7 @@ function AppNavbar() {
   const [children, setChildren] = useState([]);
   const isAdmin = isAdminUser();
   const isWebmaster = isWebmasterUser();
+  const isLoggedIn = isUserLoggedIn();
 
   const changeLanguage = (lng) => {
     i18n.changeLanguage(lng);
@@ -33,15 +34,16 @@ function AppNavbar() {
   };
 
   const loadChildren = async () => {
-    try {
-      const response = await axios.get(`/nav/children/${site_root}`);
-      // filter those with metadata DBFolder
-      const filteredChildren = (response.data.children || []).filter(child => child.metadata && child.metadata.classname === "DBFolder");
-      // alert(JSON.stringify(filteredChildren));
-      setChildren(filteredChildren);
-    } catch (error) {
-      console.error("Error loading root children:", error);
-    }
+    logoutUser();
+    // try {
+    //   const response = await axios.get(`/nav/children/${site_root}`);
+    //   // filter those with metadata DBFolder
+    //   const filteredChildren = (response.data.children || []).filter(child => child.metadata && child.metadata.classname === "DBFolder");
+    //   // alert(JSON.stringify(filteredChildren));
+    //   setChildren(filteredChildren);
+    // } catch (error) {
+    //   console.error("Error loading root children:", error);
+    // }
   };
 
   // Load root children

@@ -87,7 +87,10 @@ export function formatDescription(description) {
 export function formateDateTimeString(dateTimeString) {
     if (!dateTimeString) return '';
     const date = new Date(dateTimeString);
-    return date.toLocaleString();
+    var ret = date.toLocaleString();
+    ret = ret.replace('0000-00-00 ', ''); // Handle MySQL zero date
+    ret = ret.replace(' 00:00:00', ''); // Remove time if it's zero
+    return ret;
 }
 
 
@@ -102,6 +105,26 @@ export function isTokenValid() {
 
     // Optionally, you can implement further validation, e.g., check expiration
     return true;
+}
+
+export function isUserLoggedIn() {
+    const userId = localStorage.getItem("user_id");
+    return !!userId;
+}
+
+export function logoutUser() {
+    try {
+      const response = axios.post("/logout");
+      console.log("Logout response:", response.data);
+      localStorage.removeItem("token");
+      localStorage.removeItem("username");
+      setUsername(null);
+      setChildren([]);
+      loadChildren();
+      navigate("/", { replace: true });
+    } catch (error) {
+      console.error("Error during logout:", error);
+    }
 }
 
 export function isAdminUser() {
