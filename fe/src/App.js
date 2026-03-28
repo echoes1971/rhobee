@@ -77,6 +77,7 @@ function App() {
   if (isUserLoggedIn_ && !isValidToken) {
     console.warn("App: user is logged in but token is invalid/expired, logging out");
     logoutUser();
+    Navigate("/", { replace: true });
   }
 
   // if any onAppLoad hooks are needed, iterate here
