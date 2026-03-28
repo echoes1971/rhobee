@@ -120,9 +120,9 @@ export function isUserLoggedIn() {
 /**
  * The caller is responsible to handle post-logout actions
  */
-export function logoutUser() {
+export async function logoutUser() {
     try {
-      const response = axios.post("/logout");
+      const response = await axios.post("/logout");
       console.log("Logout response:", response.data);
     } catch (error) {
       console.error("Error during logout API call:", error);

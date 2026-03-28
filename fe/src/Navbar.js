@@ -24,9 +24,17 @@ function AppNavbar() {
   const isLoggedIn = isUserLoggedIn();
 
   if (isLoggedIn && !isValidToken) {
-    console.warn("Navbar:   user is logged in but token is invalid/expired, logging out");
-    logoutUser();
-    navigate("/", { replace: true });
+    // loadChildren();
+    // sleep a bit to ensure logoutUser has cleared localStorage before navigating
+    setTimeout(() => {
+      console.warn("Navbar:   user is logged in but token is invalid/expired, logging out");
+      logoutUser();
+      setUsername(null);
+      setChildren([]);
+      loadChildren();
+      navigate("/", { replace: true });
+    }, 100);
+    // navigate("/", { replace: true });
   }
 
   const changeLanguage = (lng) => {
@@ -60,10 +68,10 @@ function AppNavbar() {
   const handleLogout = async () => {
     logoutUser();
     try {
-      const response = await axios.post("/logout");
-      console.log("Logout response:", response.data);
-      localStorage.removeItem("token");
-      localStorage.removeItem("username");
+      // const response = await axios.post("/logout");
+      // console.log("Logout response:", response.data);
+      // localStorage.removeItem("token");
+      // localStorage.removeItem("username");
       setUsername(null);
       setChildren([]);
       loadChildren();
