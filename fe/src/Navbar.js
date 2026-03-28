@@ -5,7 +5,7 @@ import { ThemeContext } from "./ThemeContext";
 import { useTranslation } from "react-i18next";
 import { app_cfg } from "./app.cfg";
 import axios from "./axios";
-import { hasGroupAccess, isAdminUser, isWebmasterUser, isGuestUser, isUserLoggedIn, logoutUser } from "./sitenavigation_utils";
+import { hasGroupAccess, isAdminUser, isWebmasterUser, isGuestUser, isTokenValid, isUserLoggedIn, logoutUser } from "./sitenavigation_utils";
 import { getPlugin, getAllPluginNames } from './plugins';
 
 function AppNavbar() {
@@ -20,7 +20,14 @@ function AppNavbar() {
   const [children, setChildren] = useState([]);
   const isAdmin = isAdminUser();
   const isWebmaster = isWebmasterUser();
+  const isValidToken = isTokenValid();
   const isLoggedIn = isUserLoggedIn();
+
+  if (isLoggedIn && !isValidToken) {
+    console.warn("Navbar:   user is logged in but token is invalid/expired, logging out");
+    logoutUser();
+    navigate("/", { replace: true });
+  }
 
   const changeLanguage = (lng) => {
     i18n.changeLanguage(lng);
@@ -34,16 +41,15 @@ function AppNavbar() {
   };
 
   const loadChildren = async () => {
-    logoutUser();
-    // try {
-    //   const response = await axios.get(`/nav/children/${site_root}`);
-    //   // filter those with metadata DBFolder
-    //   const filteredChildren = (response.data.children || []).filter(child => child.metadata && child.metadata.classname === "DBFolder");
-    //   // alert(JSON.stringify(filteredChildren));
-    //   setChildren(filteredChildren);
-    // } catch (error) {
-    //   console.error("Error loading root children:", error);
-    // }
+    try {
+      const response = await axios.get(`/nav/children/${site_root}`);
+      // filter those with metadata DBFolder
+      const filteredChildren = (response.data.children || []).filter(child => child.metadata && child.metadata.classname === "DBFolder");
+      // alert(JSON.stringify(filteredChildren));
+      setChildren(filteredChildren);
+    } catch (error) {
+      console.error("Error loading root children:", error);
+    }
   };
 
   // Load root children
@@ -52,6 +58,7 @@ function AppNavbar() {
   }, [site_root]);
 
   const handleLogout = async () => {
+    logoutUser();
     try {
       const response = await axios.post("/logout");
       console.log("Logout response:", response.data);

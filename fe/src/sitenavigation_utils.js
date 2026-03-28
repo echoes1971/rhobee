@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Spinner } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
-import axiosInstance from './axios';
+// import axiosInstance from './axios';
 import { app_cfg } from './app.cfg';
 import { getPlugin, getAllPluginNames, getPluginClassnameToIcon } from './plugins';
+import axios from "./axios";
 
 // Format object ID: if 16 chars, format as xxxx-xxxxxxxx-xxxx
 export function formatObjectId(objId) {
@@ -117,18 +117,28 @@ export function isUserLoggedIn() {
     return !!userId;
 }
 
+/**
+ * The caller is responsible to handle post-logout actions
+ */
 export function logoutUser() {
     try {
       const response = axios.post("/logout");
       console.log("Logout response:", response.data);
-      localStorage.removeItem("token");
-      localStorage.removeItem("username");
-      setUsername(null);
-      setChildren([]);
-      loadChildren();
-      navigate("/", { replace: true });
     } catch (error) {
-      console.error("Error during logout:", error);
+      console.error("Error during logout API call:", error);
+    } finally {
+      localStorage.removeItem("token");
+      localStorage.removeItem("expires_at");
+      localStorage.removeItem("username");
+      localStorage.removeItem("user_id");
+      localStorage.removeItem("groups");
+      console.log("User logged out, localStorage cleared");
+    //   setUsername(null);
+    //   setChildren([]);
+    //   loadChildren();
+    //   navigate("/", { replace: true });
+    // } catch (error) {
+    //   console.error("Error during logout:", error);
     }
 }
 
