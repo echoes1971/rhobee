@@ -25,6 +25,21 @@ import { HtmlView } from '../../ContentHtml';
 import axiosInstance from '../../axios';
 import { ThemeContext } from '../../ThemeContext';
 
+
+const statusMap = {
+    "": "--",
+    "0": "to be invoiced",
+    "1": "not to be invoiced",
+    "2": "invoiced",
+    "3": "assistance"
+}
+const interventionLocationMap = {
+    "": "--",
+    "0": "Office",
+    "1": "Remote (via ssh/etc.)",
+    "2": "On site"
+}
+
 /*
 	function getViewColumnNames() { return array(
 // 		'fk_progetto','father_id','fk_obj_id',
@@ -96,14 +111,46 @@ export function TimetrackView({ data, metadata, objectData, dark }) {
             </Card.Header>
             <Card.Body className={dark ? 'bg-secondary bg-opacity-10' : ''}>
                 <h2 className={dark ? 'text-light' : 'text-dark'}>{data.name}</h2>
-                {!data.html && data.description && <hr />}
                 {data.description && (
-                    <Card.Text dangerouslySetInnerHTML={{ __html: formatDescription(data.description) }}></Card.Text>
+                    <div className="row">
+                        <div className='col-md-2 col-4 text-end'>{t('common.description')}: </div>
+                        <div className='col-md-10 col-8' dangerouslySetInnerHTML={{ __html: formatDescription(data.description) }} />
+                    </div>
                 )}
-                {data.html && <hr />}
-                {data.html && (
-                    <HtmlView htmlContent={data.html} dark={dark} />
-                )}
+                <div className="row">
+                    <div className='col-md-2 col-4 text-end'>{t('plugin-projects.fk_project')}:</div>
+                    <div className='col-md-3 col-8'><ObjectLinkView obj_id={data.fk_project} dark={dark} /></div>
+                </div>
+                <div className="row">
+                    <div className='col-md-2 col-4 text-end'>{t('common.from')}:</div>
+                    <div className='col-md-3 col-8'> {formateDateTimeString(data.from_time)}</div>
+                    <div className='col-md-2 col-4 text-end'>{t('common.to')}:</div>
+                    <div className='col-md-3 col-8'> {formateDateTimeString(data.to_time)}</div>
+                </div>
+
+                <div className="row">
+                    <div className='col-md-2 col-4 text-end'>{t('plugin-projects.intervention_hours')}:</div>
+                    <div className='col-md-3 col-8'> {formateDateTimeString(data.intervention_hours)}</div>
+                </div>
+                <div className="row">
+                    <div className='col-md-2 col-4 text-end'>{t('plugin-projects.travel_hours')}:</div>
+                    <div className='col-md-3 col-8'> {formateDateTimeString(data.travel_hours) || '--'}</div>
+                    <div className='col-md-2 col-4 text-end'>{t('plugin-projects.travel_distance')}:</div>
+                    <div className='col-md-3 col-8'> {data.travel_distance || '--'} km</div>
+                </div>
+                <div className="row">
+                    <div className='col-md-2 col-4 text-end'>{t('plugin-projects.intervention_location')}:</div>
+                    <div className='col-md-3 col-8'> {interventionLocationMap[data.intervention_location] || '--'}</div>
+                    <div className='col-md-2 col-4 text-end'>{t('plugin-projects.status')}:</div>
+                    <div className='col-md-3 col-8'> {statusMap[data.status] || '--'}</div>
+                </div>
+
+                {/* {data.hourly_rate && data.currency && data.hourly_rate > 0 && ( */}
+                    <div className="row">
+                        <div className='col-md-2 col-4 text-end'>{t('plugin-projects.hourly_rate')}:</div>
+                        <div className='col-md-3 col-8'>{data.hourly_rate && data.hourly_rate > 0 ? data.hourly_rate : '--'} {data.currency || ''}</div>
+                    </div>
+                {/* )} */}
             </Card.Body>
             <Card.Footer className={dark ? 'bg-secondary bg-opacity-10' : ''} style={dark ? { borderTop: '1px solid rgba(255,255,255,0.1)' } : {}}>
                 <ObjectFooterView data={data} metadata={metadata} objectData={objectData} dark={dark} />
@@ -264,20 +311,6 @@ export function TimetrackEdit({ data, metadata, onSave, onCancel, onDelete, savi
             </div>
         </Form>
     );
-}
-
-const statusMap = {
-    "": "--",
-    "0": "to be invoiced",
-    "1": "not to be invoiced",
-    "2": "invoiced",
-    "3": "assistance"
-}
-const interventionLocationMap = {
-    "": "--",
-    "0": "Office",
-    "1": "Remote (via ssh/etc.)",
-    "2": "On site"
 }
 
 export function Timetracks() {
