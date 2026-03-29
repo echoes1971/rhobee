@@ -56,7 +56,8 @@
         "no_matches": "Nessuna corrispondenza",
         "load_more": "Carica di più",
         "from": "Da",
-        "to": "A"
+        "to": "A",
+        "details": "Dettagli"
     },
     "users": {
         "user_profile": "Profilo Utente",

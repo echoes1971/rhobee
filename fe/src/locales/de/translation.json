@@ -56,7 +56,8 @@
     "no_matches": "Keine Übereinstimmungen gefunden",
     "load_more": "Mehr laden",
     "from": "Von",
-    "to": "Bis"
+    "to": "Bis",
+    "details": "Details"
   },
   "users": {
     "user_profile": "Benutzerprofil",

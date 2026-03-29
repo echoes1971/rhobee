@@ -56,7 +56,8 @@
     "no_matches": "Aucune correspondance",
     "load_more": "Charger plus",
     "from": "De",
-    "to": "À"
+    "to": "À",
+    "details": "Détails"
   },
   "users": {
     "user_profile": "Profil Utilisateur",
