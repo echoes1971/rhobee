@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { Alert, Button, Card, Col, Form, Row, Spinner } from 'react-bootstrap';
+import { Accordion, Alert, Button, Card, Col, Form, Row, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { 
@@ -16,6 +16,8 @@ import {
   LanguageView,
   ObjectLinkView,
   UserLinkView,
+  TimeEdit,
+  ObjectView,
 } from '../../ContentWidgets';
 import { ObjectSearch, ObjectHeaderView, ObjectFooterView } from "../../dbobjects/DBObject";
 import ObjectLinkSelector from '../../ObjectLinkSelector'
@@ -176,6 +178,16 @@ export function TimetrackEdit({ data, metadata, onSave, onCancel, onDelete, savi
         father_id: data.father_id || null,
         owner: data.owner || null,
         group_id: data.group_id || null,
+        fk_project: data.fk_project || null,
+        from_time: data.from_time || null,
+        to_time: data.to_time || null,
+        intervention_hours: data.intervention_hours || null,
+        travel_hours: data.travel_hours || null,
+        travel_distance: data.travel_distance || null,
+        intervention_location: data.intervention_location || null,
+        status: data.status || null,
+        hourly_rate: data.hourly_rate || null,
+        currency: data.currency || null,
     });
 
     const handleChange = (e) => {
@@ -193,50 +205,53 @@ export function TimetrackEdit({ data, metadata, onSave, onCancel, onDelete, savi
 
     return (
         <Form onSubmit={handleSubmit}>
-            <Alert variant="info" className="mb-3">
-                <i className="bi bi-info-circle me-2"></i>
-                Editing {metadata.classname} - Basic fields only
-            </Alert>
+            <Accordion className="mb-3 rhobee-theme">
+                <Accordion.Item eventKey="general">
+                    <Accordion.Header className='rhobee-theme'>{t('common.details')}</Accordion.Header>
+                    <Accordion.Body>
+                        <div className="row">
+                            <div className="col-md-4 mb-3">
+                            <ObjectLinkSelector
+                                value={formData.father_id || '0'}
+                                onChange={handleChange}
+                                classname="DBObject"
+                                fieldName="father_id"
+                                label={t('dbobjects.parent')}
+                            />
+                            </div>
+                            <div className="col-md-4 mb-3">
+                            <ObjectLinkSelector
+                                value={formData.owner}
+                                onChange={handleChange}
+                                classname="DBUser"
+                                fieldName="owner"
+                                label={t('permissions.owner')}
+                                required={false}
+                            />
+                            </div>
+                            <div className="col-md-4 mb-3">
+                            <ObjectLinkSelector
+                                value={formData.group_id}
+                                onChange={handleChange}
+                                classname="DBGroup"
+                                fieldName="group_id"
+                                label={t('permissions.group')}
+                                required={false}
+                            />
+                            </div>
+                        </div>
 
-            <div className="row">
-                <div className="col-md-4 mb-3">
-                <ObjectLinkSelector
-                    value={formData.father_id || '0'}
-                    onChange={handleChange}
-                    classname="DBObject"
-                    fieldName="father_id"
-                    label={t('dbobjects.parent')}
-                />
-                </div>
-                <div className="col-md-4 mb-3">
-                <ObjectLinkSelector
-                    value={formData.owner}
-                    onChange={handleChange}
-                    classname="DBUser"
-                    fieldName="owner"
-                    label={t('permissions.owner')}
-                    required={false}
-                />
-                </div>
-                <div className="col-md-4 mb-3">
-                <ObjectLinkSelector
-                    value={formData.group_id}
-                    onChange={handleChange}
-                    classname="DBGroup"
-                    fieldName="group_id"
-                    label={t('permissions.group')}
-                    required={false}
-                />
-                </div>
-            </div>
+                        <PermissionsEditor
+                            value={formData.permissions}
+                            onChange={handleChange}
+                            name="permissions"
+                            label={t('permissions.current') || 'Permissions'}
+                            dark={dark}
+                        />
 
-            <PermissionsEditor
-                value={formData.permissions}
-                onChange={handleChange}
-                name="permissions"
-                label={t('permissions.current') || 'Permissions'}
-                dark={dark}
-            />
+                    </Accordion.Body>
+                </Accordion.Item>
+            </Accordion>
 
             <Form.Group className="mb-3">
                 <Form.Label>{t('common.name')}</Form.Label>
@@ -249,16 +264,128 @@ export function TimetrackEdit({ data, metadata, onSave, onCancel, onDelete, savi
                 />
             </Form.Group>
 
-            <Form.Group className="mb-3">
-                <Form.Label>{t('common.description')}</Form.Label>
-                <Form.Control
-                    as="textarea"
-                    name="description"
-                    rows={10}
-                    value={formData.description}
-                    onChange={handleChange}
-                />
-            </Form.Group>
+            <Accordion className='mb-3 rhobee-theme' defaultActiveKey={formData.description ? "0" : null}>
+                <Accordion.Item eventKey="0" alwaysOpen>
+                    <Accordion.Header className='rhobee-theme'>{t('common.description')}</Accordion.Header>
+                    <Accordion.Body>
+                        <Form.Control
+                            as="textarea"
+                            name="description"
+                            rows={5}
+                            value={formData.description}
+                            onChange={handleChange}
+                        />
+                    </Accordion.Body>
+                </Accordion.Item>
+            </Accordion>
+
+            <div className="row">
+                <div className="col-md-6 mb-3">
+                    <ObjectLinkSelector
+                        value={formData.fk_project || '0'}
+                        onChange={handleChange}
+                        classname="DBProject"
+                        fieldName="fk_project"
+                        label={t('plugin-projects.fk_project')}
+                    />
+                </div>
+            </div>
+
+            <div className="row">
+                <div className='col-md-2 col-4 text-end'>{t('common.from')}:</div>
+                <div className='col-md-3 col-8'>
+                        <Form.Control
+                            type="datetime-local"
+                            name="from_time"
+                            value={formData.from_time ? formData.from_time.substring(0,16) : ''}
+                            onChange={handleChange}
+                        />
+                </div>
+                <div className='col-md-2 col-4 text-end'>{t('common.to')}:</div>
+                <div className='col-md-3 col-8'>
+                    <Form.Control
+                            type="datetime-local"
+                            name="to_time"
+                            value={formData.to_time ? formData.to_time.substring(0,16) : ''}
+                            onChange={handleChange}
+                        />
+                </div>
+            </div>
+
+            <div className="row">
+                <div className='col-md-2 col-4 text-end'>{t('plugin-projects.intervention_hours')}:</div>
+                <div className='col-md-3 col-8'>
+                    <TimeEdit
+                        name="intervention_hours"
+                        value={formData.intervention_hours || ''}
+                        onChange={handleChange}
+                    />
+                </div>
+            </div>
+
+            <div className="row">
+                <div className='col-md-2 col-4 text-end'>{t('plugin-projects.travel_hours')}:</div>
+                <div className='col-md-3 col-8'>
+                    <TimeEdit
+                        name="travel_hours"
+                        value={formData.travel_hours || ''}
+                        onChange={handleChange}
+                    />
+                </div>
+                <div className='col-md-2 col-4 text-end'>{t('plugin-projects.travel_distance')} (Km):</div>
+                <div className='col-md-3 col-8'>
+                    <Form.Control
+                        type="number"
+                        name="travel_distance"
+                        value={formData.travel_distance || ''}
+                        onChange={handleChange}
+                    />
+                </div>
+            </div>
+
+            <div className="row">
+                <div className='col-md-2 col-4 text-end'>{t('plugin-projects.intervention_location')}:</div>
+                <div className='col-md-3 col-8'>
+                    <Form.Select name="intervention_location" value={formData.intervention_location || ''} onChange={handleChange}>
+                        <option value="">{t('common.select')}</option>
+                        {Object.entries(interventionLocationMap).map(([key, label]) => (
+                            <option key={key} value={key}>{label}</option>
+                        ))}
+                    </Form.Select>
+                </div>
+                <div className='col-md-2 col-4 text-end'>{t('plugin-projects.status')}:</div>
+                <div className='col-md-3 col-8'>
+                    <Form.Select name="status" value={formData.status || ''} onChange={handleChange}>
+                        <option value="">{t('common.select')}</option>
+                        {Object.entries(statusMap).map(([key, label]) => (
+                            <option key={key} value={key}>{label}</option>
+                        ))}
+                    </Form.Select>
+                </div>
+            </div>
+
+            <div className="row">
+                <div className='col-md-2 col-4 text-end'>{t('plugin-projects.hourly_rate')}:</div>
+                <div className='col-md-3 col-8'>
+                    <Form.Control
+                        type="number"
+                        name="hourly_rate"
+                        value={formData.hourly_rate || ''}
+                        onChange={handleChange}
+                    />
+                </div>
+                <div className='col-md-2 col-4 text-end'>{t('plugin-projects.currency')}:</div>
+                <div className='col-md-3 col-8'>
+                    <Form.Control
+                        type="text"
+                        name="currency"
+                        value={formData.currency || ''}
+                        onChange={handleChange}
+                    />
+                </div>
+            </div>
+
+            <div style={{ height: '2rem' }}></div>
 
             {error && (
                 <Alert variant="danger" className="mb-3">
