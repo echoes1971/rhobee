@@ -86,11 +86,15 @@ export function formatDescription(description) {
 }
 export function formateDateTimeString(dateTimeString) {
     if (!dateTimeString) return '';
-    const date = new Date(dateTimeString);
+
+    var _datetimeString = dateTimeString;
+    _datetimeString = _datetimeString.replace('1970-01-01 ', '');
+
+    const date = new Date(_datetimeString);
     var ret = date.toLocaleString();
     if (ret === 'Invalid Date') {
         // If the date is invalid, return the original string (after stripping zero date/time)
-        ret = dateTimeString;
+        ret = _datetimeString;
         ret = ret.replace('0000-00-00 ', '');
         ret = ret.replace(' 00:00:00', '');
         ret = ret.replace('00:00:00', '');

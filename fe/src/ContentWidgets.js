@@ -620,3 +620,82 @@ export function LanguageView({ language, short }) {
         <span>{short ? languageShortMap[languagePrefix] || languagePrefix : languageMap[languagePrefix] || languagePrefix}</span>
     );
 }
+
+export function TimeEdit({ value, onChange, name }) {
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        // value is in format "HH:MM", convert to "1970-01-01THH:MM:00"
+        const timeValue = value ? `1970-01-01 ${value}` : null;
+        // Pass it as event-like object to onChange2
+        onChange({ target: { name, value: timeValue } });
+    }
+
+    // console.log('TimeEdit render, value:', value);
+
+    return (
+        <input
+            className="form-control"
+            type="time-local"
+            name={name}
+            value={value && value.length > 8 ? value.substring(11,19) : (value.length === 8 ? value : '')}
+            // on click down, select the nearest char to the click position to make it easier to edit hours vs minutes vs seconds
+            onClick={(e) => {
+                const input = e.target;
+                const clickPosition = input.selectionStart;
+                if (clickPosition < 8) {
+                    // Clicked on hours
+                    input.setSelectionRange(clickPosition, clickPosition + 1);
+                } else {
+                    // Clicked on seconds
+                    input.setSelectionRange(7, 8);
+                }
+            }}
+            // when goind left and right with arrow keys, keep the selection on the nearest char to make it easier to edit hours vs minutes vs seconds
+            onKeyDown={(e) => {
+                const input = e.target;
+                var selectionStart = input.selectionStart;
+                if (e.key === 'ArrowLeft') {
+                    if (e.target.value[selectionStart-1] === ':') {
+                        selectionStart -= 1;
+                    }
+                    if (selectionStart >= 0) {
+                        e.preventDefault();
+                        if (selectionStart > 0) {
+                            input.setSelectionRange(selectionStart - 1, selectionStart);
+                        } else {
+                            input.setSelectionRange(0, 1);
+                        }
+                    }
+                } else if (e.key === 'ArrowRight') {
+                    if (selectionStart < input.value.length) {
+                        e.preventDefault();
+                        if (e.target.value[selectionStart+1] === ':') {
+                            selectionStart += 1;
+                        }
+                        if (selectionStart < 7) {
+                            input.setSelectionRange(selectionStart+1, selectionStart+2);
+                        } else {
+                            input.setSelectionRange(7, 8);
+                        }
+                    }
+                }
+            }}
+            onChange={(e) => {
+                var clickPosition = e.target.selectionStart;
+                handleChange(e);
+                setTimeout(() => {
+                    if (e.target.value[clickPosition] === ':') {
+                        clickPosition += 1;
+                    }
+                    if (clickPosition < 8) {
+                        e.target.setSelectionRange(clickPosition, clickPosition+1);
+                    } else {
+                        e.target.setSelectionRange(7, 8);
+                    }
+                }, 0);
+            }
+            }
+            // onChange={handleChangeHours}
+        />
+    );
+}
