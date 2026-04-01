@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Form, Spinner } from 'react-bootstrap';
+import React, { useState, useEffect, useRef } from 'react';
+import { Form, ListGroup, Spinner } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import axiosInstance from './axios';
 import { classname2bootstrapIcon } from './sitenavigation_utils';
@@ -697,5 +697,211 @@ export function TimeEdit({ value, onChange, name }) {
             }
             // onChange={handleChangeHours}
         />
+    );
+}
+
+/**
+ * 
+ * @param {*} param0 
+ * @description multiple options for ordering: "last_modify_date","creation_date","name","description","owner","group_id","creator","last_modify","deleted_by","deleted_date"
+ * each one can be asc or desc. Options will be separated by comma, e.g. "last_modify_date desc, name asc"
+ * @returns 
+ */
+export function OrderBySelector({ value, onChange, name }) {
+    const { t } = useTranslation();
+    const [selectedOptions, setSelectedOptions] = useState([]);
+    const lastValueRef = useRef(null);
+
+    const fields = [
+        'last_modify_date',
+        'creation_date',
+        'name',
+        'description',
+        'owner',
+        'group_id',
+        'creator',
+        'last_modify',
+        'deleted_by',
+        'deleted_date',
+        'classname',
+    ];
+
+    const formatFieldLabel = (field) => {
+        switch (field) {
+            case 'last_modify_date':
+                return t('dbobjects.modified');
+            case 'creation_date':
+                return t('dbobjects.created');
+            case 'name':
+                return t('dbobjects.name');
+            case 'description':
+                return t('dbobjects.description');
+            case 'owner':
+                return t('dbobjects.owner');
+            case 'group_id':
+                return t('dbobjects.group');
+            case 'creator':
+                return t('dbobjects.creator');
+            case 'last_modify':
+                return t('dbobjects.last_modify');
+            case 'deleted_by':
+                return t('dbobjects.deleted_by');
+            case 'deleted_date':
+                return t('dbobjects.deleted');
+            case 'classname':
+                return t('dbobjects.classname') || 'classname';
+            default:
+                return field;
+        }
+    };
+
+    const parseValue = (valueString) => {
+        if (!valueString || !valueString.toString().trim()) {
+            return [];
+        }
+        const items = valueString
+            .toString()
+            .split(',')
+            .map((item) => item.trim())
+            .filter(Boolean);
+
+        const result = [];
+        for (const item of items) {
+            const parts = item.split(/\s+/);
+            if (parts.length === 0) continue;
+            const field = parts[0].trim();
+            if (!fields.includes(field)) continue;
+            const directionToken = parts[1]?.trim()?.toLowerCase();
+            const direction = directionToken === 'desc' ? 'desc' : 'asc';
+            result.push({ field, direction });
+        }
+        return result;
+    };
+
+    const stringifyValue = (options) =>
+        options
+            .map((opt) => `${opt.field} ${opt.direction}`)
+            .join(', ');
+
+    // Solo sincronizzare dal parent se value è effettivamente cambiato
+    useEffect(() => {
+        if (lastValueRef.current !== value) {
+            lastValueRef.current = value;
+            const parsed = parseValue(value);
+            setSelectedOptions(parsed);
+        }
+    }, [value, fields]);
+
+    const emitChange = (newSelected) => {
+        setSelectedOptions(newSelected);
+        const flatValue = stringifyValue(newSelected);
+        lastValueRef.current = flatValue; // Marca come "emesso da noi"
+        if (onChange) {
+            onChange({ target: { name, value: flatValue } });
+        }
+    };
+
+    const handleItemClick = (field, event) => {
+        const isCtrlClick = event && (event.ctrlKey || event.metaKey);
+        const idx = selectedOptions.findIndex((opt) => opt.field === field);
+
+        if (idx >= 0) {
+            if (isCtrlClick) {
+                // Ctrl/Cmd-click: deselect
+                const newSelected = selectedOptions.filter((opt) => opt.field !== field);
+                emitChange(newSelected);
+            } else {
+                // Normal click: toggle direction
+                const newSelected = selectedOptions.map((opt) =>
+                    opt.field === field
+                        ? { ...opt, direction: opt.direction === 'asc' ? 'desc' : 'asc' }
+                        : opt
+                );
+                emitChange(newSelected);
+            }
+        } else {
+            // Non selezionato, aggiungi
+            const newSelected = [...selectedOptions, { field, direction: 'asc' }];
+            emitChange(newSelected);
+        }
+    };
+
+    const dragStartField = (event, index) => {
+        event.dataTransfer.setData('text/plain', index);
+        event.dataTransfer.effectAllowed = 'move';
+    };
+
+    const dragOverItem = (event) => {
+        event.preventDefault();
+    };
+
+    const dropItem = (event, targetIndex) => {
+        event.preventDefault();
+        const sourceIndex = Number(event.dataTransfer.getData('text/plain'));
+        if (isNaN(sourceIndex) || sourceIndex === targetIndex) {
+            return;
+        }
+
+        const allItems = [
+            ...selectedOptions.map((opt) => ({ ...opt, selected: true })),
+            ...fields
+                .filter((f) => !selectedOptions.some((opt) => opt.field === f))
+                .map((field) => ({ field, direction: 'asc', selected: false })),
+        ];
+
+        const movedItem = allItems.splice(sourceIndex, 1)[0];
+        allItems.splice(targetIndex, 0, movedItem);
+
+        const newSelected = allItems
+            .filter((item) => item.selected)
+            .map((item) => ({ field: item.field, direction: item.direction }));
+        emitChange(newSelected);
+    };
+
+    const displayedItems = [
+        ...selectedOptions.map((opt) => ({ ...opt, selected: true })),
+        ...fields
+            .filter((f) => !selectedOptions.some((opt) => opt.field === f))
+            .map((field) => ({ field, direction: 'asc', selected: false })),
+    ];
+
+    return (
+        <Form.Group className="mb-3">
+            <Form.Label>{t('dbobjects.childs_sort_by')}</Form.Label>
+            <ListGroup style={{ overflowY: 'auto' }}>
+                {displayedItems.map((item, index) => {
+                    const active = item.selected;
+                    const arrow = item.selected ? (item.direction === 'desc' ? '▼' : '▲') : '';
+                    return (
+                        <ListGroup.Item
+                            key={item.field}
+                            draggable
+                            active={active}
+                            onMouseDown={(e) => {
+                                // Assicuriamoci che l'evento sia catturato correttamente
+                                if (e.button === 0) {
+                                    // left click
+                                    setTimeout(() => {
+                                        handleItemClick(item.field, e);
+                                    }, 0);
+                                }
+                            }}
+                            onDragStart={(event) => dragStartField(event, index)}
+                            onDragOver={dragOverItem}
+                            onDrop={(event) => dropItem(event, index)}
+                            style={{
+                                cursor: active ? 'move' : 'pointer',
+                                userSelect: 'none',
+                                opacity: active ? 1 : 0.6,
+                            }}
+                        >
+                            <span>{formatFieldLabel(item.field)}</span>
+                            <span style={{ float: 'right', fontWeight: 'bold' }}>{arrow}</span>
+                        </ListGroup.Item>
+                    );
+                })}
+            </ListGroup>
+            <small className="text-muted d-block mb-2">{t('dbobjects.childs_sort_by_hint')}</small>
+        </Form.Group>
     );
 }

@@ -296,11 +296,11 @@ func ensureTableExistsAndUpdatedForMysql(dbe DBEntityInterface, Verbose bool) er
 				// Column does not exist, add it
 				addColumnSQL := fmt.Sprintf("ALTER TABLE %s ADD COLUMN %s %s", tableName, colName, colDef.Type)
 				log.Printf("Adding missing column with SQL: %s", addColumnSQL)
-				// _, err := DbConnection.Exec(addColumnSQL)
-				// if err != nil {
-				// 	log.Printf("Error adding column %s to table %s: %v", colName, tableName, err)
-				// 	return err
-				// }
+				_, err := DbConnection.Exec(addColumnSQL)
+				if err != nil {
+					log.Printf("Error adding column %s to table %s: %v", colName, tableName, err)
+					return err
+				}
 				log.Printf("Added column %s to table %s", colName, tableName)
 			}
 		}

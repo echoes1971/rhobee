@@ -121,7 +121,13 @@
     "description": "Description",
     "linked_to": "Linked to",
     "download_file": "Download File",
-    "include_deleted": "Include Deleted"
+    "include_deleted": "Include Deleted",
+    "classname": "Type",
+    "creator": "Created By",
+    "last_modify": "Modified By",
+    "deleted_by": "Deleted By",
+    "childs_sort_by": "Children Sort By",
+    "childs_sort_by_hint": "Click to toggle direction • Ctrl+Click to remove"
   },
   "permissions": {
     "read": "Read",

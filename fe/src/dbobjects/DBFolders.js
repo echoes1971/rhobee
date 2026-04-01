@@ -7,6 +7,7 @@ import axiosInstance from '../axios';
 import ObjectLinkSelector from '../ObjectLinkSelector';
 import ObjectList from "../ObjectList";
 import { ObjectSearch } from "./DBObject";
+import { OrderBySelector } from "../ContentWidgets";
 import { cleanTokensBeforeSave, HtmlEdit, HtmlView } from "../ContentHtml";
 import PermissionsEditor from '../PermissionsEditor';
 
@@ -267,6 +268,7 @@ export function FolderEdit({ data, onSave, onCancel, onDelete, saving, error, da
         fk_obj_id: data.fk_obj_id || '0',
         permissions: data.permissions || 'rwxr-x---',
         childs_sort_order: data.childs_sort_order || '',
+        childs_sort_by: data.childs_sort_by || '',
     });
     const [children, setChildren] = useState([]);
     const [loadingChildren, setLoadingChildren] = useState(false);
@@ -662,6 +664,13 @@ export function FolderEdit({ data, onSave, onCancel, onDelete, saving, error, da
                     )}
                 </Form.Group>
             )}
+
+            <OrderBySelector
+                value={formData.childs_sort_by || 'name'}
+                onChange={handleChange}
+                name="childs_sort_by"
+                label={t('folder.children_sort_by')}
+            />
 
             {error && (
                 <Alert variant="danger" className="mb-3">
