@@ -865,15 +865,23 @@ func (dbr *DBRepository) GetChildren(parentID string, ignoreDeleted bool) []DBEn
 	}
 	// Get childs_sort_order if container is DBFolder
 	childs_sort_order := []string{}
-	childs_sort_by := "name"
 	if container != nil && container.GetTypeName() == "DBFolder" {
 		childs_sort_order = container.(*DBFolder).GetChildsSortOrder()
 		if dbr.Verbose {
 			log.Print("DBRepository.GetChildren: childs_sort_order=", childs_sort_order)
 		}
-		if container.HasValue("childs_sort_by") && container.GetValue("childs_sort_by") != "" {
-			childs_sort_by = container.GetValue("childs_sort_by").(string)
+	} else if container != nil && container.HasValue("childs_sort_order") && container.GetValue("childs_sort_order") != nil && container.GetValue("childs_sort_order") != "" {
+		for _, child := range strings.Split(container.GetValue("childs_sort_order").(string), ",") {
+			childs_sort_order = append(childs_sort_order, child)
 		}
+		if dbr.Verbose {
+			log.Print("DBRepository.GetChildren: childs_sort_order from metadata=", childs_sort_order)
+		}
+	}
+
+	childs_sort_by := "name"
+	if container.HasValue("childs_sort_by") && container.GetValue("childs_sort_by") != "" {
+		childs_sort_by = container.GetValue("childs_sort_by").(string)
 	}
 
 	registeredTypes := dbr.factory.GetAllClassNames()
