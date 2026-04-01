@@ -5,9 +5,8 @@ import { ThemeContext } from "../ThemeContext";
 import { useTranslation } from "react-i18next";
 import axiosInstance from '../axios';
 import ObjectLinkSelector from '../ObjectLinkSelector';
-import ObjectList from "../ObjectList";
 import { ObjectSearch } from "./DBObject";
-import { OrderBySelector } from "../ContentWidgets";
+import { OrderBySelector, ChildrenSortOrder } from "../ContentWidgets";
 import { cleanTokensBeforeSave, HtmlEdit, HtmlView } from "../ContentHtml";
 import PermissionsEditor from '../PermissionsEditor';
 
@@ -270,10 +269,6 @@ export function FolderEdit({ data, onSave, onCancel, onDelete, saving, error, da
         childs_sort_order: data.childs_sort_order || '',
         childs_sort_by: data.childs_sort_by || '',
     });
-    const [children, setChildren] = useState([]);
-    const [loadingChildren, setLoadingChildren] = useState(false);
-    const [sortedChildrenIds, setSortedChildrenIds] = useState([]);
-    const [draggedIndex, setDraggedIndex] = useState(null);
     
     // Index page editor states
     const [indexPages, setIndexPages] = useState([]);
@@ -286,34 +281,10 @@ export function FolderEdit({ data, onSave, onCancel, onDelete, saving, error, da
     // Load children and index pages on mount
     useEffect(() => {
         if (data.id) {
-            loadChildren();
+            // loadChildren();
             loadIndexPages();
         }
     }, [data.id]);
-
-    const loadChildren = async () => {
-        setLoadingChildren(true);
-        try {
-            const response = await axiosInstance.get(`/nav/children/${data.id}`);
-            const childrenData = response.data.children || [];
-            setChildren(childrenData);
-            
-            // Initialize sorted order from childs_sort_order or use current order
-            if (formData.childs_sort_order) {
-                const orderIds = formData.childs_sort_order.split(',').filter(id => id);
-                setSortedChildrenIds(orderIds);
-            // } else {
-            //     setSortedChildrenIds(childrenData.map(child => child.data.id));
-            }
-            if(sortedChildrenIds.length !== 0) {
-                console.log('Initial sortedChildrenIds:', sortedChildrenIds);
-            }
-        } catch (error) {
-            console.error('Failed to load children:', error);
-        } finally {
-            setLoadingChildren(false);
-        }
-    };
 
     const loadIndexPages = async () => {
         try {
@@ -388,54 +359,9 @@ export function FolderEdit({ data, onSave, onCancel, onDelete, saving, error, da
         }
     };
 
-    const handleDragStart = (e, index) => {
-        setDraggedIndex(index);
-        e.dataTransfer.effectAllowed = 'move';
-    };
-
-    const handleDragOver = (e, index) => {
-        e.preventDefault();
-        if (draggedIndex === null || draggedIndex === index) return;
-
-        const newOrder = [...sortedChildrenIds];
-        const draggedItem = newOrder[draggedIndex];
-        newOrder.splice(draggedIndex, 1);
-        newOrder.splice(index, 0, draggedItem);
-
-        setSortedChildrenIds(newOrder);
-        setDraggedIndex(index);
-    };
-
-    const handleDragEnd = () => {
-        setDraggedIndex(null);
-        // Update formData with new order
-        setFormData(prev => ({
-            ...prev,
-            childs_sort_order: sortedChildrenIds.join(',')
-        }));
-    };
-
-    const toggleChildInOrder = (childId) => {
-        const newOrder = sortedChildrenIds.includes(childId)
-            ? sortedChildrenIds.filter(id => id !== childId)
-            : [...sortedChildrenIds, childId];
-        
-        setSortedChildrenIds(newOrder);
-        setFormData(prev => ({
-            ...prev,
-            childs_sort_order: newOrder.join(',')
-        }));
-    };
-
     const handleSubmit = (e) => {
         e.preventDefault();
         onSave(formData);
-    };
-
-    // Get child name by ID
-    const getChildName = (childId) => {
-        const child = children.find(c => c.data.id === childId);
-        return child ? child.data.name : childId;
     };
 
     return (
@@ -563,107 +489,13 @@ export function FolderEdit({ data, onSave, onCancel, onDelete, saving, error, da
             </Form.Group>
 
             {/* Children Sort Order */}
-            {children.length > 0 && (
-                <Form.Group className="mb-3">
-                    <Form.Label>
-                        {t('folder.children_order')}
-                        <small className="ms-2 text-secondary">
-                            ({t('folder.drag_to_reorder')})
-                        </small>
-                    </Form.Label>
-                    
-                    {loadingChildren ? (
-                        <div className="text-center p-3">
-                            <Spinner animation="border" size="sm" />
-                        </div>
-                    ) : (
-                        <>
-                            {/* List of sorted children (draggable) */}
-                            <div className={`border rounded p-2 mb-2 ${dark ? 'border-secondary' : ''}`}>
-                                {sortedChildrenIds.length === 0 ? (
-                                    <div className="text-secondary text-center p-2">
-                                        {t('folder.no_children_selected')}
-                                    </div>
-                                ) : (
-                                    sortedChildrenIds.map((childId, index) => (
-                                        <div
-                                            key={childId}
-                                            draggable
-                                            onDragStart={(e) => handleDragStart(e, index)}
-                                            onDragOver={(e) => handleDragOver(e, index)}
-                                            onDragEnd={handleDragEnd}
-                                            className={`d-flex align-items-center p-2 mb-1 rounded ${
-                                                dark ? 'bg-dark' : 'bg-light'
-                                            } ${draggedIndex === index ? 'opacity-50' : ''}`}
-                                            style={{ cursor: 'move' }}
-                                        >
-                                            <i className="bi bi-grip-vertical me-2"></i>
-                                            <span className="flex-grow-1">{getChildName(childId)}</span>
-                                            <Button
-                                                variant="outline-danger"
-                                                size="sm"
-                                                onClick={() => toggleChildInOrder(childId)}
-                                                disabled={saving}
-                                            >
-                                                <i className="bi bi-x"></i>
-                                            </Button>
-                                        </div>
-                                    ))
-                                )}
-                            </div>
-
-                            {/* List of available children (not in sort order) */}
-                            {children.filter(child => !sortedChildrenIds.includes(child.data.id)).length > 0 && (
-                                <>
-                                    <Accordion className="mb-3 rhobee-theme">
-                                        <Accordion.Item eventKey="0" className='rhobee-theme'>
-                                            <Accordion.Header className='rhobee-theme'>
-                                                {t('folder.available_children')} ({children.filter(child => !sortedChildrenIds.includes(child.data.id)).length})
-                                            </Accordion.Header>
-                                            <Accordion.Body className='rhobee-theme'>
-                                                <ObjectList
-                                                    items={children
-                                                        .filter(child => !sortedChildrenIds.includes(child.data.id))
-                                                        .map(child => ({
-                                                            id: child.data.id,
-                                                            name: child.data.name,
-                                                            description: child.data.description,
-                                                            classname: child.metadata?.classname
-                                                        }))
-                                                    }
-                                                    onItemClick={(item) => toggleChildInOrder(item.id)}
-                                                    showViewToggle={true}
-                                                    storageKey="folderChildrenViewMode"
-                                                    defaultView="list"
-                                                />
-                                            </Accordion.Body>
-                                        </Accordion.Item>
-                                    </Accordion>
-                                    {/* <Form.Label className="mt-3 mb-2">
-                                        {t('folder.available_children')}
-                                    </Form.Label>
-                                    
-                                    <ObjectList
-                                        items={children
-                                            .filter(child => !sortedChildrenIds.includes(child.data.id))
-                                            .map(child => ({
-                                                id: child.data.id,
-                                                name: child.data.name,
-                                                description: child.data.description,
-                                                classname: child.metadata?.classname
-                                            }))
-                                        }
-                                        onItemClick={(item) => toggleChildInOrder(item.id)}
-                                        showViewToggle={true}
-                                        storageKey="folderChildrenViewMode"
-                                        defaultView="list"
-                                    /> */}
-                                </>
-                            )}
-                        </>
-                    )}
-                </Form.Group>
-            )}
+            <ChildrenSortOrder
+                father_id={data.id}
+                name="childs_sort_order"
+                onChange={handleChange}
+                value={formData.childs_sort_order || ''}
+                saving={saving}
+            />
 
             <OrderBySelector
                 value={formData.childs_sort_by || 'name'}
