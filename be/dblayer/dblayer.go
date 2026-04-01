@@ -14,7 +14,7 @@ import (
 )
 
 // The database can be mysql, sqlite, postgres, etc.
-var dbEngine string
+var DbEngine string
 var dbUrl string
 var DbSchema string
 var DbConnection *sql.DB
@@ -25,8 +25,8 @@ var dbFiles_root_directory string = "."
 var dbFiles_dest_directory string = "files"
 
 func InitDBLayer(config models.Config) {
-	dbEngine = config.DBEngine
-	log.Print("DB Engine:", dbEngine)
+	DbEngine = config.DBEngine
+	log.Print("DB Engine:", DbEngine)
 	dbUrl = config.DBUrl
 	DbSchema = strings.ReplaceAll(config.TablePrefix, "_", "")
 	log.Print("DB Schema:", DbSchema)
@@ -89,9 +89,9 @@ func InitDBConnection() {
 	// 	log.Print(" InitDBConnection: Error opening DB connection:", err)
 	// }
 
-	log.Print(" DB Engine: ", dbEngine, " DB URL:", dbUrl)
+	log.Print(" DB Engine: ", DbEngine, " DB URL:", dbUrl)
 	dbName := ""
-	switch dbEngine {
+	switch DbEngine {
 	case "mysql":
 		parts := strings.Split(dbUrl, "/")
 		if len(parts) > 1 {
@@ -111,14 +111,14 @@ func InitDBConnection() {
 	}
 	log.Print(" DB URL without DB:", dbUrlNoDB)
 
-	DbConnection, err = sql.Open(dbEngine, dbUrlNoDB)
+	DbConnection, err = sql.Open(DbEngine, dbUrlNoDB)
 	if err != nil {
 		log.Fatal(" InitDBConnection: Error opening DB connection:", err)
 	}
 
 	// Create DB if not exists (for sqlite, the DB file is created automatically)
 	sqlCreateDB := ""
-	switch dbEngine {
+	switch DbEngine {
 	case "sqlite3":
 	case "mysql":
 		sqlCreateDB = "CREATE DATABASE IF NOT EXISTS " + dbName + ";"
@@ -133,7 +133,7 @@ func InitDBConnection() {
 		}
 		// Close and reopen connection to the specific DB
 		DbConnection.Close()
-		DbConnection, err = sql.Open(dbEngine, dbUrl)
+		DbConnection, err = sql.Open(DbEngine, dbUrl)
 		if err != nil {
 			log.Fatal(" InitDBConnection: Error reopening DB connection:", err)
 		}
@@ -163,7 +163,7 @@ func GetCreateTableSQL(dbe DBEntityInterface, dbSchema string) string {
 	isDBObjectChild := isDBObject && dbe.GetTypeName() != "DBObject"
 
 	for _, col := range dbe.GetColumnDefinitions() {
-		if dbEngine == "postgres" && isDBObjectChild && slices.Contains(objectsColumns, col.Name) {
+		if DbEngine == "postgres" && isDBObjectChild && slices.Contains(objectsColumns, col.Name) {
 			continue
 		}
 		colDef := fmt.Sprintf(" %s %s", col.Name, col.Type)
@@ -195,7 +195,7 @@ func GetCreateTableSQL(dbe DBEntityInterface, dbSchema string) string {
 	// }
 	// IF NOT EXISTS is redundant as we check for table existence before calling this method: but it's kept for future use cases
 	inheritanceClause := ""
-	if dbEngine == "postgres" && isDBObjectChild {
+	if DbEngine == "postgres" && isDBObjectChild {
 		inheritanceClause = fmt.Sprintf(" INHERITS (%s_%s)", dbSchema, "objects")
 	}
 	createTableSQL := fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s_%s (\n%s\n)%s;", dbSchema, dbe.GetTableName(), strings.Join(columnDefs, ",\n"), inheritanceClause)
@@ -718,7 +718,7 @@ func EnsureDBSchema(Verbose bool) {
 	for _, dbe := range classInstances {
 		var err error
 		className := dbe.GetTypeName()
-		switch dbEngine {
+		switch DbEngine {
 		case "mysql":
 			err = ensureTableExistsAndUpdatedForMysql(dbe, Verbose)
 		case "sqlite3":
@@ -726,7 +726,7 @@ func EnsureDBSchema(Verbose bool) {
 		case "postgres":
 			err = ensureTableExistsAndUpdatedForPostgres(dbe, Verbose)
 		default:
-			log.Fatal("Unsupported dbEngine:", dbEngine)
+			log.Fatal("Unsupported dbEngine:", DbEngine)
 		}
 		if err != nil {
 			log.Fatal("Error ensuring table for ", className, ":", err)
