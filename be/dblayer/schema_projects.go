@@ -85,6 +85,9 @@ func NewDBProject() *DBProject {
 		{Name: "father_id", Type: "varchar(16)", Constraints: []string{"DEFAULT NULL"}},
 		{Name: "name", Type: "varchar(255)", Constraints: []string{"NOT NULL"}},
 		{Name: "description", Type: "text", Constraints: []string{"DEFAULT NULL"}},
+		// NEW: see DBFolder for details
+		{Name: "childs_sort_order", Type: "text", Constraints: []string{}},
+		{Name: "childs_sort_by", Type: "varchar(255)", Constraints: []string{}},
 	}
 	keys := []string{"id"}
 	foreignKeys := []ForeignKey{

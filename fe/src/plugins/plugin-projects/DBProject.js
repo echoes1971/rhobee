@@ -8,14 +8,7 @@ import {
     classname2bootstrapIcon,
 } from '../../sitenavigation_utils';
 import {
-  CountryView,
-  CountrySelector,
-  GroupLinkView,
-  ImageView,
-  LanguageSelector,
-  LanguageView,
-  ObjectLinkView,
-  UserLinkView,
+  OrderBySelector, ChildrenSortOrder
 } from '../../ContentWidgets';
 import { ObjectSearch, ObjectHeaderView, ObjectFooterView} from "../../dbobjects/DBObject";
 import ObjectLinkSelector from '../../ObjectLinkSelector'
@@ -114,6 +107,8 @@ export function ProjectEdit({ data, metadata, onSave, onCancel, onDelete, saving
         father_id: data.father_id || null,
         owner: data.owner || null,
         group_id: data.group_id || null,
+        childs_sort_order: data.childs_sort_order || null,
+        childs_sort_by: data.childs_sort_by || 'name',
     });
 
     const handleChange = (e) => {
@@ -192,6 +187,21 @@ export function ProjectEdit({ data, metadata, onSave, onCancel, onDelete, saving
                     onChange={handleChange}
                 />
             </Form.Group>
+
+            <ChildrenSortOrder
+                father_id={data.id}
+                name="childs_sort_order"
+                onChange={handleChange}
+                value={formData.childs_sort_order || ''}
+                saving={saving}
+            />
+
+            <OrderBySelector
+                value={formData.childs_sort_by || 'name'}
+                onChange={handleChange}
+                name="childs_sort_by"
+                label={t('folder.children_sort_by')}
+            />
 
             {error && (
                 <Alert variant="danger" className="mb-3">
