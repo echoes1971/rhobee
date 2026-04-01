@@ -1011,7 +1011,10 @@ func NewDBFolder() *DBFolder {
 		{Name: "name", Type: "varchar(255)", Constraints: []string{"NOT NULL"}},
 		{Name: "description", Type: "text", Constraints: []string{}},
 		{Name: "fk_obj_id", Type: "varchar(16)", Constraints: []string{}},
+		// It's more "sticky" children to show at the top in the specified order
 		{Name: "childs_sort_order", Type: "text", Constraints: []string{}},
+		// a simple ORDER BY clause for children. NOTE: use only fields common to all objects (i.e. those of DBObject), you can use the virtual field 'classname' too
+		{Name: "childs_sort_by", Type: "varchar(255)", Constraints: []string{}},
 	}
 	keys := []string{"id"}
 	foreignKeys := []ForeignKey{

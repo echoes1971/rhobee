@@ -117,7 +117,13 @@
         "description": "Descrizione",
         "linked_to": "Collegato a",
         "download_file": "Scarica File",
-        "include_deleted": "Includi eliminati"
+        "include_deleted": "Includi eliminati",
+        "classname": "Tipo",
+        "creator": "Creato da",
+        "last_modify": "Modificato da",
+        "deleted_by": "Eliminato da",
+        "childs_sort_by": "Ordina figli per",
+        "childs_sort_by_hint": "Clicca per cambiare direzione • Ctrl+Clic per rimuovere"
     },
     "permissions": {
         "read": "Lettura",

@@ -117,7 +117,13 @@
     "description": "Beschreibung",
     "linked_to": "Verknüpft mit",
     "download_file": "Datei herunterladen",
-    "include_deleted": "Inklusive Gelöschte"
+    "include_deleted": "Inklusive Gelöschte",
+    "classname": "Typ",
+    "creator": "Erstellt von",
+    "last_modify": "Geändert von",
+    "deleted_by": "Gelöscht von",
+    "childs_sort_by": "Kinder sortieren nach",
+    "childs_sort_by_hint": "Klicken zum Umschalten der Richtung • Strg+Klick zum Entfernen"
   },
   "permissions": {
     "read": "Lesen",
