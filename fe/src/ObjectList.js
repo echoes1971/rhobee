@@ -58,90 +58,90 @@ function ObjectList({
     return null;
   }
 
-    const normalizeObject = (obj) => {
-        const data = obj.data || obj;
-        const meta = obj.metadata || obj;
+  const normalizeObject = (obj) => {
+      const data = obj.data || obj;
+      const meta = obj.metadata || obj;
 
-        return {
-            id: data.id || obj.id,
-            name: data.name || 'Untitled',
-            description: meta.classname !== 'DBNote' ? data.description : '',
-            classname: meta.classname || obj.classname, // || '',
-            isDeleted: data.deleted_date ? true : (obj.isDeleted || false),
-            language: data.language || obj.language || null,
-            data: data,
-            metadata: meta,
-        };
-    };
-    // id: child.data.id,
-    // name: child.data.name,
-    // description: child.metadata.classname !== 'DBNote' ? child.data.description : '',
-    // classname: child.metadata.classname,
-    // isDeleted: child.data.deleted_date ? true : false,
-    // language: child.data.language || null,
+      return {
+          id: data.id || obj.id,
+          name: data.name || 'Untitled',
+          description: meta.classname !== 'DBNote' ? data.description : '',
+          classname: meta.classname || obj.classname, // || '',
+          isDeleted: data.deleted_date ? true : (obj.isDeleted || false),
+          language: data.language || obj.language || null,
+          data: data,
+          metadata: meta,
+      };
+  };
+  // id: child.data.id,
+  // name: child.data.name,
+  // description: child.metadata.classname !== 'DBNote' ? child.data.description : '',
+  // classname: child.metadata.classname,
+  // isDeleted: child.data.deleted_date ? true : false,
+  // language: child.data.language || null,
 
-    const loadChildren = async (father_id) => {
-        console.log('Loading children for:', father_id);
-        try {
-            const response = await axiosInstance.get(`/nav/children/${formatObjectId(father_id)}`);
-            const rawChildren = response.data.children || [];
-            const normalized = rawChildren.map(normalizeObject);
-            console.log('Loaded children:', normalized);
-            setTreeChildren(prev => ({ ...prev, [father_id]: normalized }));
-        } catch (err) {
-            console.error('Error loading children:', err);
-        }
-    };
+  const loadChildren = async (father_id) => {
+      console.log('Loading children for:', father_id);
+      try {
+          const response = await axiosInstance.get(`/nav/children/${formatObjectId(father_id)}`);
+          const rawChildren = response.data.children || [];
+          const normalized = rawChildren.map(normalizeObject);
+          console.log('Loaded children:', normalized);
+          setTreeChildren(prev => ({ ...prev, [father_id]: normalized }));
+      } catch (err) {
+          console.error('Error loading children:', err);
+      }
+  };
 
-    const toggleExpand = async (item) => {
-        console.log('Toggling expand for item:', item.id);
-        if (expandedItems.has(item.id)) {
-            setExpandedItems(prev => {
-                const newSet = new Set(prev);
-                newSet.delete(item.id);
-                return newSet;
-            });
-        } else {
-            setExpandedItems(prev => new Set(prev).add(item.id));
-            if (!treeChildren[item.id]) {
-                await loadChildren(item.id);
-            }
-        }
-    };
+  const toggleExpand = async (item) => {
+      console.log('Toggling expand for item:', item.id);
+      if (expandedItems.has(item.id)) {
+          setExpandedItems(prev => {
+              const newSet = new Set(prev);
+              newSet.delete(item.id);
+              return newSet;
+          });
+      } else {
+          setExpandedItems(prev => new Set(prev).add(item.id));
+          if (!treeChildren[item.id]) {
+              await loadChildren(item.id);
+          }
+      }
+  };
 
-    const TreeItem = ({ item, level = 0 }) => {
-        const normalized = normalizeObject(item);
-        const hasChildren = treeChildren[normalized.id] && treeChildren[normalized.id].length > 0;
-        const isExpanded = expandedItems.has(normalized.id);
-        const itemName = normalized.name;
-        const itemClassname = normalized.classname;
-        const itemIsDeleted = normalized.isDeleted;
-        const itemId = normalized.id;
-        return (
-            <div key={itemId} style={{ marginLeft: level * 20 }}>
-                <div className="d-flex align-items-center" style={{ cursor: 'pointer', opacity: itemIsDeleted ? 0.6 : 1 }}>
-                    <Button
-                        variant="link"
-                        size="sm"
-                        onClick={() => toggleExpand({ id: itemId, ...item })}
-                        style={{ padding: 0, marginRight: 5 }}
-                    >
-                        <i className={`bi ${isExpanded ? 'bi-chevron-down' : 'bi-chevron-right'}`}></i>
-                    </Button>
-                    <i 
-                        className={`bi bi-${classname2bootstrapIcon(itemClassname)}`} 
-                        style={{ fontSize: '1.5rem', marginRight: 5 }}
-                    ></i>
-                    <span onClick={() => handleItemClick({ id: itemId, name: itemName, classname: itemClassname, isDeleted: itemIsDeleted, ...item })}>{itemName}{itemIsDeleted ? ' (Deleted)' : ''}</span>
-                </div>
-                {isExpanded && treeChildren[itemId] && treeChildren[itemId].map(child => (
-                  (child.classname === 'DBPage' || child.classname === 'DBNews') && child.language && child.language.substring(0, 2) !== language ? null : (
-                    <TreeItem key={child.data ? child.data.id : child.id} item={child} level={level + 1} />
-                  )
-                ))}
-            </div>
-        );
-    };
+  const TreeItem = ({ item, level = 0 }) => {
+      const normalized = normalizeObject(item);
+      const hasChildren = treeChildren[normalized.id] && treeChildren[normalized.id].length > 0;
+      const isExpanded = expandedItems.has(normalized.id);
+      const itemName = normalized.name;
+      const itemClassname = normalized.classname;
+      const itemIsDeleted = normalized.isDeleted;
+      const itemId = normalized.id;
+      return (
+          <div key={itemId} style={{ marginLeft: level * 20 }}>
+              <div className="d-flex align-items-center" style={{ cursor: 'pointer', opacity: itemIsDeleted ? 0.6 : 1 }}>
+                  <Button
+                      variant="link"
+                      size="sm"
+                      onClick={() => toggleExpand({ id: itemId, ...item })}
+                      style={{ padding: 0, marginRight: 5 }}
+                  >
+                      <i className={`bi ${isExpanded ? 'bi-chevron-down' : 'bi-chevron-right'}`}></i>
+                  </Button>
+                  <i 
+                      className={`bi bi-${classname2bootstrapIcon(itemClassname)}`} 
+                      style={{ fontSize: '1.5rem', marginRight: 5 }}
+                  ></i>
+                  <span onClick={() => handleItemClick({ id: itemId, name: itemName, classname: itemClassname, isDeleted: itemIsDeleted, ...item })}>{itemName}{itemIsDeleted ? ' (Deleted)' : ''}</span>
+              </div>
+              {isExpanded && treeChildren[itemId] && treeChildren[itemId].map(child => (
+                (child.classname === 'DBPage' || child.classname === 'DBNews') && child.language && child.language.substring(0, 2) !== language ? null : (
+                  <TreeItem key={child.data ? child.data.id : child.id} item={child} level={level + 1} />
+                )
+              ))}
+          </div>
+      );
+  };
 
   return (
     <>
