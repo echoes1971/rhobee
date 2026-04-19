@@ -65,14 +65,20 @@ function ObjectList({
         return {
             id: data.id || obj.id,
             name: data.name || 'Untitled',
-            description: data.description || '',
-            classname: meta.classname || obj.classname || '',
+            description: meta.classname !== 'DBNote' ? data.description : '',
+            classname: meta.classname || obj.classname, // || '',
             isDeleted: data.deleted_date ? true : (obj.isDeleted || false),
             language: data.language || obj.language || null,
             data: data,
             metadata: meta,
         };
     };
+    // id: child.data.id,
+    // name: child.data.name,
+    // description: child.metadata.classname !== 'DBNote' ? child.data.description : '',
+    // classname: child.metadata.classname,
+    // isDeleted: child.data.deleted_date ? true : false,
+    // language: child.data.language || null,
 
     const loadChildren = async (father_id) => {
         console.log('Loading children for:', father_id);
@@ -129,7 +135,9 @@ function ObjectList({
                     <span onClick={() => handleItemClick({ id: itemId, name: itemName, classname: itemClassname, isDeleted: itemIsDeleted, ...item })}>{itemName}{itemIsDeleted ? ' (Deleted)' : ''}</span>
                 </div>
                 {isExpanded && treeChildren[itemId] && treeChildren[itemId].map(child => (
+                  (child.classname === 'DBPage' || child.classname === 'DBNews') && child.language && child.language.substring(0, 2) !== language ? null : (
                     <TreeItem key={child.data ? child.data.id : child.id} item={child} level={level + 1} />
+                  )
                 ))}
             </div>
         );
