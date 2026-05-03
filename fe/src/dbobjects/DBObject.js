@@ -769,7 +769,7 @@ export function ObjectSearch({searchClassname, searchColumns, resultsColumns, or
                         <td className={col.hideOnSmall ? "d-none d-md-table-cell" : ""} key={cindex}>{result[col.attribute] ? result[col.attribute].slice(0, 30) + (result[col.attribute].length > 30 ? "..." : "") : ""}</td>
                     )
                 ))}
-                <td>
+                <td className="d-flex flex-column flex-sm-row gap-2">
                   {CheckWritePermission({objectData: result}) && <button
                     className="btn btn-sm btn-warning"
                     onClick={() => navigate(`/e/${result.id}`)}
@@ -778,7 +778,7 @@ export function ObjectSearch({searchClassname, searchColumns, resultsColumns, or
                   </button>
                    }
                   <button
-                    className="btn btn-sm btn-warning ms-2"
+                    className="btn btn-sm btn-warning"
                     onClick={() => navigate(`/c/${result.id}`)}
                   >
                     {t("common.view")}
