@@ -25,8 +25,8 @@ export function News() {
     { name: t("dbobjects.name") || "Name", attribute: "name", type: "string", hideOnSmall: false },
     { name: t("dbobjects.description") || "Description", attribute: "description", type: "string", hideOnSmall: true },
     { name: t("common.language") || "Language", attribute: "language", type: "languageView", hideOnSmall: true },
-    { name: t("dbobjects.created") || "Created", attribute: "creation_date", type: "dateSelector", hideOnSmall: true },
-    { name: t("dbobjects.modified") || "Modified", attribute: "last_modify_date", type: "dateSelector", hideOnSmall: true },
+    { name: t("dbobjects.created") || "Created", attribute: "creation_date", type: "dateTime", hideOnSmall: true },
+    { name: t("dbobjects.modified") || "Modified", attribute: "last_modify_date", type: "dateTime", hideOnSmall: true },
   ]
   return (
     <ObjectSearch searchClassname={searchClassname} searchColumns={searchColumns} resultsColumns={resultsColumns} dark={dark} themeClass={themeClass} />

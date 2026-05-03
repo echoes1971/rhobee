@@ -281,8 +281,8 @@ export function Pages() {
   ];
 
   const resultsColumns = [
-    { name: t("dbobjects.created") || "Created", attribute: "creation_date", type: "dateSelector", hideOnSmall: true },
-    { name: t("dbobjects.modified") || "Modified", attribute: "last_modify_date", type: "dateSelector", hideOnSmall: true },
+    { name: t("dbobjects.created") || "Created", attribute: "creation_date", type: "dateTime", hideOnSmall: true },
+    { name: t("dbobjects.modified") || "Modified", attribute: "last_modify_date", type: "dateTime", hideOnSmall: true },
     // { name: t("dbobjects.group") || "Group", attribute: "group_id", type: "groupLink", hideOnSmall: true },
     { name: t("dbobjects.parent") || "Parent", attribute: "father_id", type: "objectLink", hideOnSmall: true },
     { name: t("dbobjects.name") || "Name", attribute: "name", type: "string", hideOnSmall: false },

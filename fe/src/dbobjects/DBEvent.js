@@ -888,13 +888,13 @@ export function Events() {
   const orderBy = "start_date";
 
   const resultsColumns = [
-    { name: t("event.start") || "Start Date", attribute: "start_date", type: "datetime", hideOnSmall: false },
-    { name: t("event.end") || "End Date", attribute: "end_date", type: "datetime", hideOnSmall: false },
+    { name: t("event.start") || "Start Date", attribute: "start_date", type: "dateTime", hideOnSmall: false },
+    { name: t("event.end") || "End Date", attribute: "end_date", type: "dateTime", hideOnSmall: false },
     { name: t("dbobjects.name") || "Name", attribute: "name", type: "string", hideOnSmall: false },
     { name: t("dbobjects.parent") || "Parent", attribute: "father_id", type: "objectLink", hideOnSmall: true },
     // { name: t("dbobjects.description") || "Description", attribute: "description", type: "string", hideOnSmall: true },
-    // { name: t("dbobjects.created") || "Created", attribute: "creation_date", type: "dateSelector", hideOnSmall: true },
-    // { name: t("dbobjects.modified") || "Modified", attribute: "last_modify_date", type: "dateSelector", hideOnSmall: true },
+    // { name: t("dbobjects.created") || "Created", attribute: "creation_date", type: "dateTime", hideOnSmall: true },
+    // { name: t("dbobjects.modified") || "Modified", attribute: "last_modify_date", type: "dateTime", hideOnSmall: true },
   ]
   return (
     <ObjectSearch searchClassname={searchClassname} searchColumns={searchColumns} resultsColumns={resultsColumns} dark={dark} themeClass={themeClass} />
