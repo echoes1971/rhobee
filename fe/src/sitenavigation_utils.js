@@ -99,6 +99,8 @@ export function formateDateTimeString(dateTimeString) {
         ret = ret.replace(' 00:00:00', '');
         ret = ret.replace('00:00:00', '');
     }
+    // ret = ret.replace(' 00:00:00', '');
+    ret = ret.replace(', 12:00:00 AM', '');
     return ret;
 }
 
