@@ -28,7 +28,7 @@ function ObjectList({
   onItemClick = null, 
   showViewToggle = true,
   storageKey = 'objectListViewMode',
-  defaultView = 'list',
+  defaultView = 'cards',
   dark = false
 }) {
   const navigate = useNavigate();

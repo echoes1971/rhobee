@@ -13,8 +13,11 @@ function AppNavbar() {
   const [username, setUsername] = useState(localStorage.getItem("username"));
   const [searchVisible, setSearchVisible] = useState(false);
   const [searchText, setSearchText] = useState('');
+  const [expanded, setExpanded] = useState(false);
   const { dark, toggleTheme } = useContext(ThemeContext);
   const { t, i18n } = useTranslation();
+
+  const closeNavbar = () => setExpanded(false);
   const site_title = app_cfg.site_title;
   const site_root = app_cfg.app_home_object_id;
   const [children, setChildren] = useState([]);
@@ -102,7 +105,7 @@ function AppNavbar() {
   };
 
   return (
-    <Navbar className={dark ? "navbar bg-gradient-dark" : "navbar bg-gradient-light"} bg={dark ? "dark" : "light"} variant={dark ? "dark" : "light"} expand="lg">
+    <Navbar expanded={expanded} onToggle={setExpanded} className={dark ? "navbar bg-gradient-dark" : "navbar bg-gradient-light"} bg={dark ? "dark" : "light"} variant={dark ? "dark" : "light"} expand="lg">
       <Container>
         <Navbar.Brand as={Link} to="/">{site_title}</Navbar.Brand>
         
@@ -131,7 +134,7 @@ function AppNavbar() {
           <Nav className="ms-auto">
             {/* Display non public folders when a user is logged in */}
             {children.map(child => (!username || child.data.permissions.slice(-3)==='---') && (
-              <Nav.Link as={Link} key={child.data.id} to={`/c/${child.data.id}`}>
+              <Nav.Link as={Link} key={child.data.id} to={`/c/${child.data.id}`} onClick={closeNavbar}>
                 {child.data.name}
               </Nav.Link>
             ))}
@@ -224,7 +227,7 @@ function AppNavbar() {
 
           
             {!username ? (
-              <Button as={Link} to="/login" variant={dark ? "secondary" : "outline-secondary"}>
+              <Button as={Link} to="/login" variant={dark ? "secondary" : "outline-secondary"} onClick={closeNavbar}>
                 {t("common.login")}
               </Button>
             ) : null}
