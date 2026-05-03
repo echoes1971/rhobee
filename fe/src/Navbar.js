@@ -92,6 +92,8 @@ function AppNavbar() {
       navigate(`/c/${person_id}`);
     } catch (error) {
       console.error("Error fetching person:", error);
+    } finally {
+      closeNavbar();
     }
   };
 
@@ -161,32 +163,32 @@ function AppNavbar() {
 
             {username && isWebmaster ? (
               <NavDropdown title="Webmaster 🛠️" id="webmaster-nav-dropdown" align="end" {...(dark ? { menuVariant: 'dark' } : {})}>
-                <NavDropdown.Item as={Link} to="/">{t("common.home")}</NavDropdown.Item>
-                <NavDropdown.Item as={Link} to="/folders">{t("folder.folders")}</NavDropdown.Item>
-                <NavDropdown.Item as={Link} to="/pages">{t("page.pages")}</NavDropdown.Item>
-                <NavDropdown.Item as={Link} to="/news">{t("news.news")}</NavDropdown.Item>
-                <NavDropdown.Item as={Link} to="/files">{t("files.files")}</NavDropdown.Item>
-                <NavDropdown.Item as={Link} to="/links">{t("link.links")}</NavDropdown.Item>
-                <NavDropdown.Item as={Link} to="/events">{t("event.events")}</NavDropdown.Item>
+                <NavDropdown.Item as={Link} to="/" onClick={closeNavbar}>{t("common.home")}</NavDropdown.Item>
+                <NavDropdown.Item as={Link} to="/folders" onClick={closeNavbar}>{t("folder.folders")}</NavDropdown.Item>
+                <NavDropdown.Item as={Link} to="/pages" onClick={closeNavbar}>{t("page.pages")}</NavDropdown.Item>
+                <NavDropdown.Item as={Link} to="/news" onClick={closeNavbar}>{t("news.news")}</NavDropdown.Item>
+                <NavDropdown.Item as={Link} to="/files" onClick={closeNavbar}>{t("files.files")}</NavDropdown.Item>
+                <NavDropdown.Item as={Link} to="/links" onClick={closeNavbar}>{t("link.links")}</NavDropdown.Item>
+                <NavDropdown.Item as={Link} to="/events" onClick={closeNavbar}>{t("event.events")}</NavDropdown.Item>
               </NavDropdown>
             ) : null}
             {username && (
               <NavDropdown title={t("common.contacts")} id="webmaster-nav-dropdown" align="end" {...(dark ? { menuVariant: 'dark' } : {})}>
-                <NavDropdown.Item as={Link} to="/companies">{t("company.companies")}</NavDropdown.Item>
-                <NavDropdown.Item as={Link} to="/people">{t("person.people")}</NavDropdown.Item>
+                <NavDropdown.Item as={Link} to="/companies" onClick={closeNavbar}>{t("company.companies")}</NavDropdown.Item>
+                <NavDropdown.Item as={Link} to="/people" onClick={closeNavbar}>{t("person.people")}</NavDropdown.Item>
               </NavDropdown>
             )}
             {username && isAdmin ? (
               <NavDropdown title="Admin ⚙️" id="admin-nav-dropdown" align="end" {...(dark ? { menuVariant: 'dark' } : {})}>
-                <NavDropdown.Item as={Link} to="/admin/dashboard">{t("common.dashboard")}</NavDropdown.Item>
+                <NavDropdown.Item as={Link} to="/admin/dashboard" onClick={closeNavbar}>{t("common.dashboard")}</NavDropdown.Item>
                 <NavDropdown.Divider />
-                <NavDropdown.Item as={Link} to="/users">{t("users.users")}</NavDropdown.Item>
-                <NavDropdown.Item as={Link} to="/groups">{t("groups.groups")}</NavDropdown.Item>
+                <NavDropdown.Item as={Link} to="/users" onClick={closeNavbar}>{t("users.users")}</NavDropdown.Item>
+                <NavDropdown.Item as={Link} to="/groups" onClick={closeNavbar}>{t("groups.groups")}</NavDropdown.Item>
                 <NavDropdown.Divider />
-                <NavDropdown.Item as={Link} to="/objects">{t("object.objects")}</NavDropdown.Item>
+                <NavDropdown.Item as={Link} to="/objects" onClick={closeNavbar}>{t("object.objects")}</NavDropdown.Item>
                 <NavDropdown.Divider />
-                <NavDropdown.Item as={Link} to="/db" disabled>{t("common.db")}</NavDropdown.Item>
-                <NavDropdown.Item as={Link} to="/log" disabled>{t("common.log")}</NavDropdown.Item>
+                <NavDropdown.Item as={Link} to="/db" onClick={closeNavbar} disabled>{t("common.db")}</NavDropdown.Item>
+                <NavDropdown.Item as={Link} to="/log" onClick={closeNavbar} disabled>{t("common.log")}</NavDropdown.Item>
               </NavDropdown>
             ) : null}
 
@@ -238,13 +240,13 @@ function AppNavbar() {
                   <i className="bi bi-person-circle me-2"></i>{t("users.user_profile")}
                 </NavDropdown.Item>
                 <NavDropdown.Divider />
-                <NavDropdown.Item as={Link} to="/settings" disabled>
+                <NavDropdown.Item as={Link} to="/settings" onClick={closeNavbar} disabled>
                   <i className="bi bi-gear me-2"></i>{t("common.settings")}
                 </NavDropdown.Item>
                 <NavDropdown.Divider />
-                <NavDropdown.Item as={Link} to="/notes">{t("note.notes")}</NavDropdown.Item>
+                <NavDropdown.Item as={Link} to="/notes" onClick={closeNavbar}>{t("note.notes")}</NavDropdown.Item>
                 <NavDropdown.Divider />
-                <NavDropdown.Item onClick={handleLogout}>{t("common.logout")}</NavDropdown.Item>
+                <NavDropdown.Item onClick={handleLogout} onClick={closeNavbar}>{t("common.logout")}</NavDropdown.Item>
               </NavDropdown>
             ) : null}
 
