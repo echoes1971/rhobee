@@ -876,13 +876,13 @@ export function Events() {
   const searchClassname = "DBEvent";
 
   const searchColumns = [
-    { name: t("dbobjects.name") || "Name", attribute: "name", type: "string" },
-    // { name: t("dbobjects.description") || "Description", attribute: "description", type: "string" },
-    // { name: t("dbobjects.parent") || "Parent", attribute: "father_id", type: "objectLink" },
-    { name: t("event.start") || "Start", attribute: "start_date", type: "dateSelector" },
-    { name: t("event.end") || "End", attribute: "end_date", type: "dateSelector" },
-    { name: t("dbobjects.created") || "Created", attribute: "creation_date", type: "dateSelector" },
-    { name: t("dbobjects.modified") || "Modified", attribute: "last_modify_date", type: "dateSelector" },
+    { name: t("dbobjects.name") || "Name", attribute: "name", type: "string", hideOnSmall: false },
+    // { name: t("dbobjects.description") || "Description", attribute: "description", type: "string", hideOnSmall: false },
+    // { name: t("dbobjects.parent") || "Parent", attribute: "father_id", type: "objectLink", hideOnSmall: false },
+    { name: t("event.start") || "Start", attribute: "start_date", type: "dateSelector", hideOnSmall: false },
+    { name: t("event.end") || "End", attribute: "end_date", type: "dateSelector", hideOnSmall: false },
+    { name: t("dbobjects.created") || "Created", attribute: "creation_date", type: "dateSelector", hideOnSmall: true },
+    { name: t("dbobjects.modified") || "Modified", attribute: "last_modify_date", type: "dateSelector", hideOnSmall: true },
   ];
 
   const orderBy = "start_date";
