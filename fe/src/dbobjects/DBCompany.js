@@ -335,11 +335,11 @@ export function Companies() {
   const searchClassname = "DBCompany";
 
   const searchColumns = [
-    { name: t("dbobjects.name") || "Name", attribute: "name", type: "string" },
-    { name: t("common.zip") || "ZIP", attribute: "zip", type: "string" },
-    { name: t("common.city") || "City", attribute: "city", type: "string" },
-    { name: t("dbobjects.fk_countrylist_id") || "Country", attribute: "fk_countrylist_id", type: "countrySelector" },
-    // { name: t("dbobjects.parent") || "Parent", attribute: "father_id", type: "objectLink" },
+    { name: t("dbobjects.name") || "Name", attribute: "name", type: "string", hideOnSmall: false },
+    { name: t("common.zip") || "ZIP", attribute: "zip", type: "string", hideOnSmall: false },
+    { name: t("common.city") || "City", attribute: "city", type: "string", hideOnSmall: false },
+    { name: t("dbobjects.fk_countrylist_id") || "Country", attribute: "fk_countrylist_id", type: "countrySelector", hideOnSmall: false },
+    // { name: t("dbobjects.parent") || "Parent", attribute: "father_id", type: "objectLink", hideOnSmall: false },
   ];
 
   const resultsColumns = [

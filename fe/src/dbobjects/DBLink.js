@@ -270,9 +270,11 @@ export function Links() {
   const searchClassname = "DBLink";
 
   const searchColumns = [
-    { name: t("dbobjects.name") || "Name", attribute: "name", type: "string" },
-    { name: t("dbobjects.description") || "Description", attribute: "description", type: "string" },
-    { name: t("dbobjects.parent") || "Parent", attribute: "father_id", type: "objectLink" },
+    { name: t("dbobjects.name") || "Name", attribute: "name", type: "string", hideOnSmall: false },
+    { name: t("dbobjects.description") || "Description", attribute: "description", type: "string", hideOnSmall: false },
+    { name: t("dbobjects.parent") || "Parent", attribute: "father_id", type: "objectLink", hideOnSmall: false },
+    // { name: t("dbobjects.created") || "Created", attribute: "creation_date", type: "dateSelector", hideOnSmall: true },
+    // { name: t("dbobjects.modified") || "Modified", attribute: "last_modify_date", type: "dateSelector", hideOnSmall: true },
   ];
 
   const resultsColumns = [
