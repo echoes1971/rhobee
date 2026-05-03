@@ -470,9 +470,9 @@ export function Todos() {
 
   const resultsColumns = [
     //priority
-    { name: t("plugin-projects.priority") || "Priority", attribute: "priority", type: "number", hideOnSmall: false },
+    { name: t("plugin-projects.priority") || "Priority", attribute: "priority", type: "number", hideOnSmall: true },
     // reported_date
-    { name: t("plugin-projects.reported_date") || "Reported Date", attribute: "reported_date", type: "dateSelector", hideOnSmall: false },
+    { name: t("plugin-projects.reported_date") || "Reported Date", attribute: "reported_date", type: "dateTime", hideOnSmall: false },
     // fk_reported_by
     // { name: t("plugin-projects.fk_reported_by") || "Reported By", attribute: "fk_reported_by", type: "objectLink", hideOnSmall: false },
     // fk_customer
@@ -485,7 +485,7 @@ export function Todos() {
     { name: t("plugin-projects.fk_type") || "Type", attribute: "fk_type", type: "objectLink", hideOnSmall: true },
     { name: t("plugin-projects.status") || "Status", attribute: "status", type: "number", hideOnSmall: true },
     // closed_date
-    { name: t("plugin-projects.closed_date") || "Closed Date", attribute: "closed_date", type: "dateSelector", hideOnSmall: true },
+    { name: t("plugin-projects.closed_date") || "Closed Date", attribute: "closed_date", type: "dateTime", hideOnSmall: true },
   ]
   return (
     <ObjectSearch searchClassname={searchClassname} searchColumns={searchColumns} resultsColumns={resultsColumns} dark={dark} themeClass={themeClass} />
