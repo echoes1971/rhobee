@@ -43,6 +43,7 @@ function AppNavbar() {
   const changeLanguage = (lng) => {
     i18n.changeLanguage(lng);
     localStorage.setItem("lang", lng);
+    closeNavbar();
   };
   const flags = {
     it: "🇮🇹",
@@ -69,18 +70,18 @@ function AppNavbar() {
   }, [site_root]);
 
   const handleLogout = async () => {
-    logoutUser();
     try {
-      // const response = await axios.post("/logout");
-      // console.log("Logout response:", response.data);
-      // localStorage.removeItem("token");
-      // localStorage.removeItem("username");
+      await logoutUser();
       setUsername(null);
       setChildren([]);
+      setExpanded(false);
       loadChildren();
       navigate("/", { replace: true });
+      window.location.reload();
     } catch (error) {
       console.error("Error during logout:", error);
+    } finally {
+      closeNavbar();
     }
   };
 
@@ -150,7 +151,7 @@ function AppNavbar() {
                   <NavDropdown title={plugin.name} id={`${pluginName}-nav-dropdown`} align="end" {...(dark ? { menuVariant: 'dark' } : {})}>
                     {plugin.menuItems && plugin.menuItems.map((item, idx) => (
                       item.label &&
-                      <NavDropdown.Item as={Link} key={`${pluginName}-menu-${idx}`} to={item.path}>
+                      <NavDropdown.Item as={Link} key={`${pluginName}-menu-${idx}`} to={item.path} onClick={closeNavbar}>
                         {item.icon && <i className={`${item.icon} me-2`}></i>}
                         {item.label}
                       </NavDropdown.Item>
@@ -246,7 +247,7 @@ function AppNavbar() {
                 <NavDropdown.Divider />
                 <NavDropdown.Item as={Link} to="/notes" onClick={closeNavbar}>{t("note.notes")}</NavDropdown.Item>
                 <NavDropdown.Divider />
-                <NavDropdown.Item onClick={handleLogout} onClick={closeNavbar}>{t("common.logout")}</NavDropdown.Item>
+                <NavDropdown.Item onClick={handleLogout}>{t("common.logout")}</NavDropdown.Item>
               </NavDropdown>
             ) : null}
 
