@@ -7,7 +7,7 @@ test.beforeAll(() => {
   // Endpoints inferred from docker-compose.dev.yml
   // Local backend service: http://localhost:1971
   // Docker network: http://be:1971
-  const apiBaseUrl = process.env.API_BASE_URL || process.env.BASE_URL+'/api' || 'http://localhost:1971';
+  const apiBaseUrl = process.env.API_BASE_URL || (process.env.BASE_URL ? process.env.BASE_URL+'/api' : 'http://localhost:1971');
   apiHelper = new ApiTestHelper(apiBaseUrl);
 });
 

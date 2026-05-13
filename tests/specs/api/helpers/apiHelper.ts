@@ -48,11 +48,28 @@ export class ApiTestHelper {
   }
 
   /**
+   * Health check endpoint
+   * Endpoint: GET /ping
+   */
+  async ping(): Promise<ApiResponse> {
+    return this.request('GET', '/ping');
+  }
+
+  /**
    * Sends a login request to the backend API
    * Endpoint: POST /login
    */
   async login(credentials: LoginRequest): Promise<ApiResponse> {
     return this.request('POST', '/login', credentials);
+  }
+
+  /**
+   * Sends a logout request to the backend API
+   * Endpoint: POST /logout
+   * @param token - JWT token from login response
+   */
+  async logout(token: string): Promise<ApiResponse> {
+    return this.request('POST', '/logout', {}, { Authorization: `Bearer ${token}` });
   }
 
   /**

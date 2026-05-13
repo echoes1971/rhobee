@@ -49,6 +49,7 @@ tests/
 - **Run tests with UI:**
   ```bash
   npm run test:ui
+  BASE_URL=http://localhost:8080 npm run test:ui
   ```
 
 - **Run only API tests:**
