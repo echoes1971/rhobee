@@ -22,6 +22,24 @@ export class NavBar {
     return this.page.getByRole('button').filter({ hasText: /login/i });
   }
 
+
+  /**
+   * Get User Profile button locator from opened dropdown
+   */
+  getProfileButton(): Locator {
+    return this.page.getByRole('button').filter({ hasText: /profil/i });
+  }
+
+  /**
+   * Click on the profile button in the user menu
+   */
+  async clickProfileOption() {
+    const profileButton = this.getProfileButton();
+    await profileButton.waitFor({ state: 'visible' });
+    await profileButton.click();
+    await this.page.waitForLoadState('networkidle');
+  }
+
   /**
    * Get logout button locator from opened dropdown
    */

@@ -50,6 +50,8 @@ tests/
   ```bash
   npm run test:ui
   BASE_URL=http://localhost:8080 npm run test:ui
+
+  BASE_URL=https://localhost:8080 npx playwright test tests/login.spec.ts
   ```
 
 - **Run only API tests:**
