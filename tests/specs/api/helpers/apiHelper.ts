@@ -48,31 +48,6 @@ export class ApiTestHelper {
   }
 
   /**
-   * Health check endpoint
-   * Endpoint: GET /ping
-   */
-  async ping(): Promise<ApiResponse> {
-    return this.request('GET', '/ping');
-  }
-
-  /**
-   * Sends a login request to the backend API
-   * Endpoint: POST /login
-   */
-  async login(credentials: LoginRequest): Promise<ApiResponse> {
-    return this.request('POST', '/login', credentials);
-  }
-
-  /**
-   * Sends a logout request to the backend API
-   * Endpoint: POST /logout
-   * @param token - JWT token from login response
-   */
-  async logout(token: string): Promise<ApiResponse> {
-    return this.request('POST', '/logout', {}, { Authorization: `Bearer ${token}` });
-  }
-
-  /**
    * Generic GET request helper
    */
   async get(endpoint: string, headers?: Record<string, string>): Promise<ApiResponse> {
@@ -99,4 +74,42 @@ export class ApiTestHelper {
   async delete(endpoint: string, headers?: Record<string, string>): Promise<ApiResponse> {
     return this.request('DELETE', endpoint, undefined, headers);
   }
+
+
+  /**
+   * Health check endpoint
+   * Endpoint: GET /ping
+   */
+  async ping(): Promise<ApiResponse> {
+    return this.request('GET', '/ping');
+  }
+
+  /**
+   * Sends a login request to the backend API
+   * Endpoint: POST /login
+   */
+  async login(credentials: LoginRequest): Promise<ApiResponse> {
+    return this.request('POST', '/login', credentials);
+  }
+
+  /**
+   * Sends a logout request to the backend API
+   * Endpoint: POST /logout
+   * @param token - JWT token from login response
+   */
+  async logout(token: string): Promise<ApiResponse> {
+    return this.request('POST', '/logout', {}, { Authorization: `Bearer ${token}` });
+  }
+
+  /**
+   * Sends a request to the ollama endpoint
+   * Endpoint: POST /ollama
+   * @param token JWT token
+   * @param prompt prompt to send to ollama
+   * @returns ollama response or error
+   */
+  async ollama(token: string, prompt: string): Promise<ApiResponse> {
+    return this.post('/ollama', { prompt: prompt }, { Authorization: `Bearer ${token}` });
+  }
+
 }
