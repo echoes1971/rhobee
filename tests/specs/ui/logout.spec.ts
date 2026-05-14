@@ -1,5 +1,8 @@
 import { test, expect } from '@playwright/test';
-import { LoginPage, NavBar } from './helpers/loginPage';
+import { LoginPage } from './helpers/loginPage';
+import { NavBar } from './helpers/navBar';
+
+// test.describe.configure({ mode: 'serial' });
 
 test.describe('Frontend UI - Logout', () => {
   test('should successfully logout and redirect to login page', async ({ page }) => {
@@ -73,10 +76,11 @@ test.describe('Frontend UI - Logout', () => {
 
     // The navbar should exist but logout button should not be visible
     const navBar = new NavBar(page);
-    const logoutButton = navBar.logoutButton;
+    console.log(navBar.usernameDropdown);
+    const usernameDropdown = navBar.usernameDropdown;
 
     // Logout button should not be visible or should not exist
-    const isVisible = await logoutButton.isVisible().catch(() => false);
+    const isVisible = await usernameDropdown.isVisible().catch(() => false);
     expect(isVisible).toBe(false);
   });
 });
