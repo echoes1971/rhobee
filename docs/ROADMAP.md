@@ -90,9 +90,14 @@ References:
 ### Project Management plugin
 - [x] DBProject
 - [ ] DBTimetrack
-  - [ ] UI
+  - [x] UI
 - [ ] DBTodo
-  - [ ] UI
+  - [x] UI
+  - [ ] button to start a timetrack
+    - [ ] display a modal dialog to enter a comment in the "description" field
+  - [ ] show children timetracks
+    - [ ] button to stop 
+      - [ ] display a modal dialog to enter a comment in the "description" field
 
 ### Search & Discovery
 - [x] Full-text search in HTML content // 👤 Roberto: A search box in the NavBar that leads to a /nav/search with results and filters
