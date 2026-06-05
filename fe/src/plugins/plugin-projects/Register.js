@@ -31,9 +31,9 @@ export default function registerProjectsPlugin() {
 
     // Routes added to your appPlugin
     routes: [
-      { path: '/projects', element: <Projects /> },
-      { path: '/timetracks', element: <Timetracks /> },
-      { path: '/todos', element: <Todos /> },
+      { path: '/projects', element: <Projects />, classname: 'DBProject' },
+      { path: '/timetracks', element: <Timetracks />, classname: 'DBTimeTrack' },
+      { path: '/todos', element: <Todos />, classname: 'DBTodo' },
     ],
 
     view_components: {
