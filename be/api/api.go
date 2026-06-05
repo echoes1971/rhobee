@@ -146,13 +146,14 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		group_list = append(group_list, foundUser.GetValue("group_id").(string))
 	}
 
-	// Genera JWT
+	// Generate JWT
 	expiration := time.Now().Add(1 * time.Hour)
 	claims := &jwt.MapClaims{
 		"user_id": foundUser.GetValue("id"),
 		"login":   foundUser.GetValue("login"),
 		"groups":  strings.Join(group_list, ","),
 		"exp":     expiration.Unix(),
+		"rand":    time.Now().UnixNano(), // Added a random field to ensure token uniqueness
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := token.SignedString(JWTKey)
@@ -161,14 +162,14 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Salva token in tabella oauth_tokens
+	// Save the generated token in the oauth_tokens table
 	if err := SaveToken(repo, foundUser.GetValue("id").(string), tokenString, expiration.Unix()); err != nil {
 		log.Print("Error saving token:", err)
 		RespondSimpleError(w, ErrInternalServer, "Could not save token", http.StatusInternalServerError)
 		return
 	}
 
-	// Risposta al client
+	// Answer the client
 	resp := TokenResponse{
 		AccessToken: tokenString,
 		ExpiresAt:   expiration.Unix(),

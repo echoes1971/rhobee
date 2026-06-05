@@ -81,9 +81,10 @@ References:
 ## 📋 TODO - Organized by Priority
 
 ### CMS Core
-- [ ] DBFolder children sort
-  - [ ] BE: add a field to manage "order by" of the children; the order by is performed on common DBObject fields
-  - [ ] UI: edit the field, show the sorted children
+- [x] DBFolder children sort
+  - [x] BE: add a field to manage "order by" of the children; the order by is performed on common DBObject fields
+  - [x] UI: edit the field, show the sorted children
+  - [ ] the sort is generic: any data type that has 
 
 ### Project Management plugin
 - [x] DBProject

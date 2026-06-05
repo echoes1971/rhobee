@@ -870,12 +870,14 @@ func (dbr *DBRepository) GetChildren(parentID string, ignoreDeleted bool) []DBEn
 		if dbr.Verbose {
 			log.Print("DBRepository.GetChildren: childs_sort_order=", childs_sort_order)
 		}
+		// if ANY data type has childs_sort_order, use it to sort children (comma separated list of child IDs)
+		// TODO the previous IF is redundant now?
 	} else if container != nil && container.HasValue("childs_sort_order") && container.GetValue("childs_sort_order") != nil && container.GetValue("childs_sort_order") != "" {
 		for _, child := range strings.Split(container.GetValue("childs_sort_order").(string), ",") {
 			childs_sort_order = append(childs_sort_order, child)
 		}
 		if dbr.Verbose {
-			log.Print("DBRepository.GetChildren: childs_sort_order from metadata=", childs_sort_order)
+			log.Print("DBRepository.GetChildren: childs_sort_order =", childs_sort_order)
 		}
 	}
 
