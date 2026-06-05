@@ -150,7 +150,7 @@ References:
 - [x] File upload progress indicator
 - [x] Batch file upload (multiple files at once) // 👤 Roberto: yes
 - [x] Image resizing/thumbnails on upload (backend exists, integrate in UI)
-- [ ] File storage optimization (nested directory structure: `files/XX/YY/ZZZZ...`) // 👤 Roberto: now the structure is <father_id>/<file>
+- [x] File storage optimization (nested directory structure: `files/XX/YY/ZZZZ...`) // 👤 Roberto: now the structure is <father_id>/<file>
 - [ ] Quota management per user/group
 - [ ] File versioning // 👤 Roberto: how?
 - [ ] Preview for more file types (PDF viewer, video player) // DESIGN: use a video thumbnail frame for video; for PDF show generic icon to avoid exposing content
