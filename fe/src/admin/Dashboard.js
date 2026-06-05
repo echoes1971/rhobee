@@ -5,6 +5,7 @@ import { ThemeContext } from "../ThemeContext";
 import { useTranslation } from "react-i18next";
 import { app_cfg } from "../app.cfg";
 import axios from "../axios";
+import { classname2route } from "../sitenavigation_utils";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 
 // Colors for the slices of the pie chart
@@ -38,7 +39,7 @@ export function AdminDashboard() {
     }, []);
 
     // Prepare data for the pie chart: transform object_stats into an array
-    const pieData = stats.object_stats ? Object.keys(stats.object_stats).map(className => ({
+    const objectsDistributionsData = stats.object_stats ? Object.keys(stats.object_stats).map(className => ({
         name: className,
         value: stats.object_stats[className] !== null && stats.object_stats[className].count || 0
     })).filter(item => item.value > 0) : []; // show only types with at least 1 object
@@ -152,14 +153,14 @@ export function AdminDashboard() {
             {/* Bar Charts Row - Side by side on desktop */}
             <div className="row mb-4">
                 {/* Pie Chart for objects distribution */}
-                {pieData.length > 0 && (
+                {objectsDistributionsData.length > 0 && (
                     <div className="col-12 col-lg-6">
                         <div className="col-12">
                             <h4 className={dark ? "text-light" : "text-dark"}>{t("admin.objects_distribution")}</h4>
                             <ResponsiveContainer width="100%" height={400}>
                                 <PieChart>
                                     <Pie
-                                        data={pieData}
+                                        data={objectsDistributionsData}
                                         cx="50%"
                                         cy="50%"
                                         labelLine={false}
@@ -167,8 +168,31 @@ export function AdminDashboard() {
                                         outerRadius={180}
                                         fill="#8884d8"
                                         dataKey="value"
+
+                                        style={{ cursor: 'pointer' }}
+
+                                        onClick={(data) => {
+                                            console.log(data.payload);
+                                            const route = classname2route(data.payload.name);
+                                            // console.log(`Route for classname ${data.payload.name}:`, route);
+                                            if (route) {
+                                                const lastWeek = new Date();
+                                                lastWeek.setDate(lastWeek.getDate() - 7);
+                                                // date format: YYYY-MM-DD 00:00:00
+                                                const filter = `_from_created_date${lastWeek.toISOString().split('T')[0]} 00:00:00`;
+                                                // const filter = `created_date:>${lastWeek.toISOString()}`;
+                                                const queryParams = new URLSearchParams({
+                                                    // _from_creation_date: lastWeek.toISOString().split('T')[0],
+                                                    _search: 'true',
+                                                    _order_by: 'last_modify_date desc'
+                                                }).toString();
+                                                navigate(`${route}?${queryParams}`);
+                                            } else {
+                                                console.warn(`No route found for classname ${data.payload.name}`);
+                                            }
+                                        }}
                                     >
-                                        {pieData.map((entry, index) => (
+                                        {objectsDistributionsData.map((entry, index) => (
                                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                         ))}
                                     </Pie>
@@ -197,6 +221,7 @@ export function AdminDashboard() {
             </div>
 
             <div className="row mb-4">
+                {/* Groups Distribution Pie Chart */}
                 {groupsPieData.length > 0 && (
                     <div className="col-12 col-lg-6 mb-4 mb-lg-0">
                         <h4 className={dark ? "text-light" : "text-dark"}>{t("admin.groups_distribution")}</h4>
@@ -246,7 +271,6 @@ export function AdminDashboard() {
                 )}
             </div>
 
-            {/* Groups Distribution Pie Chart */}
             <div className="row mb-4">
                 <div className="col-md-4 mb-3">
                     <div className={`card text-center ${dark ? 'bg-dark text-light' : 'bg-light'}`}>
@@ -288,6 +312,26 @@ export function AdminDashboard() {
                                     outerRadius={120}
                                     fill="#8884d8"
                                     dataKey="value"
+
+                                    style={{ cursor: 'pointer' }}
+
+                                    onClick={(data) => {
+                                        console.log(data.payload);
+                                        const route = classname2route(data.payload.name);
+                                        if (route) {
+                                            const lastWeek = new Date();
+                                            lastWeek.setDate(lastWeek.getDate() - 7);
+                                            const filter = `_from_${modalData.title.toLowerCase()}_date${lastWeek.toISOString().split('T')[0]} 00:00:00`;
+                                            const queryParams = new URLSearchParams({
+                                                _from_creation_date: lastWeek.toISOString().split('T')[0],
+                                                _search: 'true',
+                                                _order_by: 'creation_date'
+                                            }).toString();
+                                            navigate(`${route}?${queryParams}`);
+                                        } else {
+                                            console.warn(`No route found for classname ${data.payload.name}`);
+                                        }
+                                    }}
                                 >
                                     {modalData.pieData.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />

@@ -32,6 +32,10 @@ References:
 - [x] File embedding system with JWT tokens
 - [x] FileSelector with write permission filtering
 - [x] Multi-language support (EN, IT, DE, FR)
+- [x] DBFolder children sort
+  - [x] BE: add a field to manage "order by" of the children; the order by is performed on common DBObject fields
+  - [x] UI: edit the field, show the sorted children
+  - [x] the sort is generic: any data type that has 
 
 ### Rich Text Editor Improvements
 - [x] Pre condition: make it a separate reusable component
@@ -81,10 +85,7 @@ References:
 ## 📋 TODO - Organized by Priority
 
 ### CMS Core
-- [x] DBFolder children sort
-  - [x] BE: add a field to manage "order by" of the children; the order by is performed on common DBObject fields
-  - [x] UI: edit the field, show the sorted children
-  - [ ] the sort is generic: any data type that has 
+- [ ] ...
 
 ### Project Management plugin
 - [x] DBProject
@@ -106,6 +107,7 @@ References:
 - [ ] Search results highlighting
 - [ ] Search in name, description, and HTML content // ⚠️ all objects have name and description, only page and news have html
 - [x] Pagination for search results
+- [x] Keeps last research when clicked "Cancel" or back from a detail
 
 ### Security & Performance
 - [ ] Token auto-refresh (file preview tokens expire after 15 min)
@@ -149,7 +151,7 @@ References:
 - [x] File upload progress indicator
 - [x] Batch file upload (multiple files at once) // 👤 Roberto: yes
 - [x] Image resizing/thumbnails on upload (backend exists, integrate in UI)
-- [ ] File storage optimization (nested directory structure: `files/XX/YY/ZZZZ...`) // 👤 Roberto: now the structure is <father_id>/<file>
+- [x] File storage optimization (nested directory structure: `files/XX/YY/ZZZZ...`) // 👤 Roberto: now the structure is <father_id>/<file>
 - [ ] Quota management per user/group
 - [ ] File versioning // 👤 Roberto: how?
 - [ ] Preview for more file types (PDF viewer, video player) // DESIGN: use a video thumbnail frame for video; for PDF show generic icon to avoid exposing content
@@ -173,7 +175,7 @@ References:
 - [ ] Admin dashboard with statistics
   - [x] User activity // 👤 Roberto: how?
   - [x] Content statistics
-  - [ ] Link from charts to research. Example: created 10 pages last week -> search page with correct filters
+  - [x] Link from charts to research. Example: created 10 pages last week -> search page with correct filters
   - [ ] Storage usage // 👤 Roberto: should be easy
   - [ ] Popular pages // 👤 Roberto: needs db support
 - [ ] Audit log (comprehensive who/what/when tracking) // 👤 Roberto: not easy

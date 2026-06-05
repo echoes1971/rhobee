@@ -54,6 +54,37 @@ export function classname2label(classname) {
     }
     return null;
 }
+export function classname2route(classname) {
+    const pluginNames = getAllPluginNames();
+    for (const pluginName of pluginNames) {
+        const plugin = getPlugin(pluginName);
+        if (!plugin.routes || !Array.isArray(plugin.routes)) continue;
+        const routeObj = plugin.routes.find(r => r.classname === classname);
+        if (routeObj) {
+            return routeObj.path;
+        }
+    }
+    // IF not found in plugins
+    switch (classname) {
+        case 'DBCompany': return '/companies';
+        case 'DBEvent': return '/events';
+        case 'DBFile': return '/files';
+        case 'DBFolder': return '/folders';
+        case 'DBImage': return '/images';
+        case 'DBLink': return '/links';
+        case 'DBNews': return '/news';
+        case 'DBNote': return '/notes';
+        case 'DBObject': return '/objects';
+        case 'DBPage': return '/pages';
+        case 'DBPerson': return '/persons';
+
+        case 'DBUser': return '/users';
+        case 'DBGroup': return '/groups';
+
+        default: return null;
+    }
+    return null;
+}
 export function languageCode2FlagEmoji(languageCode) {
     const flags = {
         it: "🇮🇹",
