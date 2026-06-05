@@ -375,6 +375,8 @@ export function ObjectSearch({searchClassname, searchColumns, resultsColumns, or
     name: "",
     description: "",
   });
+  const [urlSearchParams] = useState(new URLSearchParams(window.location.search));
+  // console.log('ObjectSearch initialized with classname:', searchClassname, ' url params:', Object.fromEntries(urlSearchParams.entries()));
   const [searchOrderBy, setSearchOrderBy] = useState(orderBy || "name");
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -392,6 +394,40 @@ export function ObjectSearch({searchClassname, searchColumns, resultsColumns, or
   useEffect(() => {
     // fetchObjects(searchFormData);
   }, []);
+  // loop on urlSearchParams and set searchFormData accordingly, only for keys in searchColumns
+  useEffect(() => {
+    const newSearchFormData = { ...searchFormData };
+    var _order_by_from_url = null;
+    for (const [key, value] of urlSearchParams.entries()) {
+      if (key === '_order_by') {
+        setSearchOrderBy(value);
+        _order_by_from_url = value;
+        continue;
+      }
+      const baseName = key.replace(/^_from_/, '').replace(/^_to_/, '');
+      if (searchColumns.find(col => col.attribute === baseName)) {
+        if (key.startsWith('_from_') || key.startsWith('_to_')) {
+          if (!newSearchFormData[baseName]) {
+            newSearchFormData[baseName] = ["", ""];
+          }
+          if (key.startsWith('_from_')) {
+            newSearchFormData[baseName][0] = value + " 00:00:00";
+          } else {
+            newSearchFormData[baseName][1] = value + " 23:59:59";
+          }
+          // console.log('Set date range for', baseName, 'from url params:', newSearchFormData[baseName]);
+          continue;
+        }
+        newSearchFormData[key] = value;
+      }
+    }
+    // console.log('Initialized searchFormData from URL params:', newSearchFormData);
+    setSearchFormData(newSearchFormData);
+    // IF '_search' param is present in the url, trigger search with the initialized searchFormData
+    if (urlSearchParams.get('_search') === 'true') {
+      fetchObjects(newSearchFormData,  _order_by_from_url || searchOrderBy, 0);
+    }
+  }, []); // Run only on mount
 
   // Auto-dismiss error message after 5 seconds
   useEffect(() => {
@@ -407,6 +443,28 @@ export function ObjectSearch({searchClassname, searchColumns, resultsColumns, or
     const token = localStorage.getItem("token");
     setLoading(true);
     setErrorMessage("");
+
+    // Update URL with search params
+    const params = new URLSearchParams();
+    for (const key in search) {
+      if (search[key]) {
+        if (Array.isArray(search[key])) {
+          // Date range
+          if (search[key][0]) {
+            params.append(`_from_${key}`, search[key][0].slice(0,10)); // Only include date part in URL
+          }
+          if (search[key][1]) {
+            params.append(`_to_${key}`, search[key][1].slice(0,10)); // Only include date part in URL
+          }
+        } else {
+          params.append(key, search[key]);
+        }
+      }
+    }
+    params.append('_order_by', orderBy);
+    params.append('_search', 'true');
+    const newUrl = `${window.location.pathname}?${params.toString()}`;
+    window.history.replaceState(null, '', newUrl);
 
     try {
       console.log('Searching objects with:', search, ' order by:', orderBy);
@@ -590,7 +648,10 @@ export function ObjectSearch({searchClassname, searchColumns, resultsColumns, or
                     <Form.Control
                         type="date"
                         name={'_from_' + col.attribute}
-                        value={searchFormData[col.attribute] ? searchFormData[col.attribute][0]?.slice(0,10) || '' : ''}
+                        value={searchFormData[col.attribute] ? searchFormData[col.attribute][0]?.slice(0,10) || ''
+                          // if name is in the url params, use that as initial value
+                           : urlSearchParams.get('_from_' + col.attribute) ? urlSearchParams.get('_from_' + col.attribute) : ''
+                           }
                         title={t('common.from')}
                         onChange={handleDateRangeInputChange}
                         onSubmit={handleSearch}
@@ -687,6 +748,20 @@ export function ObjectSearch({searchClassname, searchColumns, resultsColumns, or
           {/* <button className="btn btn-success mb-3" onClick={() => { navigate('/folders/new'); }} >{t("common.new")}</button> */}
         </div>
         <div className="col-md-6 text-center text-md-end">
+          {/* Add a Clean button */}
+          <button className="btn btn-secondary me-2" onClick={() => {
+            setSearchFormData({
+              father_id: "", //"0",
+              name: "",
+              description: "",
+            });
+            setIncludeDeleted(false);
+            setSearchOrderBy(orderBy || "name");
+            setResults([]);
+            // Clear URL params
+            window.history.replaceState(null, '', window.location.pathname);
+            window.location.reload();
+          }}>{t("common.clear")}</button>
           <button type="submit" form="searchForm" className="btn btn-primary">{t("common.search")}</button>
         </div>
       </div>

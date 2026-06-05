@@ -107,6 +107,7 @@ References:
 - [ ] Search results highlighting
 - [ ] Search in name, description, and HTML content // ⚠️ all objects have name and description, only page and news have html
 - [x] Pagination for search results
+- [x] Keeps last research when clicked "Cancel" or back from a detail
 
 ### Security & Performance
 - [ ] Token auto-refresh (file preview tokens expire after 15 min)
@@ -174,7 +175,7 @@ References:
 - [ ] Admin dashboard with statistics
   - [x] User activity // 👤 Roberto: how?
   - [x] Content statistics
-  - [ ] Link from charts to research. Example: created 10 pages last week -> search page with correct filters
+  - [x] Link from charts to research. Example: created 10 pages last week -> search page with correct filters
   - [ ] Storage usage // 👤 Roberto: should be easy
   - [ ] Popular pages // 👤 Roberto: needs db support
 - [ ] Audit log (comprehensive who/what/when tracking) // 👤 Roberto: not easy
